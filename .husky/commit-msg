@@ -1,0 +1,12 @@
+subject=$(head -n 1 "$1")
+
+case "$subject" in
+  "Merge "* | "Revert "* | "fixup! "* | "squash! "*) exit 0 ;;
+esac
+
+if ! printf '%s\n' "$subject" | grep -Eq '^(feat|fix|docs|style|refactor|test|chore|build|ci|perf)(\([a-z0-9-]+\))?!?: .+'; then
+  echo "Commit subject must follow Conventional Commits: <type>(<scope>)?: <description>" >&2
+  echo "Types: feat fix docs style refactor test chore build ci perf" >&2
+  echo "Got: $subject" >&2
+  exit 1
+fi
