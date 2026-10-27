@@ -11,7 +11,7 @@ Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `custo
 2. Run `pnpm codegen:api` (it writes `packages/api-client/src/generated/openapi.d.ts`; never edit that file).
 3. Export the type and add a method to `createApiClient` in `packages/api-client/src/index.ts`, wrapped in `unwrap(...)` like the others so errors become `ApiError`.
 4. Wrap it in the module facade `apps/crm-agent/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
-5. Add a query hook in `modules/<id>/queries/` using `queryOptions` and centralized keys (`caseKeys` in `src/lib/query-keys.ts`, or the module's `queries/keys.ts`). Example: `useMasterData.ts`.
+5. Add a query hook in `modules/<id>/queries/` using `queryOptions` and the module's own key factory in `modules/<id>/queries/keys.ts` (`caseKeys`, `customerKeys`; `src/lib/query-keys.ts` holds only cross-module keys such as `sessionKey` and `masterDataKey`). Example: `useMasterData.ts`.
 6. Dev mock: data in `src/mocks/db.ts`, handler in `src/mocks/handlers.ts`. Mask PII per role through `src/mocks/mask.ts`.
 7. Tests: client logic in `packages/api-client/src/index.test.ts`; components that use it with `renderWithProviders` from `@crm/test-utils` (seed the cache with `queryClient.setQueryData`).
 
@@ -73,7 +73,7 @@ Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `custo
 
 - **Unit/component:** `*.test.ts(x)` next to the code. For components using queries, use `renderWithProviders` from `@crm/test-utils` and seed the cache with `setQueryData`. For i18n text, `await createI18n()` in `beforeAll`.
 - **Router:** build a memory router (`createMemoryHistory`) as in `app/layout/RouteFallbacks.test.tsx`.
-- **E2E (Playwright, `apps/crm-agent/e2e/`):** dev server with MSW. After signing in, navigate through the router (`clientNavigate`), never `page.goto`. Wait for `networkidle` before ending the session.
+- **E2E (Playwright, `apps/crm-agent/e2e/`):** dev server with MSW. Import `test` and `expect` from `e2e/support.ts` and take `signedInPage` (already signed in on `/cases`). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
 - **Accessibility:** add new pages to `e2e/a11y.spec.ts`; `expectNoViolations` must stay clean.
 - The coverage floor is in `vitest.config.ts`; raise it when tests grow.
 

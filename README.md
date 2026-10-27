@@ -6,6 +6,8 @@ Kerangka frontend untuk **konsol agen customer service**: daftar case dengan fil
 detail case dengan timeline dan balasan rich text, profil customer, dan hak akses per peran. Seluruh
 backend ditiru oleh mock di browser, jadi proyek ini langsung jalan tanpa server apa pun.
 
+Istilah: **agen CS** adalah staf customer service yang memakai konsol ini; **AI agent** adalah asisten kode (lihat bagian terakhir). Nama app `crm-agent` merujuk ke agen CS.
+
 Cocok dipakai sebagai titik awal tim frontend: pola data, routing, keamanan, tes, dan CI sudah
 tertata, tinggal menambah modul.
 
@@ -86,7 +88,7 @@ Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](do
 
 ## Status dan batasan
 
-- **Backend belum ada di repo ini.** Semua data berasal dari mock (MSW). Kontrak API di `packages/api-client/openapi/openapi.yaml` masih sementara; tipe dan klien di-generate darinya.
+- **Backend belum ada di repo ini.** Semua data berasal dari mock (MSW). Kontrak API di `packages/api-client/openapi/openapi.yaml` masih sementara; tipe dan klien di-generate darinya. Status tiap endpoint ada di [docs/contract-status.md](docs/contract-status.md).
 - **Domain masih generik** (4 status, antrean l1/l2/escalated, 4 peran). Perlakukan sebagai contoh pola, bukan model final.
 - **Belum ada pelaporan error ke layanan eksternal.** Error baru masuk `console.error`; titik pasang SDK sudah disediakan (`setErrorReporter`).
 - **CSP masih Report-Only**, dan login memakai sesi mock sampai backend tersedia.
