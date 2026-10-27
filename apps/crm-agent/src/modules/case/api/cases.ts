@@ -1,4 +1,9 @@
-import type { CaseListQuery, CreateReplyRequest, UpdateCaseRequest } from '@crm/api-client'
+import type {
+  CaseListQuery,
+  CreateCaseRequest,
+  CreateReplyRequest,
+  UpdateCaseRequest,
+} from '@crm/api-client'
 import { api } from '@/lib/api'
 
 /**
@@ -10,6 +15,7 @@ export const casesApi = {
   masterData: (signal?: AbortSignal) => api.getMasterData(signal),
   summary: (signal?: AbortSignal) => api.getCaseSummary(signal),
   detail: (caseId: string, signal?: AbortSignal) => api.getCase(caseId, signal),
+  create: (body: CreateCaseRequest) => api.createCase(body),
   update: (caseId: string, patch: UpdateCaseRequest) => api.updateCase(caseId, patch),
   reply: (caseId: string, body: CreateReplyRequest) => api.createReply(caseId, body),
 }

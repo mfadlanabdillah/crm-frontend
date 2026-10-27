@@ -32,6 +32,16 @@ test.describe('setelah masuk', () => {
     await expectNoViolations(page)
   })
 
+  test('create case form, with and without errors', async ({ signedInPage: page }) => {
+    await clientNavigate(page, '/cases/new')
+    await expect(page.getByLabel('Subjek', { exact: true })).toBeVisible()
+    await expectNoViolations(page)
+
+    await page.getByRole('button', { name: 'Buat case' }).click()
+    await expect(page.getByText('Subjek minimal 3 karakter.')).toBeVisible()
+    await expectNoViolations(page)
+  })
+
   test('daftar dan detail customer', async ({ signedInPage: page }) => {
     await clientNavigate(page, '/customers')
     await expect(page.getByRole('columnheader', { name: 'Nama' })).toBeVisible()

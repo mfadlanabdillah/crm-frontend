@@ -39,6 +39,24 @@ describe('createApiClient', () => {
     expect(fetch.mock.calls[0]?.[0].credentials).toBe('include')
   })
 
+  it('createCase posts the body with the CSRF token and returns the created case', async () => {
+    const { api, fetch } = setup((request) => {
+      expect(request.method).toBe('POST')
+      return json({ id: 'case-1' }, 201)
+    })
+
+    const created = await api.createCase({ subject: 'Lost parcel', priority: 'high', queue: 'l1' })
+
+    const request = fetch.mock.calls[0]?.[0]
+    expect(created).toEqual({ id: 'case-1' })
+    expect(request?.headers.get('X-CSRF-Token')).toBe('csrf-1')
+    expect(await request?.clone().json()).toEqual({
+      subject: 'Lost parcel',
+      priority: 'high',
+      queue: 'l1',
+    })
+  })
+
   it('getSession mengembalikan null pada 401 tanpa melempar atau memanggil onError', async () => {
     const { api, onError } = setup(() => json({ code: 'unauthorized' }, 401))
     await expect(api.getSession()).resolves.toBeNull()
