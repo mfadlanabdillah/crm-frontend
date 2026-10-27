@@ -23,6 +23,7 @@ tertata, tinggal menambah modul.
 - **Dua bahasa** (`id-ID`, `en-US`), aksesibilitas WCAG 2.1 AA (dipindai axe di e2e), dan budget ukuran bundle per route.
 - **Tes dan CI:** Vitest, Testing Library, Playwright; lint, typecheck, cakupan, build, dan image Docker diperiksa di setiap PR.
 - **Generator modul:** `pnpm new:module` membuat kerangka modul baru lengkap dengan route dan guard izin.
+- **Generator endpoint:** `pnpm new:endpoint` menyambungkan satu endpoint GET (kontrak, klien, facade, query hook, mock, tabel status) dalam satu perintah.
 
 **Stack:** React 19 · Vite 8 · TypeScript strict · TanStack Router/Query/Table/Virtual · Zustand · Tailwind CSS 4 · Zod · React Hook Form · Tiptap · i18next · MSW · Vitest · Playwright · pnpm workspace.
 
@@ -62,6 +63,7 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 | `pnpm --filter @crm/crm-agent perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
 | `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
 | `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                |
+| `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
 | `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
 
 ## Cara kerjanya

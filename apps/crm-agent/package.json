@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "size": "node scripts/check-bundle-budget.mjs",
     "perf": "playwright test --config perf/playwright.config.ts",
-    "new:module": "node scripts/new-module.mjs"
+    "new:module": "node scripts/new-module.mjs",
+    "new:endpoint": "node scripts/new-endpoint.mjs"
   },
   "dependencies": {
     "@crm/api-client": "workspace:*",
