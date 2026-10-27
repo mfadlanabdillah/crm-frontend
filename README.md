@@ -1,0 +1,119 @@
+# crm-frontend
+
+> Starter kit for a customer-service agent console (CRM): React 19, Vite, TanStack, MSW. Runs fully on a mock backend.
+
+Kerangka frontend untuk **konsol agen customer service**: daftar case dengan filter dan ribuan baris,
+detail case dengan timeline dan balasan rich text, profil customer, dan hak akses per peran. Seluruh
+backend ditiru oleh mock di browser, jadi proyek ini langsung jalan tanpa server apa pun.
+
+Cocok dipakai sebagai titik awal tim frontend: pola data, routing, keamanan, tes, dan CI sudah
+tertata, tinggal menambah modul.
+
+|                                           |                                             |
+| ----------------------------------------- | ------------------------------------------- |
+| ![Daftar case](docs/images/case-list.png) | ![Detail case](docs/images/case-detail.png) |
+
+## Isi singkat
+
+- **Modul Case** (acuan lengkap) dan **Customer** (acuan minimal): daftar, detail, filter yang tersimpan di URL, tab case terbuka, balasan rich text, indikator real-time (SSE).
+- **Hak akses per peran** (L1, L2, supervisor, admin) dan **masking data pribadi**: server memasking, UI memasking lagi sebagai lapisan kedua.
+- **Sesi aman:** cookie `HttpOnly` lewat BFF, token CSRF, sesi habis ditangani di satu tempat, logout menjalar ke semua tab.
+- **Dua bahasa** (`id-ID`, `en-US`), aksesibilitas WCAG 2.1 AA (dipindai axe di e2e), dan budget ukuran bundle per route.
+- **Tes dan CI:** Vitest, Testing Library, Playwright; lint, typecheck, cakupan, build, dan image Docker diperiksa di setiap PR.
+- **Generator modul:** `pnpm new:module` membuat kerangka modul baru lengkap dengan route dan guard izin.
+
+**Stack:** React 19 · Vite 8 · TypeScript strict · TanStack Router/Query/Table/Virtual · Zustand · Tailwind CSS 4 · Zod · Tiptap · i18next · MSW · Vitest · Playwright · pnpm workspace.
+
+## Mulai cepat
+
+Butuh Node >= 22.12 (lihat `.nvmrc`) dan pnpm >= 12 (`corepack enable`).
+
+```bash
+pnpm install
+cp apps/crm-agent/.env.example apps/crm-agent/.env.local
+pnpm dev            # http://localhost:5173
+```
+
+Aplikasi langsung masuk sebagai **supervisor** (sesi mock). Untuk mencoba peran lain, ubah
+`VITE_MOCK_ROLE` di `.env.local` menjadi `l1`, `l2`, atau `admin`.
+
+Sebelum membuat PR, jalankan `pnpm check`.
+
+## Perintah
+
+| Perintah           | Fungsi                                                         |
+| ------------------ | -------------------------------------------------------------- |
+| `pnpm dev`         | Dev server dengan backend mock                                 |
+| `pnpm check`       | lint + typecheck + test + build + size (jalankan sebelum PR)   |
+| `pnpm test`        | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)   |
+| `pnpm test:e2e`    | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA |
+| `pnpm size`        | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)   |
+| `pnpm codegen:api` | Generate ulang klien dari `packages/api-client/openapi/`       |
+| `pnpm new:module`  | Buat kerangka modul baru (lihat bagian di bawah)               |
+| `pnpm format`      | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)      |
+
+## Cara kerjanya
+
+```text
+apps/crm-agent/src
+  routes/        # URL; tipis, hanya merangkai halaman dari modul
+  modules/<id>/  # satu folder per fitur CRM (case, customer, ...)
+  app/           # shell aplikasi: layout, login, daftar modul
+  components/ui/ # komponen dasar
+  lib/           # helper umum
+  mocks/         # backend tiruan (hanya dev)
+packages/
+  api-client/    # tipe dan klien dari kontrak OpenAPI
+  auth/          # peran, izin, masking data pribadi
+  i18n/          # teks id-ID dan en-US
+  test-utils/    # bantuan untuk tes
+```
+
+Tiga aturan utama (ditegakkan ESLint dan tes, bukan hanya himbauan):
+
+1. **Modul saling terpisah.** Satu modul tidak boleh mengimpor modul lain kecuali lewat `public.ts`-nya.
+2. **Data server hanya di TanStack Query.** Tidak ada `fetch` di komponen dan tidak ada data server di Zustand.
+3. **Filter hidup di URL**, jadi tampilan bisa di-bookmark dan dibagikan.
+
+### Menambah modul
+
+```bash
+pnpm new:module invoice --path /invoices --icon Receipt --permission invoice.view
+```
+
+Perintah itu membuat folder modul, route tipis dengan guard izin, dan mendaftarkannya di navigasi.
+Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
+
+## Status dan batasan
+
+- **Backend belum ada di repo ini.** Semua data berasal dari mock (MSW). Kontrak API di `packages/api-client/openapi/openapi.yaml` masih sementara; tipe dan klien di-generate darinya.
+- **Domain masih generik** (4 status, antrean l1/l2/escalated, 4 peran). Perlakukan sebagai contoh pola, bukan model final.
+- **Belum ada pelaporan error ke layanan eksternal.** Error baru masuk `console.error`; titik pasang SDK sudah disediakan (`setErrorReporter`).
+- **CSP masih Report-Only**, dan login memakai sesi mock sampai backend tersedia.
+
+## Docker
+
+```bash
+docker build -t crm-agent .
+docker run -p 8080:8080 crm-agent        # http://localhost:8080
+```
+
+Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header keamanan di
+`security-headers.inc`. Aplikasi diasumsikan same-origin di belakang BFF.
+
+- Build arg `VITE_API_BASE_URL` (default `/`) dan `VITE_TELEMETRY_URL` tertanam di bundle; keduanya publik, jangan isi secret.
+- MSW hanya jalan di dev server. File `*.map` dan `mockServiceWorker.js` dihapus dari image.
+
+## Kontribusi
+
+- **Branch:** `feature/`, `bugfix/`, `hotfix/`, `release/`. Alur: `development` -> `staging` -> `master`.
+- **Commit:** Conventional Commits (`feat`, `fix`, `docs`, `test`, `chore`, ...).
+- **PR:** ikuti template di `.github/` dan lolos CI: `format:check`, `pnpm check`, drift klien OpenAPI (`pnpm codegen:api` tanpa diff), e2e, dan build image Docker.
+- **Pre-commit:** Husky menjalankan `lint-staged` (ESLint + Prettier pada file yang berubah). Aktif otomatis setelah `pnpm install`.
+
+## Untuk AI agent
+
+Aturan, perintah verifikasi, dan perangkap yang sering terjadi ada di [AGENTS.md](AGENTS.md); langkah
+per jenis tugas (endpoint, modul, route, teks, izin, tes) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
+`CLAUDE.md` hanya mengimpor `AGENTS.md`. Sebuah tes menjaga agar path yang disebut di dokumen itu
+tetap ada.

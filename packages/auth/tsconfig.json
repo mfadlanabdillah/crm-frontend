@@ -1,0 +1,7 @@
+{
+  "extends": "@crm/config-ts/library",
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
