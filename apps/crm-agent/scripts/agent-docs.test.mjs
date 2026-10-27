@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -66,4 +66,36 @@ describe('docs/contract-status.md', () => {
     expect(rows.length).toBeGreaterThan(0)
     expect(unknown).toEqual([])
   })
+})
+
+describe('docs/adr', () => {
+  const dir = path.join(repoRoot, 'docs/adr')
+  const files = readdirSync(dir)
+    .filter((file) => /^\d{4}-.+\.md$/.test(file))
+    .sort()
+  const index = readFileSync(path.join(dir, 'README.md'), 'utf8')
+
+  it('numbers the ADRs from 0001 without gaps or repeats', () => {
+    expect(files.length).toBeGreaterThan(0)
+    expect(files.map((file) => file.slice(0, 4))).toEqual(
+      files.map((_, position) => String(position + 1).padStart(4, '0')),
+    )
+  })
+
+  it('lists every ADR in the index', () => {
+    expect(files.filter((file) => !index.includes(`(${file})`))).toEqual([])
+  })
+
+  it.each(files)(
+    '%s has a matching title, a valid status, a date, and the required sections',
+    (file) => {
+      const text = readFileSync(path.join(dir, file), 'utf8')
+      expect(text).toMatch(new RegExp(`^# ADR-${file.slice(0, 4)}: .+`, 'm'))
+      expect(text).toMatch(/^- Status: (Proposed|Accepted|Deprecated|Superseded by ADR-\d{4})$/m)
+      expect(text).toMatch(/^- Date: \d{4}-\d{2}-\d{2}$/m)
+      for (const heading of ['Context', 'Decision', 'Consequences', 'Alternatives considered']) {
+        expect(text, `${file} lacks "## ${heading}"`).toContain(`\n## ${heading}\n`)
+      }
+    },
+  )
 })
