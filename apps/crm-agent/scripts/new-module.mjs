@@ -11,6 +11,7 @@
  *   src/modules/<id>/{module.ts,public.ts,api,queries,schemas,pages}
  *   src/routes/_authenticated/<path>/index.tsx  (thin route)
  *   an entry in src/app/modules/registry.ts
+ *   a placeholder `<camel>.title` in both locales of packages/i18n/src/resources.ts
  * Then runs `tsr generate`. The skeleton must pass `pnpm lint` and `pnpm typecheck` before it is
  * filled in. i18n text and the permission are added by hand (see the message printed at the end).
  */
@@ -154,7 +155,7 @@ for (const [file, content] of Object.entries(files)) {
 // Presentational pieces live here; git only tracks the folder once a component is added.
 mkdirSync(path.join(moduleDir, 'components'), { recursive: true })
 
-// Daftarkan ke registry.
+// Register in the module registry.
 const registryFile = path.join(src, 'app/modules/registry.ts')
 let registry = readFileSync(registryFile, 'utf8')
 const importLine = `import { ${camel}Module } from '@/modules/${id}/module'\n`
@@ -177,6 +178,17 @@ registry = registry.replace(arrayRe, (_, list) => {
 })
 writeFileSync(registryFile, registry)
 
+// A placeholder title in both locales keeps the i18n parity test green; translate it afterwards.
+const resourcesFile = path.join(appRoot, '../../packages/i18n/src/resources.ts')
+const localeEndRe = /\n\} as const\n(?=\n(?:const enUS|export const resources))/g
+let resources = readFileSync(resourcesFile, 'utf8')
+const i18nAdded =
+  resources.match(localeEndRe)?.length === 2 && !resources.includes(`\n  ${camel}: {`)
+if (i18nAdded) {
+  resources = resources.replace(localeEndRe, `\n  ${camel}: { title: '${pascal}' },\n} as const\n`)
+  writeFileSync(resourcesFile, resources)
+}
+
 // Skipped by the generator test, which runs in a temp folder without tsr/prettier.
 if (!process.env.NEW_MODULE_SKIP_POSTPROCESS) {
   execFileSync('pnpm', ['exec', 'tsr', 'generate'], { cwd: appRoot, stdio: 'ignore' })
@@ -189,7 +201,11 @@ if (!process.env.NEW_MODULE_SKIP_POSTPROCESS) {
 console.log(`Module "${id}" created in src/modules/${id} (route ${urlPath}) and registered in the registry.
 
 Next steps:
-  1. UI text: add "${camel}.title" (and any other text) to packages/i18n/src/resources.ts, both locales.
+  1. UI text: ${
+    i18nAdded
+      ? `translate the placeholder "${camel}.title" in packages/i18n/src/resources.ts, both locales, and add any other text.`
+      : `add "${camel}.title" (and any other text) to packages/i18n/src/resources.ts, both locales.`
+  }
   2. Permission: ${
     permission
       ? `add "${permission}" to packages/auth/src/roles.ts (module.ts and the route already use it).`
