@@ -68,4 +68,23 @@ const moduleBoundaries = moduleIds.map((id) => ({
   ]),
 }))
 
-export default [...config, leafBoundary, appBoundary, ...moduleBoundaries]
+/** Modules, components, and routes reach the API only through the module facade (`@crm/api-client`). */
+const noRawFetch = {
+  files: [
+    `${srcDir}/modules/**/*.{ts,tsx}`,
+    `${srcDir}/components/**/*.{ts,tsx}`,
+    `${srcDir}/routes/**/*.{ts,tsx}`,
+  ],
+  rules: {
+    'no-restricted-globals': [
+      'error',
+      {
+        name: 'fetch',
+        message:
+          'No fetch in modules, components, or routes: call the API through the facade in modules/<id>/api/ (@crm/api-client).',
+      },
+    ],
+  },
+}
+
+export default [...config, leafBoundary, appBoundary, ...moduleBoundaries, noRawFetch]
