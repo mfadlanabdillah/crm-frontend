@@ -49,6 +49,12 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      # Keyed on the lockfile, so any dependency change re-downloads the browser; on a hit the
+      # install below still adds OS packages but skips the download.
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install browsers
         run: pnpm --filter @crm/crm-agent exec playwright install --with-deps chromium
       - name: E2E
