@@ -138,4 +138,4 @@ Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `s
 
 ## Keep the docs true
 
-When structure, commands, or rules change, update `README.md` and this file. `apps/crm-agent/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, update the mock, and update `docs/contract-status.md`.
+When structure, commands, or rules change, update `README.md` and this file. `apps/crm-agent/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists, or when an operation in `openapi.yaml` is missing from `docs/contract-status.md` or has an unknown status. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, update the mock, and update `docs/contract-status.md`.
