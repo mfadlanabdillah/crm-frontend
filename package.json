@@ -25,7 +25,8 @@
     "codegen:check": "pnpm codegen:api && git diff --exit-code packages/api-client/src/generated",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm codegen:check",
     "prepare": "husky",
-    "new:module": "pnpm --filter @crm/crm-agent new:module"
+    "new:module": "pnpm --filter @crm/crm-agent new:module",
+    "new:endpoint": "pnpm --filter @crm/crm-agent new:endpoint"
   },
   "devDependencies": {
     "@crm/config-eslint": "workspace:*",

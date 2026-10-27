@@ -48,16 +48,16 @@ packages/
   api-client/  auth/  i18n/  test-utils/  config-ts/  config-eslint/
 ```
 
-| To add...         | Put it in...                                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| CRM module        | `pnpm new:module <id> --path /<path>` (skeleton + route + registry entry)                                    |
-| Page / URL        | thin route in `src/routes/`; page body in `src/modules/<id>/pages/`                                          |
-| Module component  | `src/modules/<id>/components/`                                                                               |
-| Generic primitive | `src/components/ui/`                                                                                         |
-| API endpoint      | `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/` |
-| Permission        | `packages/auth/src/roles.ts`                                                                                 |
-| UI text           | `packages/i18n/src/resources.ts` (both locales)                                                              |
-| Dev mock          | `src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                     |
+| To add...         | Put it in...                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CRM module        | `pnpm new:module <id> --path /<path>` (skeleton + route + registry entry)                                                                        |
+| Page / URL        | thin route in `src/routes/`; page body in `src/modules/<id>/pages/`                                                                              |
+| Module component  | `src/modules/<id>/components/`                                                                                                                   |
+| Generic primitive | `src/components/ui/`                                                                                                                             |
+| API endpoint      | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/` |
+| Permission        | `packages/auth/src/roles.ts`                                                                                                                     |
+| UI text           | `packages/i18n/src/resources.ts` (both locales)                                                                                                  |
+| Dev mock          | `src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                         |
 
 ### Layer boundaries (enforced by ESLint, `eslint.config.js`)
 
