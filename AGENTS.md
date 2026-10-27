@@ -74,7 +74,7 @@ packages/
 - Server state in TanStack Query; Zustand holds UI state only, never server data.
 - Filters and pagination live in the URL (search params + zod, `.catch()` for stale URLs).
 - Forms use React Hook Form + a zod schema with i18n-key messages and `FormField`; follow `modules/case/components/CaseForm.tsx` (recipe: "Add a form").
-- No `fetch` in components and no data fetching in `useEffect`. API calls go through the facade in `modules/<id>/api/`.
+- No `fetch` in components and no data fetching in `useEffect`. API calls go through the facade in `modules/<id>/api/`. ESLint rejects `fetch` in `modules/`, `components/`, and `routes/`.
 - Master data (status, queue, priority, taxonomy) comes from the API (`GET /v1/master-data` via `useMasterData`: code, label, badge tone). Do not hardcode business enums; URL search and SSE events accept any code.
 - A 401 is handled globally (`lib/query-client.ts` + `app/auth/session-expiry.ts`). Do not handle 401 per page.
 
@@ -97,7 +97,7 @@ packages/
 - TypeScript strict with `noUncheckedIndexedAccess`; no `any` (use `unknown`); handle `undefined` from indexing instead of `!`.
 - `import type` for types; `eqeqeq`; `no-console` except `warn`/`error`; Prettier: single quotes, trailing commas, width 100.
 - Skip needless comments and docstrings; use clear names. Comment only non-obvious logic, workarounds, and edge cases.
-- Tests sit next to the code as `*.test.ts(x)`. Non-trivial new logic needs a test, critical flows need e2e. `pnpm test` enforces a coverage floor in `vitest.config.ts`; raise it as tests grow.
+- Tests sit next to the code as `*.test.ts(x)`. Non-trivial new logic needs a test, critical flows need e2e. UI added without a unit test can trip the coverage floor: split the markup into a component and test it (`renderWithRouter` from `@crm/test-utils` when it has a `Link`). `pnpm test` enforces a coverage floor in `vitest.config.ts`; raise it as tests grow.
 - Bundle budget: initial JS and every route (entry + route chunk) <= 300 KB gzip (`pnpm size`).
 
 ## Language policy
@@ -118,7 +118,7 @@ packages/
 ## Known pitfalls
 
 - **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-agent/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
-- **E2E runs with 3 workers on purpose** (`apps/crm-agent/playwright.config.ts`). Measured on a 12-core machine from a cold Vite cache: 2-4 workers pass 20/20 in about 25 s, while the default 6 time out on the first page loads. Do not raise it without re-measuring.
+- **E2E runs with 2 workers on purpose** (`apps/crm-agent/playwright.config.ts`). Each worker is a Chromium; 2-4 workers take the same ~25 s, but 6 fail every run and 3 time out when RAM/swap is tight (seen on an 8 GB machine). Do not raise it without re-measuring. If e2e fails only when the machine is swapping, free memory before suspecting the code.
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
 - **Session expiry vs logout:** `ModuleDefinition.onSignOut(reason)` receives `'logout'` or `'expired'`. Unsent drafts are deleted only on `logout`.
