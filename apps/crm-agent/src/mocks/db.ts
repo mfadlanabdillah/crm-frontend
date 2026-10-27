@@ -5,6 +5,7 @@ import type {
   CasePriority,
   CaseStatus,
   CaseSummary,
+  CreateCaseRequest,
   MasterData,
   CreateReplyRequest,
   CustomerListQuery,
@@ -358,6 +359,42 @@ export const db = {
       },
     ]
 
+    return { ...item }
+  },
+
+  addCase(input: CreateCaseRequest, actor: User): Case {
+    const index = cases.length + 1
+    const now = new Date().toISOString()
+    const item: Case = {
+      id: `case-${String(index).padStart(5, '0')}`,
+      code: `CASE-2026-${String(100_000 + index)}`,
+      subject: input.subject.trim(),
+      description: input.description?.trim() ?? '',
+      status: MASTER_DATA.statuses[0]?.code ?? 'open',
+      queue: input.queue,
+      priority: input.priority,
+      assignee: null,
+      // Kaitan customer belum dirancang: mock memakai customer pertama.
+      customer: { ...(cases[0] as Case).customer },
+      shipmentId: null,
+      sttNumber: null,
+      tags: [],
+      slaDueAt: null,
+      createdAt: now,
+      updatedAt: now,
+      timeline: [
+        {
+          id: `entry-${Date.now()}`,
+          type: 'note',
+          author: actor,
+          body: 'Case dibuat.',
+          visibility: 'internal',
+          createdAt: now,
+        },
+      ],
+    }
+    cases.unshift(item)
+    casesById.set(item.id, item)
     return { ...item }
   },
 

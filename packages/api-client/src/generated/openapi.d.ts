@@ -60,7 +60,8 @@ export interface paths {
         /** Daftar case dengan filter, sort, dan pagination di server */
         get: operations["listCases"];
         put?: never;
-        post?: never;
+        /** Buat case baru (usulan; contoh pola form, kaitan customer belum dirancang) */
+        post: operations["createCase"];
         delete?: never;
         options?: never;
         head?: never;
@@ -283,6 +284,12 @@ export interface components {
             unassigned: number;
             overdue: number;
         };
+        CreateCaseRequest: {
+            subject: string;
+            description?: string;
+            priority: components["schemas"]["Priority"];
+            queue: components["schemas"]["Queue"];
+        };
         UpdateCaseRequest: {
             status?: components["schemas"]["CaseStatus"];
             queue?: components["schemas"]["Queue"];
@@ -435,6 +442,41 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    createCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Case yang dibuat */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Case"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Isian tidak valid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getCaseSummary: {

@@ -3,6 +3,11 @@ import { ROLE_PERMISSIONS, ROLES, can } from './roles'
 import type { Permission } from './roles'
 
 describe('RBAC', () => {
+  it('setiap role boleh membuat case', () => {
+    for (const role of ROLES) expect(can(role, 'case.create')).toBe(true)
+    expect(can(null, 'case.create')).toBe(false)
+  })
+
   it('agen L1 tidak boleh reassign case', () => {
     expect(can('l1', 'case.reassign')).toBe(false)
     expect(can('l1', 'case.view')).toBe(true)

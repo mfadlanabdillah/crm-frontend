@@ -60,6 +60,33 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   /v1/cases:
+    post:
+      tags: [cases]
+      operationId: createCase
+      summary: Buat case baru (usulan; contoh pola form, kaitan customer belum dirancang)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaseRequest'
+      responses:
+        '201':
+          description: Case yang dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     get:
       tags: [cases]
       operationId: listCases
@@ -582,6 +609,22 @@ components:
           type: integer
         overdue:
           type: integer
+
+    CreateCaseRequest:
+      type: object
+      required: [subject, priority, queue]
+      properties:
+        subject:
+          type: string
+          minLength: 3
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        priority:
+          $ref: '#/components/schemas/Priority'
+        queue:
+          $ref: '#/components/schemas/Queue'
 
     UpdateCaseRequest:
       type: object

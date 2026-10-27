@@ -16,6 +16,7 @@ export type CaseSummary = components['schemas']['CaseSummary']
 export type MasterData = components['schemas']['MasterData']
 export type MasterDataItem = components['schemas']['MasterDataItem']
 export type UpdateCaseRequest = components['schemas']['UpdateCaseRequest']
+export type CreateCaseRequest = components['schemas']['CreateCaseRequest']
 export type CreateReplyRequest = components['schemas']['CreateReplyRequest']
 export type CaseEvent = components['schemas']['CaseEvent']
 
@@ -160,6 +161,10 @@ export function createApiClient(options: ApiClientOptions) {
           ...(signal ? { signal } : {}),
         }),
       )
+    },
+
+    createCase(body: CreateCaseRequest): Promise<Case> {
+      return unwrap(client.POST('/v1/cases', { body }))
     },
 
     updateCase(caseId: string, patch: UpdateCaseRequest): Promise<Case> {

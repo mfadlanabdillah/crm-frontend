@@ -1,7 +1,7 @@
-import { getRouteApi } from '@tanstack/react-router'
+import { Link, getRouteApi } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '@crm/auth'
-import { Button } from '@/components/ui/button'
+import { Can, useAuth } from '@crm/auth'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/data-state'
 import { CaseFilters } from '@/modules/case/components/CaseFilters'
@@ -42,6 +42,11 @@ export function CaseListPage() {
             <h2 className="text-base font-semibold text-ink">{t('cases.title')}</h2>
             <p className="text-xs text-ink-muted">{t('cases.subtitle')}</p>
           </div>
+          <Can permission="case.create">
+            <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
+              {t('cases.create.open')}
+            </Link>
+          </Can>
           {meta ? (
             <p className="text-xs text-ink-muted tabular-nums">
               {t('cases.total', { total: formatNumber(meta.total) })} ·{' '}

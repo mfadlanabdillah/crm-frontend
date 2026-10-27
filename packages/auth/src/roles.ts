@@ -7,6 +7,7 @@ export const ROLES = ['l1', 'l2', 'supervisor', 'admin'] as const satisfies read
 /** Aksi yang boleh dikontrol UI. Backend tetap penjaga akhir untuk semuanya. */
 export type Permission =
   | 'case.view'
+  | 'case.create'
   | 'case.assign'
   | 'case.reassign'
   | 'case.status.update'
@@ -20,6 +21,7 @@ export type Permission =
 
 const L1: readonly Permission[] = [
   'case.view',
+  'case.create',
   'case.status.update',
   'case.reply',
   'case.note.internal',

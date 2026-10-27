@@ -3,6 +3,7 @@ import { can } from '@crm/auth'
 import type {
   CaseListQuery,
   CaseStatus,
+  CreateCaseRequest,
   CreateReplyRequest,
   CustomerListQuery,
   Queue,
@@ -63,6 +64,23 @@ export const handlers = [
     await delay(NETWORK_DELAY_MS)
     if (!requireSession()) return unauthorized()
     return HttpResponse.json(db.getSummary())
+  }),
+
+  http.post('/v1/cases', async ({ request }) => {
+    await delay(NETWORK_DELAY_MS)
+    const session = requireSession()
+    if (!session) return unauthorized()
+    if (!can(session.user.role, 'case.create')) {
+      return jsonError(403, 'forbidden', 'Role Anda tidak boleh membuat case')
+    }
+
+    const body = (await request.json()) as CreateCaseRequest
+    if (typeof body.subject !== 'string' || body.subject.trim().length < 3) {
+      return jsonError(422, 'validation_error', 'Subjek minimal 3 karakter')
+    }
+
+    const created = db.addCase(body, session.user)
+    return HttpResponse.json(maskCaseForRole(created, session.user.role), { status: 201 })
   }),
 
   http.get('/v1/cases', async ({ request }) => {
