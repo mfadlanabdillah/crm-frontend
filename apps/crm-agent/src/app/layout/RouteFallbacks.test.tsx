@@ -1,31 +1,18 @@
-import {
-  RouterProvider,
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-} from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@crm/api-client'
 import { createI18n } from '@crm/i18n'
+import { renderWithRouter } from '@crm/test-utils'
 import { setErrorReporter } from '@/lib/telemetry'
 import { RouteError, RouteNotFound } from './RouteFallbacks'
 
 function renderThrowing(error: unknown) {
-  const root = createRootRoute({ errorComponent: RouteError, notFoundComponent: RouteNotFound })
-  const index = createRoute({
-    getParentRoute: () => root,
-    path: '/',
-    component: () => {
-      throw error
-    },
+  function Thrower(): never {
+    throw error
+  }
+  return renderWithRouter(<Thrower />, {
+    rootOptions: { errorComponent: RouteError, notFoundComponent: RouteNotFound },
   })
-  const router = createRouter({
-    routeTree: root.addChildren([index]),
-    history: createMemoryHistory({ initialEntries: ['/'] }),
-  })
-  return render(<RouterProvider router={router} />)
 }
 
 describe('RouteError', () => {
@@ -39,7 +26,7 @@ describe('RouteError', () => {
     setErrorReporter(reporter)
     const error = new Error('stack rahasia internal')
 
-    renderThrowing(error)
+    await renderThrowing(error)
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Terjadi kesalahan')
     expect(screen.queryByText(/stack rahasia internal/)).not.toBeInTheDocument()
@@ -50,7 +37,7 @@ describe('RouteError', () => {
   it('menampilkan kode referensi bila error API membawa requestId', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    renderThrowing(new ApiError('gagal', 500, 'internal', 'req-123'))
+    await renderThrowing(new ApiError('gagal', 500, 'internal', 'req-123'))
 
     expect(await screen.findByText('Kode referensi: req-123')).toBeInTheDocument()
   })
