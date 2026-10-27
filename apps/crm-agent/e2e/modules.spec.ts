@@ -1,16 +1,11 @@
-import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-
-test.beforeEach(async ({ page }) => {
-  await page.goto('/cases')
-  await expect(page.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
-})
+import { expect, test } from './support'
 
 function moduleNav(page: Page) {
   return page.getByRole('navigation', { name: 'Modul' })
 }
 
-test('pindah modul lewat sidebar: daftar customer lalu detail', async ({ page }) => {
+test('pindah modul lewat sidebar: daftar customer lalu detail', async ({ signedInPage: page }) => {
   await moduleNav(page).getByRole('link', { name: 'Customer' }).click()
 
   await expect(page).toHaveURL(/\/customers$/)
@@ -32,7 +27,7 @@ test('pindah modul lewat sidebar: daftar customer lalu detail', async ({ page })
   await expect(page.getByText(/^0812\d{8}$/)).toBeVisible()
 })
 
-test('tab workspace case hanya tampil di modul Case', async ({ page }) => {
+test('tab workspace case hanya tampil di modul Case', async ({ signedInPage: page }) => {
   await page.goto('/cases/case-00001')
   await expect(page.getByText('CASE-2026-100001', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Case terbuka' })).toBeVisible()
@@ -42,7 +37,9 @@ test('tab workspace case hanya tampil di modul Case', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Case terbuka' })).toHaveCount(0)
 })
 
-test('dari detail case ke profil customer (tautan lintas modul)', async ({ page }) => {
+test('dari detail case ke profil customer (tautan lintas modul)', async ({
+  signedInPage: page,
+}) => {
   await page.goto('/cases/case-00001')
   await page.getByRole('link', { name: 'Lihat profil customer' }).click()
 
@@ -53,8 +50,7 @@ test('dari detail case ke profil customer (tautan lintas modul)', async ({ page 
 test.describe('layar kecil', () => {
   test.use({ viewport: { width: 390, height: 800 } })
 
-  test('navigasi modul tersedia di layar kecil', async ({ page }) => {
-    await page.goto('/cases')
+  test('navigasi modul tersedia di layar kecil', async ({ signedInPage: page }) => {
     const nav = page.getByRole('navigation', { name: 'Modul' })
     await expect(nav).toBeVisible()
 

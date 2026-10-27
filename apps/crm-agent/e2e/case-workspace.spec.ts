@@ -1,16 +1,5 @@
-import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-
-/**
- * Sesi mock hidup di memori halaman dan dibuat ulang setiap reload, jadi
- * perpindahan halaman di tengah alur harus lewat router, bukan `page.goto`.
- */
-async function clientNavigate(page: Page, path: string) {
-  await page.evaluate((target) => {
-    window.history.pushState({}, '', target)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }, path)
-}
+import { clientNavigate, endSession, expect, test } from './support'
 
 async function openCase(page: Page, caseId: string, code: string) {
   await clientNavigate(page, `/cases/${caseId}`)
@@ -25,12 +14,7 @@ function tabs(page: Page) {
   return page.getByRole('navigation', { name: 'Case terbuka' })
 }
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/cases')
-  await expect(page.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
-})
-
-test('draft balasan tidak terbawa saat pindah case lewat tab', async ({ page }) => {
+test('draft balasan tidak terbawa saat pindah case lewat tab', async ({ signedInPage: page }) => {
   await openCase(page, 'case-00001', 'CASE-2026-100001')
   await openCase(page, 'case-00002', 'CASE-2026-100002')
 
@@ -46,7 +30,7 @@ test('draft balasan tidak terbawa saat pindah case lewat tab', async ({ page }) 
 })
 
 test('sesi habis saat kirim balasan: ke login, lalu kembali ke case setelah masuk', async ({
-  page,
+  signedInPage: page,
 }) => {
   await openCase(page, 'case-00003', 'CASE-2026-100003')
 
@@ -55,7 +39,7 @@ test('sesi habis saat kirim balasan: ke login, lalu kembali ke case setelah masu
   await page.keyboard.type('Balasan yang akan gagal')
 
   // Putus sesi di mock backend supaya POST replies dibalas 401.
-  await page.evaluate(() => fetch('/v1/auth/logout', { method: 'POST' }))
+  await endSession(page)
   await page.getByRole('button', { name: 'Kirim' }).click()
 
   await expect(page).toHaveURL(/\/login\?redirect=%2Fcases%2Fcase-00003/)
@@ -69,7 +53,7 @@ test('sesi habis saat kirim balasan: ke login, lalu kembali ke case setelah masu
   )
 })
 
-test('logout mengosongkan tab workspace sesi sebelumnya', async ({ page }) => {
+test('logout mengosongkan tab workspace sesi sebelumnya', async ({ signedInPage: page }) => {
   await openCase(page, 'case-00001', 'CASE-2026-100001')
   await expect(tabs(page).getByRole('link', { name: 'CASE-2026-100001' })).toBeVisible()
 
@@ -82,7 +66,7 @@ test('logout mengosongkan tab workspace sesi sebelumnya', async ({ page }) => {
   await expect(tabs(page).getByRole('link')).toHaveText(['CASE-2026-100002'])
 })
 
-test('login kembali ke halaman yang dituju lewat ?redirect=', async ({ page }) => {
+test('login kembali ke halaman yang dituju lewat ?redirect=', async ({ signedInPage: page }) => {
   await page.getByRole('button', { name: 'Keluar' }).click()
   await expect(page).toHaveURL(/\/login/)
 
@@ -95,23 +79,22 @@ test('login kembali ke halaman yang dituju lewat ?redirect=', async ({ page }) =
   await expect(page.getByText('CASE-2026-100004', { exact: true }).first()).toBeVisible()
 })
 
-test('kembali dari SSO dengan sesi aktif langsung diteruskan ke ?redirect=', async ({ page }) => {
+test('kembali dari SSO dengan sesi aktif langsung diteruskan ke ?redirect=', async ({
+  signedInPage: page,
+}) => {
   // Sesi mock sudah aktif setelah reload, sama seperti setelah callback SSO.
   await page.goto('/login?redirect=%2Fcases%2Fcase-00005')
   await expect(page).toHaveURL(/\/cases\/case-00005$/)
   await expect(page.getByText('CASE-2026-100005', { exact: true }).first()).toBeVisible()
 })
 
-test('redirect ke domain lain diabaikan', async ({ page }) => {
+test('redirect ke domain lain diabaikan', async ({ signedInPage: page }) => {
   await page.goto('/login?redirect=%2F%2Fevil.example%2Fphish')
   await expect(page).toHaveURL(/^http:\/\/localhost:5173\/cases(\?|$)/)
   await expect(page.getByText('Terjadi kesalahan')).toHaveCount(0)
 })
 
-test('logout di satu tab membawa tab lain ke login', async ({ page, context }) => {
-  await page.goto('/cases')
-  await expect(page.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
-
+test('logout di satu tab membawa tab lain ke login', async ({ signedInPage: page, context }) => {
   const other = await context.newPage()
   await other.goto('/cases')
   await expect(other.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
@@ -122,13 +105,10 @@ test('logout di satu tab membawa tab lain ke login', async ({ page, context }) =
   await expect(other).toHaveURL(/\/login\?redirect=%2Fcases/)
 })
 
-test('sesi berakhir saat memuat data membawa agen ke login dengan redirect', async ({ page }) => {
-  await page.goto('/cases')
-  await expect(page.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
-
-  // Query awal harus selesai dulu, kalau tidak 401-nya sudah memicu redirect sebelum klik.
-  await page.waitForLoadState('networkidle')
-  await page.evaluate(() => fetch('/v1/auth/logout', { method: 'POST' }))
+test('sesi berakhir saat memuat data membawa agen ke login dengan redirect', async ({
+  signedInPage: page,
+}) => {
+  await endSession(page)
   await page
     .getByRole('navigation', { name: 'Modul' })
     .getByRole('link', { name: 'Customer' })
