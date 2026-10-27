@@ -13,7 +13,7 @@ Rules for AI coding agents and developers in this repo. Step-by-step recipes per
 ## Context
 
 - **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-agent`, the customer-service agent console SPA (phase 1 = case record type `CS`).
-- **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 (shadcn/ui pattern), Zod (React Hook Form is added with the first real form), Tiptap, i18next, MSW, Vitest, Playwright.
+- **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 (shadcn/ui pattern), Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
 - **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.
 - **Terms:** "CS agent" (Indonesian: agen CS) is the customer-service staff member who uses the console; "AI agent" is a coding assistant reading this file. The app name `crm-agent` refers to the first.
@@ -73,6 +73,7 @@ packages/
 
 - Server state in TanStack Query; Zustand holds UI state only, never server data.
 - Filters and pagination live in the URL (search params + zod, `.catch()` for stale URLs).
+- Forms use React Hook Form + a zod schema with i18n-key messages and `FormField`; follow `modules/case/components/CaseForm.tsx` (recipe: "Add a form").
 - No `fetch` in components and no data fetching in `useEffect`. API calls go through the facade in `modules/<id>/api/`.
 - Master data (status, queue, priority, taxonomy) comes from the API (`GET /v1/master-data` via `useMasterData`: code, label, badge tone). Do not hardcode business enums; URL search and SSE events accept any code.
 - A 401 is handled globally (`lib/query-client.ts` + `app/auth/session-expiry.ts`). Do not handle 401 per page.
@@ -98,6 +99,12 @@ packages/
 - Skip needless comments and docstrings; use clear names. Comment only non-obvious logic, workarounds, and edge cases.
 - Tests sit next to the code as `*.test.ts(x)`. Non-trivial new logic needs a test, critical flows need e2e. `pnpm test` enforces a coverage floor in `vitest.config.ts`; raise it as tests grow.
 - Bundle budget: initial JS and every route (entry + route chunk) <= 300 KB gzip (`pnpm size`).
+
+## Language policy
+
+- **English:** code, comments, test names, commit messages, ESLint messages, and technical docs (`AGENTS.md`, `docs/`).
+- **Indonesian:** `README.md` and product text (the `id-ID` locale); `en-US` mirrors it.
+- Older code still has Indonesian comments, test names, and lint messages. Translate them when you touch that code; do not mass-rewrite.
 
 ## Do not edit by hand
 

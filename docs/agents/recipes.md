@@ -36,9 +36,36 @@ Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `custo
 
 **Done when:** `pnpm check` is green and `pnpm size` shows the new route under 300 KB gzip.
 
+## Add a form
+
+Reference: `modules/case/components/CaseForm.tsx` (used by `pages/CaseCreatePage.tsx`).
+
+1. Put the zod schema in `modules/<id>/schemas/`. Messages are **i18n keys** (`.min(3, 'cases.create.errors.subjectShort')`), added to both locales. Selects whose values are business codes start empty and are required; options come from master data, never from a hardcoded list.
+2. Build the form with `useForm({ resolver: zodResolver(schema), defaultValues })` from `react-hook-form` and `@hookform/resolvers/zod`. The form component is presentational: it receives `onSubmit(request)`, `onCancel`, `isPending`, and a server `error` string, and emits a ready-to-send request (see `toCreateCaseRequest`).
+3. Render each field with `FormField` (`components/ui/form-field.tsx`): it wires the label, hint, and error to the control through `id`, `aria-describedby`, and `aria-invalid`. Spread its render-prop argument and then `register('name')` onto the control: `{(control) => <Input {...control} {...register('subject')} />}`. Show errors with `t(errors.field?.message)`.
+4. The page owns the mutation (`queries/useCreate<Thing>.ts`: `useMutation` + invalidate list/summary keys) and navigation. A server failure such as a 422 comes back as `ApiError`; pass `mutation.error?.message` to the form's `error` prop.
+5. Tests: a schema test (messages are keys), a component test with `userEvent` (translated errors, submit payload, pending state), and an e2e that fills the form. In e2e use `getByLabel(text, { exact: true })` or `getByRole('combobox', { name })`: label matching is a case-insensitive substring and can hit the list page's search box.
+6. Add the page to `e2e/a11y.spec.ts`, with and without validation errors showing.
+
+**Done when:** `pnpm check` and `pnpm test:e2e` are green.
+
+## Add a UI primitive
+
+`components/ui/` is intentionally small (`button`, `input`, `select`, `textarea`, `badge`, `skeleton`, `form-field`, `data-state`). Add a new primitive only when a feature needs it. Dialog, dropdown, tooltip, and toast are not included until then.
+
+1. From `apps/crm-agent`, run `pnpm dlx shadcn@4.22.1 add <component> --yes` (`components.json` is already configured; this version was verified, bump it deliberately).
+2. **Review everything it changed.** Verified with `dialog`, the CLI:
+   - adds `radix-ui` with a `^` range and an unrelated npm package named `cn`. Delete `cn` from `package.json` (our helper is `@/lib/cn`), pin `radix-ui` to an exact version, then run `pnpm install`;
+   - uses color tokens we do not define (`bg-background`, `text-muted-foreground`, `bg-accent`). Map them to ours (`bg-surface`, `bg-surface-raised`, `text-ink`, `text-ink-muted`, `border-border-subtle`, `bg-brand`, `bg-brand-soft`); unknown classes silently do nothing;
+   - uses `Button` variants that do not exist (`outline`). Our variants are `primary`, `secondary`, `ghost`, `danger`.
+3. Keep it styling-only: no business logic, no `modules/` imports.
+4. Add a small component test and, if it traps focus or renders in a portal, an axe check in `e2e/a11y.spec.ts`.
+
+**Done when:** `pnpm check` is green and `package.json` has no `^` ranges or stray packages from the CLI.
+
 ## Add UI text
 
-1. Add the key to `packages/i18n/src/resources.ts` in both `id-ID` and `en-US`, with the same structure and `{{...}}` placeholders.
+1. Add the key to `packages/i18n/src/resources.ts` in both `id-ID` and `en-US`, with the same structure and `{{...}}` placeholders. Validation messages in zod schemas are keys too, translated at render time.
 2. Use `t('key')` from `react-i18next`; no display strings inline in JSX.
 3. Status, queue, and priority labels are not i18n text: they come from `GET /v1/master-data`.
 

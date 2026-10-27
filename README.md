@@ -24,7 +24,7 @@ tertata, tinggal menambah modul.
 - **Tes dan CI:** Vitest, Testing Library, Playwright; lint, typecheck, cakupan, build, dan image Docker diperiksa di setiap PR.
 - **Generator modul:** `pnpm new:module` membuat kerangka modul baru lengkap dengan route dan guard izin.
 
-**Stack:** React 19 · Vite 8 · TypeScript strict · TanStack Router/Query/Table/Virtual · Zustand · Tailwind CSS 4 · Zod · Tiptap · i18next · MSW · Vitest · Playwright · pnpm workspace.
+**Stack:** React 19 · Vite 8 · TypeScript strict · TanStack Router/Query/Table/Virtual · Zustand · Tailwind CSS 4 · Zod · React Hook Form · Tiptap · i18next · MSW · Vitest · Playwright · pnpm workspace.
 
 ## Mulai cepat
 
