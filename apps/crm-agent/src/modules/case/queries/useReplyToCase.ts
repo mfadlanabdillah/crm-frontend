@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Case, CreateReplyRequest, TimelineEntry } from '@crm/api-client'
-import { caseKeys } from '@/lib/query-keys'
+import { caseKeys } from './keys'
 import { casesApi } from '../api/cases'
 
 export function useReplyToCase(caseId: string) {
