@@ -118,7 +118,7 @@ packages/
 ## Known pitfalls
 
 - **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-agent/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
-- **The first e2e run after a dependency change is slow** (Vite re-bundles). Re-run before concluding there is a regression.
+- **E2E runs with 3 workers on purpose** (`apps/crm-agent/playwright.config.ts`). Measured on a 12-core machine from a cold Vite cache: 2-4 workers pass 20/20 in about 25 s, while the default 6 time out on the first page loads. Do not raise it without re-measuring.
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
 - **Session expiry vs logout:** `ModuleDefinition.onSignOut(reason)` receives `'logout'` or `'expired'`. Unsent drafts are deleted only on `logout`.

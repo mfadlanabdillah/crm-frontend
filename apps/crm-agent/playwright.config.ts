@@ -5,10 +5,13 @@ const PORT = 5173
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // Measured: from a cold Vite cache 2-4 workers pass 20/20 in ~25s, while 6 time out and are slower;
+  // warm runs are no faster with more workers. Raise only after re-measuring.
+  workers: 3,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
-  // Dev server mengompilasi lazy; di bawah beban paralel muat awal bisa lewat 5 detik bawaan.
+  // The dev server compiles lazily; under parallel load a first page load can pass the default 5s.
   expect: { timeout: 10_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
