@@ -18,7 +18,7 @@ let root
 let sandbox
 let resourcesFile
 
-/** Salinan minimal app: skrip menghitung path dari lokasinya sendiri, jadi repo asli tidak tersentuh. */
+/** Minimal copy of the app: the script derives its paths from its own location, so the real repo stays untouched. */
 beforeEach(() => {
   root = mkdtempSync(path.join(tmpdir(), 'new-module-'))
   sandbox = path.join(root, 'apps/crm-agent')
@@ -73,14 +73,14 @@ describe('new:module', () => {
     )
   })
 
-  it('menambah judul placeholder di kedua locale', () => {
+  it('adds a placeholder title to both locales', () => {
     expect(run('zz-fixture').ok).toBe(true)
 
     const text = readFileSync(resourcesFile, 'utf8')
     expect(text.match(/\n {2}zzFixture: \{ title: 'ZzFixture' \},\n\} as const\n/g)).toHaveLength(2)
   })
 
-  it('membiarkan resources.ts kalau bentuknya tidak dikenali', () => {
+  it('leaves resources.ts alone when its format is not recognized', () => {
     writeFileSync(resourcesFile, 'export {}\n')
 
     expect(run('zz-fixture').ok).toBe(true)
