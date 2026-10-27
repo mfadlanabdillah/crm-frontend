@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { caseKeys } from '@/lib/query-keys'
+import { caseKeys } from './keys'
 import { casesApi } from '../api/cases'
 
 export function caseSummaryQueryOptions() {
