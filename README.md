@@ -17,7 +17,7 @@ tertata, tinggal menambah modul.
 
 ## Isi singkat
 
-- **Modul Case** (acuan lengkap) dan **Customer** (acuan minimal): daftar, detail, filter yang tersimpan di URL, tab case terbuka, balasan rich text, indikator real-time (SSE).
+- **Modul Case** (acuan lengkap) dan **Customer** (acuan minimal): daftar, detail, filter yang tersimpan di URL, tab case terbuka, balasan rich text, indikator real-time (SSE), dan form "Case baru" (React Hook Form + Zod) sebagai contoh form.
 - **Hak akses per peran** (L1, L2, supervisor, admin) dan **masking data pribadi**: server memasking, UI memasking lagi sebagai lapisan kedua.
 - **Sesi aman:** cookie `HttpOnly` lewat BFF, token CSRF, sesi habis ditangani di satu tempat, logout menjalar ke semua tab.
 - **Dua bahasa** (`id-ID`, `en-US`), aksesibilitas WCAG 2.1 AA (dipindai axe di e2e), dan budget ukuran bundle per route.
@@ -71,7 +71,7 @@ packages/
   test-utils/    # bantuan untuk tes
 ```
 
-Tiga aturan utama (ditegakkan ESLint dan tes, bukan hanya himbauan):
+Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; sisanya dijaga lewat resep, tes, dan review:
 
 1. **Modul saling terpisah.** Satu modul tidak boleh mengimpor modul lain kecuali lewat `public.ts`-nya.
 2. **Data server hanya di TanStack Query.** Tidak ada `fetch` di komponen dan tidak ada data server di Zustand.
@@ -112,10 +112,17 @@ Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header 
 - **Commit:** Conventional Commits (`feat`, `fix`, `docs`, `test`, `chore`, ...).
 - **PR:** ikuti template di `.github/` dan lolos CI: `format:check`, `pnpm check`, drift klien OpenAPI (`pnpm codegen:api` tanpa diff), e2e, dan build image Docker.
 - **Pre-commit:** Husky menjalankan `lint-staged` (ESLint + Prettier pada file yang berubah). Aktif otomatis setelah `pnpm install`.
+- **Bahasa:** kode, komentar, nama tes, dan commit dalam bahasa Inggris; README dan teks produk (`id-ID`) dalam bahasa Indonesia. Kebijakan lengkap di [AGENTS.md](AGENTS.md).
+
+## Dokumentasi
+
+- [AGENTS.md](AGENTS.md): aturan, perintah verifikasi, dan perangkap yang sering terjadi.
+- [docs/agents/recipes.md](docs/agents/recipes.md): langkah per jenis tugas (endpoint, modul, halaman, form, komponen UI, izin, tes).
+- [docs/contract-status.md](docs/contract-status.md): endpoint mana yang stabil, sementara, atau masih usulan.
 
 ## Untuk AI agent
 
 Aturan, perintah verifikasi, dan perangkap yang sering terjadi ada di [AGENTS.md](AGENTS.md); langkah
 per jenis tugas (endpoint, modul, route, teks, izin, tes) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
 `CLAUDE.md` hanya mengimpor `AGENTS.md`. Sebuah tes menjaga agar path yang disebut di dokumen itu
-tetap ada.
+tetap ada, dan agar tabel `docs/contract-status.md` memuat semua endpoint di `openapi.yaml`.
