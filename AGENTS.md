@@ -125,7 +125,7 @@ packages/
 
 ## Agent boundaries
 
-- **Git:** no `git add`, `commit`, `push`, or opening a PR without an explicit instruction. Read-only (`status`, `diff`, `log`) is fine. Commits use Conventional Commits (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`).
+- **Git:** no `git add`, `commit`, `push`, or opening a PR without an explicit instruction. Read-only (`status`, `diff`, `log`) is fine. Commits use Conventional Commits (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`); the `.husky/commit-msg` hook rejects other subjects.
 - **Sensitive files:** never print `.env*` with `cat`/`head`/`tail`/`echo`; use the file-read tool.
 - **Dependencies:** do not add a package for a few lines of code. If one is needed, pin the exact version and explain why.
 - **CI, Docker, nginx, security headers, lockfile:** change only when the task is about them.
