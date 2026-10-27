@@ -151,6 +151,8 @@ for (const [file, content] of Object.entries(files)) {
   mkdirSync(path.dirname(file), { recursive: true })
   writeFileSync(file, content)
 }
+// Presentational pieces live here; git only tracks the folder once a component is added.
+mkdirSync(path.join(moduleDir, 'components'), { recursive: true })
 
 // Daftarkan ke registry.
 const registryFile = path.join(src, 'app/modules/registry.ts')

@@ -50,6 +50,7 @@ describe('new:module', () => {
     ]) {
       expect(existsSync(path.join(sandbox, 'src/modules/zz-fixture', file)), file).toBe(true)
     }
+    expect(existsSync(path.join(sandbox, 'src/modules/zz-fixture/components'))).toBe(true)
     expect(read('src/modules/zz-fixture/module.ts')).toContain("basePath: '/zz-fixtures'")
     expect(read('src/app/modules/registry.ts')).toContain("from '@/modules/zz-fixture/module'")
     expect(read('src/app/modules/registry.ts')).toMatch(/zzFixtureModule\]/)
