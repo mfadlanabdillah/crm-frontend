@@ -41,6 +41,15 @@ Aplikasi langsung masuk sebagai **supervisor** (sesi mock). Untuk mencoba peran 
 
 Sebelum membuat PR, jalankan `pnpm check`.
 
+Untuk menjalankan e2e (`pnpm test:e2e`), pasang browser Playwright sekali:
+
+```bash
+pnpm --filter @crm/crm-agent exec playwright install chromium
+# Linux/WSL yang baru: tambahkan --with-deps (butuh sudo), seperti di CI
+```
+
+Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
+
 ## Perintah
 
 | Perintah           | Fungsi                                                         |
@@ -110,7 +119,7 @@ Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header 
 
 - **Branch:** `feature/`, `bugfix/`, `hotfix/`, `release/`. Alur: `development` -> `staging` -> `master`.
 - **Commit:** Conventional Commits (`feat`, `fix`, `docs`, `test`, `chore`, ...).
-- **PR:** ikuti template di `.github/` dan lolos CI: `format:check`, `pnpm check`, drift klien OpenAPI (`pnpm codegen:api` tanpa diff), e2e, dan build image Docker.
+- **PR:** buka dari feature branch ke `development`, ikuti template di `.github/`, dan lolos CI: `format:check`, `pnpm check`, drift klien OpenAPI (`pnpm codegen:api` tanpa diff), e2e, dan build image Docker.
 - **Pre-commit:** Husky menjalankan `lint-staged` (ESLint + Prettier pada file yang berubah). Aktif otomatis setelah `pnpm install`.
 - **Bahasa:** kode, komentar, nama tes, dan commit dalam bahasa Inggris; README dan teks produk (`id-ID`) dalam bahasa Indonesia. Kebijakan lengkap di [AGENTS.md](AGENTS.md).
 
