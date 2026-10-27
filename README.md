@@ -128,6 +128,7 @@ Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header 
 - [AGENTS.md](AGENTS.md): aturan, perintah verifikasi, dan perangkap yang sering terjadi.
 - [docs/agents/recipes.md](docs/agents/recipes.md): langkah per jenis tugas (endpoint, modul, halaman, form, komponen UI, izin, tes).
 - [docs/contract-status.md](docs/contract-status.md): endpoint mana yang stabil, sementara, atau masih usulan.
+- [docs/adr/](docs/adr/README.md): catatan keputusan arsitektur (ADR) beserta alasannya.
 
 ## Untuk AI agent
 
