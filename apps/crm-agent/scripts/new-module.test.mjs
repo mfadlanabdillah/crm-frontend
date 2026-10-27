@@ -38,47 +38,49 @@ const read = (rel) => readFileSync(path.join(sandbox, rel), 'utf8')
 
 describe('new:module', () => {
   it('membuat kerangka modul, route tipis, dan mendaftarkannya di registry', () => {
-    expect(run('invoice', '--path', '/invoices', '--icon', 'Receipt').ok).toBe(true)
+    expect(run('zz-fixture', '--path', '/zz-fixtures', '--icon', 'Box').ok).toBe(true)
 
     for (const file of [
       'module.ts',
       'public.ts',
-      'api/invoice.ts',
+      'api/zz-fixture.ts',
       'queries/keys.ts',
       'schemas/search.ts',
-      'pages/InvoiceListPage.tsx',
+      'pages/ZzFixtureListPage.tsx',
     ]) {
-      expect(existsSync(path.join(sandbox, 'src/modules/invoice', file)), file).toBe(true)
+      expect(existsSync(path.join(sandbox, 'src/modules/zz-fixture', file)), file).toBe(true)
     }
-    expect(read('src/modules/invoice/module.ts')).toContain("basePath: '/invoices'")
-    expect(read('src/app/modules/registry.ts')).toContain("from '@/modules/invoice/module'")
-    expect(read('src/app/modules/registry.ts')).toMatch(/invoiceModule\]/)
-    expect(read('src/routes/_authenticated/invoices/index.tsx')).not.toContain('requirePermission')
+    expect(read('src/modules/zz-fixture/module.ts')).toContain("basePath: '/zz-fixtures'")
+    expect(read('src/app/modules/registry.ts')).toContain("from '@/modules/zz-fixture/module'")
+    expect(read('src/app/modules/registry.ts')).toMatch(/zzFixtureModule\]/)
+    expect(read('src/routes/_authenticated/zz-fixtures/index.tsx')).not.toContain(
+      'requirePermission',
+    )
   })
 
   it('--permission mengisi module.ts dan memasang guard di route', () => {
-    expect(run('invoice', '--permission', 'invoice.view').ok).toBe(true)
+    expect(run('zz-fixture', '--permission', 'zzfixture.view').ok).toBe(true)
 
-    expect(read('src/modules/invoice/module.ts')).toContain("permission: 'invoice.view',")
-    expect(read('src/routes/_authenticated/invoices/index.tsx')).toContain(
-      "beforeLoad: requirePermission('invoice.view')",
+    expect(read('src/modules/zz-fixture/module.ts')).toContain("permission: 'zzfixture.view',")
+    expect(read('src/routes/_authenticated/zz-fixtures/index.tsx')).toContain(
+      "beforeLoad: requirePermission('zzfixture.view')",
     )
   })
 
   it('menolak id, path, dan permission yang bentuknya salah', () => {
     expect(run('Invoice').stderr).toContain('kebab-case')
-    expect(run('invoice', '--path', 'invoices').stderr).toContain('--path')
-    expect(run('invoice', '--permission', 'invoice').stderr).toContain('--permission')
-    expect(existsSync(path.join(sandbox, 'src/modules/invoice'))).toBe(false)
+    expect(run('zz-fixture', '--path', 'invoices').stderr).toContain('--path')
+    expect(run('zz-fixture', '--permission', 'zz-fixture').stderr).toContain('--permission')
+    expect(existsSync(path.join(sandbox, 'src/modules/zz-fixture'))).toBe(false)
   })
 
   it('menolak modul yang sudah ada dan tidak mendaftar dua kali', () => {
-    expect(run('invoice').ok).toBe(true)
+    expect(run('zz-fixture').ok).toBe(true)
 
-    const second = run('invoice')
+    const second = run('zz-fixture')
 
     expect(second.ok).toBe(false)
     expect(second.stderr).toContain('sudah ada')
-    expect(read('src/app/modules/registry.ts').match(/invoiceModule/g)).toHaveLength(2)
+    expect(read('src/app/modules/registry.ts').match(/zzFixtureModule/g)).toHaveLength(2)
   })
 })
