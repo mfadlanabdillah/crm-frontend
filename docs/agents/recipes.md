@@ -7,6 +7,8 @@ Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `custo
 
 ## Add an API endpoint
 
+For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --path /v1/<segments>[/{param}] [--permission <module.action>]` (`apps/crm-agent/scripts/new-endpoint.mjs`). It does steps 1 to 5 and 8 with placeholders and adds a mock stub that answers 501. You then fill in the response schema (step 1, re-run `pnpm codegen:api`), the mock body and PII masking (step 6), the `enabled` gate (step 7), and the tests (step 9). For other methods or query filters, follow the steps by hand.
+
 1. Add the path and schema to `packages/api-client/openapi/openapi.yaml`. Business codes (status, queue, priority) are plain `string`; their values come from master data, not an OpenAPI enum.
 2. Run `pnpm codegen:api` (it writes `packages/api-client/src/generated/openapi.d.ts`; never edit that file).
 3. Export the type and add a method to `createApiClient` in `packages/api-client/src/index.ts`, wrapped in `unwrap(...)` like the others so errors become `ApiError`.
