@@ -104,16 +104,16 @@ describe('new:endpoint', () => {
     expect(
       run(
         'customer',
-        'getCustomerNotes',
+        'getZzCustomerFixture',
         '--path',
-        '/v1/customers/{customerId}/notes',
+        '/v1/customers/{customerId}/zz-fixtures',
         '--permission',
         'customer.view',
       ).ok,
     ).toBe(true)
 
     const facade = read('apps/crm-agent/src/modules/customer/api/customer.ts')
-    expect(facade).toContain('customerNotes: (customerId: string, signal?: AbortSignal) =>')
+    expect(facade).toContain('zzCustomerFixture: (customerId: string, signal?: AbortSignal) =>')
     expect(facade).toContain('detail: (customerId')
     expect(facade.trimEnd().endsWith('\n}')).toBe(true)
     expect(read('apps/crm-agent/src/mocks/handlers.ts')).toContain(
