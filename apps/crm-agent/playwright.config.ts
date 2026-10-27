@@ -5,9 +5,10 @@ const PORT = 5173
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
-  // Measured: from a cold Vite cache 2-4 workers pass 20/20 in ~25s, while 6 time out and are slower;
-  // warm runs are no faster with more workers. Raise only after re-measuring.
-  workers: 3,
+  // Each worker is a Chromium. Measured (cold Vite cache, same ~25s for 2-4 workers): 6 workers fail
+  // every run, 3 pass on a quiet machine but time out once RAM/swap is tight, 2 stay green.
+  // Raise only after re-measuring on a machine with ~8 GB RAM.
+  workers: 2,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
