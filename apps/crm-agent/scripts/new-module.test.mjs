@@ -1,26 +1,40 @@
 import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 const appRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
+let root
 let sandbox
+let resourcesFile
 
 /** Salinan minimal app: skrip menghitung path dari lokasinya sendiri, jadi repo asli tidak tersentuh. */
 beforeEach(() => {
-  sandbox = mkdtempSync(path.join(tmpdir(), 'new-module-'))
-  mkdirSync(path.join(sandbox, 'scripts'))
+  root = mkdtempSync(path.join(tmpdir(), 'new-module-'))
+  sandbox = path.join(root, 'apps/crm-agent')
+  mkdirSync(path.join(sandbox, 'scripts'), { recursive: true })
   cpSync(path.join(appRoot, 'scripts/new-module.mjs'), path.join(sandbox, 'scripts/new-module.mjs'))
   mkdirSync(path.join(sandbox, 'src/app/modules'), { recursive: true })
   cpSync(
     path.join(appRoot, 'src/app/modules/registry.ts'),
     path.join(sandbox, 'src/app/modules/registry.ts'),
   )
+  resourcesFile = path.join(root, 'packages/i18n/src/resources.ts')
+  mkdirSync(path.dirname(resourcesFile), { recursive: true })
+  cpSync(path.join(appRoot, '../../packages/i18n/src/resources.ts'), resourcesFile)
 })
 
-afterEach(() => rmSync(sandbox, { recursive: true, force: true }))
+afterEach(() => rmSync(root, { recursive: true, force: true }))
 
 function run(...args) {
   try {
@@ -57,6 +71,20 @@ describe('new:module', () => {
     expect(read('src/routes/_authenticated/zz-fixtures/index.tsx')).not.toContain(
       'requirePermission',
     )
+  })
+
+  it('menambah judul placeholder di kedua locale', () => {
+    expect(run('zz-fixture').ok).toBe(true)
+
+    const text = readFileSync(resourcesFile, 'utf8')
+    expect(text.match(/\n {2}zzFixture: \{ title: 'ZzFixture' \},\n\} as const\n/g)).toHaveLength(2)
+  })
+
+  it('membiarkan resources.ts kalau bentuknya tidak dikenali', () => {
+    writeFileSync(resourcesFile, 'export {}\n')
+
+    expect(run('zz-fixture').ok).toBe(true)
+    expect(readFileSync(resourcesFile, 'utf8')).toBe('export {}\n')
   })
 
   it('--permission mengisi module.ts dan memasang guard di route', () => {

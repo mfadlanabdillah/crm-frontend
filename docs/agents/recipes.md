@@ -23,7 +23,7 @@ Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `custo
 
 1. Run `pnpm new:module <id> --path /<path> --icon <LucideIcon> --permission <module.action>`. It creates `modules/<id>/` (including an empty `components/`), a thin route with a permission guard, and the entry in `src/app/modules/registry.ts`.
 2. Add the permission in `packages/auth/src/roles.ts` (the `Permission` type and the per-role lists).
-3. Add `<id>.title` (and other text) to `packages/i18n/src/resources.ts`, both locales.
+3. The generator adds a placeholder `<id>.title` to both locales of `packages/i18n/src/resources.ts` (it prints a note if it could not); translate it and add any other text.
 4. Contract, facade, query, and mock: follow "Add an API endpoint".
 5. Expose things to other modules only through `modules/<id>/public.ts` (queries, schemas, store; never components).
 6. Put the markup in components with their own tests, as in "Add a page or route"; otherwise the coverage floor fails.
