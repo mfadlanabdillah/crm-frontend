@@ -1,0 +1,633 @@
+openapi: 3.1.0
+info:
+  title: CRM Case API (kontrak kerja sama dengan tim backend Go)
+  version: 0.1.0
+  description: |
+    Kontrak sementara untuk konsol agen CS. File ini adalah sumber kebenaran tipe
+    frontend: `pnpm codegen:api` menghasilkan `src/generated/openapi.d.ts`.
+    Setelah backend Go punya spec sendiri, ganti specPath di script codegen ke URL
+    kontrak tersebut dan perbaiki drift lewat PR, bukan mengedit file generated.
+servers:
+  - url: /
+    description: Same-origin lewat BFF (cookie session HttpOnly)
+tags:
+  - name: session
+  - name: cases
+  - name: customers
+  - name: master-data
+  - name: events
+
+paths:
+  /v1/session:
+    get:
+      tags: [session]
+      operationId: getSession
+      summary: Sesi agen aktif (dari cookie SSO)
+      responses:
+        '200':
+          description: Sesi aktif
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/auth/logout:
+    post:
+      tags: [session]
+      operationId: logout
+      summary: Akhiri sesi SSO
+      responses:
+        '204':
+          description: Sesi diakhiri
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/master-data:
+    get:
+      tags: [master-data]
+      operationId: getMasterData
+      summary: Status, antrean, dan prioritas case beserta label dan warna badge
+      responses:
+        '200':
+          description: Master data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/cases:
+    get:
+      tags: [cases]
+      operationId: listCases
+      summary: Daftar case dengan filter, sort, dan pagination di server
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CaseStatus'
+        - name: queue
+          in: query
+          schema:
+            $ref: '#/components/schemas/Queue'
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [all, mine, unassigned]
+            default: all
+        - name: q
+          in: query
+          description: Pencarian teks pada kode, subjek, dan nama customer
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - -updated_at
+              - updated_at
+              - -created_at
+              - created_at
+              - -priority
+            default: -updated_at
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Halaman case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/cases/summary:
+    get:
+      tags: [cases]
+      operationId: getCaseSummary
+      summary: Jumlah case per antrean untuk badge navigasi
+      responses:
+        '200':
+          description: Ringkasan antrean
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/cases/{caseId}:
+    get:
+      tags: [cases]
+      operationId: getCase
+      summary: Detail case beserta timeline
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: Detail case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [cases]
+      operationId: updateCase
+      summary: Ubah status, antrean, prioritas, atau assignee
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCaseRequest'
+      responses:
+        '200':
+          description: Case setelah diubah
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Case sudah diubah agen lain (konflik versi)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/cases/{caseId}/replies:
+    post:
+      tags: [cases]
+      operationId: createReply
+      summary: Kirim balasan ke customer atau catatan internal
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReplyRequest'
+      responses:
+        '201':
+          description: Entri timeline yang baru dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimelineEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Validasi gagal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/customers:
+    get:
+      tags: [customers]
+      operationId: listCustomers
+      summary: Daftar customer dengan pencarian dan pagination di server
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Daftar customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v1/customers/{customerId}:
+    get:
+      tags: [customers]
+      operationId: getCustomer
+      summary: Profil customer
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Profil customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    CaseId:
+      name: caseId
+      in: path
+      required: true
+      schema:
+        type: string
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Unauthorized:
+      description: Sesi tidak ada atau kedaluwarsa
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Role tidak punya izin
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Case tidak ditemukan
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          examples: [unauthorized, forbidden, not_found, conflict, validation_error]
+        message:
+          type: string
+        requestId:
+          type: string
+
+    Role:
+      type: string
+      enum: [l1, l2, supervisor, admin]
+
+    CaseStatus:
+      type: string
+      description: Kode status dari master data (`GET /v1/master-data`)
+
+    Queue:
+      type: string
+      description: Kode antrean dari master data (`GET /v1/master-data`)
+
+    Priority:
+      type: string
+      description: Kode prioritas dari master data (`GET /v1/master-data`)
+
+    MasterDataItem:
+      type: object
+      required: [code, label, tone]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+          description: Teks tampilan, sudah dilokalkan oleh server
+        tone:
+          type: string
+          description: Warna badge
+          enum: [neutral, info, success, warning, danger, muted]
+
+    MasterData:
+      type: object
+      required: [statuses, queues, priorities]
+      properties:
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/MasterDataItem'
+        queues:
+          type: array
+          items:
+            $ref: '#/components/schemas/MasterDataItem'
+        priorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/MasterDataItem'
+
+    Session:
+      type: object
+      required: [user, expiresAt]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        expiresAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+
+    Customer:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type:
+            - string
+            - 'null'
+          description: Dimasking di UI sesuai role
+        email:
+          type:
+            - string
+            - 'null'
+        address:
+          type:
+            - string
+            - 'null'
+          description: Dimasking di UI sesuai role
+
+    CustomerSegment:
+      type: string
+      enum: [regular, business, priority]
+
+    CustomerProfile:
+      type: object
+      required: [id, name, segment, city, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        segment:
+          $ref: '#/components/schemas/CustomerSegment'
+        city:
+          type: string
+        phone:
+          type:
+            - string
+            - 'null'
+          description: Dimasking di UI sesuai role
+        email:
+          type:
+            - string
+            - 'null'
+        address:
+          type:
+            - string
+            - 'null'
+          description: Dimasking di UI sesuai role
+        createdAt:
+          type: string
+          format: date-time
+
+    CustomerListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerProfile'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    Case:
+      type: object
+      required:
+        - id
+        - code
+        - subject
+        - status
+        - queue
+        - priority
+        - customer
+        - createdAt
+        - updatedAt
+        - timeline
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+          examples: [CASE-2026-00123]
+        subject:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/CaseStatus'
+        queue:
+          $ref: '#/components/schemas/Queue'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        assignee:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        shipmentId:
+          type:
+            - string
+            - 'null'
+        sttNumber:
+          type:
+            - string
+            - 'null'
+        tags:
+          type: array
+          items:
+            type: string
+        slaDueAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEntry'
+
+    TimelineEntry:
+      type: object
+      required: [id, type, author, visibility, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [note, reply, status_change, assignment]
+        author:
+          $ref: '#/components/schemas/User'
+        body:
+          type:
+            - string
+            - 'null'
+        visibility:
+          type: string
+          enum: [internal, customer]
+        createdAt:
+          type: string
+          format: date-time
+
+    CaseListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Case'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    PageMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    CaseSummary:
+      type: object
+      required: [queues, unassigned, overdue]
+      properties:
+        queues:
+          type: object
+          description: Jumlah case terbuka per kode antrean
+          additionalProperties:
+            type: integer
+        unassigned:
+          type: integer
+        overdue:
+          type: integer
+
+    UpdateCaseRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/CaseStatus'
+        queue:
+          $ref: '#/components/schemas/Queue'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        assigneeId:
+          type:
+            - string
+            - 'null'
+
+    CreateReplyRequest:
+      type: object
+      required: [body, visibility]
+      properties:
+        body:
+          type: string
+          minLength: 1
+        visibility:
+          type: string
+          enum: [internal, customer]
+
+    CaseEvent:
+      type: object
+      description: Payload SSE pada endpoint /v1/events/stream
+      required: [id, type, caseId, occurredAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [case.created, case.updated, case.assigned, case.escalated]
+        caseId:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/CaseStatus'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        assignee:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'

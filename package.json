@@ -1,0 +1,50 @@
+{
+  "name": "crm-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=12.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @crm/crm-agent dev",
+    "build": "pnpm --filter @crm/crm-agent build",
+    "preview": "pnpm --filter @crm/crm-agent preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:e2e": "pnpm --filter @crm/crm-agent test:e2e",
+    "size": "pnpm --filter @crm/crm-agent size",
+    "codegen:api": "pnpm --filter @crm/api-client codegen",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
+    "prepare": "husky",
+    "new:module": "pnpm --filter @crm/crm-agent new:module"
+  },
+  "devDependencies": {
+    "@changesets/cli": "3.0.3",
+    "@crm/config-eslint": "workspace:*",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "10.13.0",
+    "husky": "9.1.7",
+    "lint-staged": "16.4.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs}": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,html}": [
+      "prettier --write"
+    ]
+  }
+}
