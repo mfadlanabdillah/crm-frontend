@@ -21,14 +21,14 @@ Rules for AI coding agents and developers in this repo. Step-by-step recipes per
 
 ## Verify (definition of done)
 
-| Command                            | When                                                                                  |
-| ---------------------------------- | ------------------------------------------------------------------------------------- |
-| `pnpm check`                       | Must be green before you finish: lint, typecheck, tests + coverage floor, build, size |
-| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                 |
-| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                              |
-| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Includes the axe accessibility scan (WCAG 2.1 AA) |
-| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                         |
-| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed   |
+| Command                            | When                                                                                                                                                                                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm check`                       | Must be green before you finish: lint, typecheck, tests + coverage floor, build, size                                                                                                                                                          |
+| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                          |
+| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                       |
+| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-agent exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
+| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                  |
+| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                            |
 
 ## Repo map
 
@@ -134,7 +134,7 @@ packages/
 
 ## Git, PRs, environment
 
-Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-agent/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL` and `VITE_TELEMETRY_URL` as build args.
+Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. Open PRs against `development`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-agent/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL` and `VITE_TELEMETRY_URL` as build args.
 
 ## Keep the docs true
 
