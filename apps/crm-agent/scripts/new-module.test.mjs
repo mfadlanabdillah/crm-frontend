@@ -80,7 +80,7 @@ describe('new:module', () => {
     const second = run('zz-fixture')
 
     expect(second.ok).toBe(false)
-    expect(second.stderr).toContain('sudah ada')
+    expect(second.stderr).toContain('already exists')
     expect(read('src/app/modules/registry.ts').match(/zzFixtureModule/g)).toHaveLength(2)
   })
 })
