@@ -22,7 +22,8 @@
     "test:e2e": "pnpm --filter @crm/crm-agent test:e2e",
     "size": "pnpm --filter @crm/crm-agent size",
     "codegen:api": "pnpm --filter @crm/api-client codegen",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
+    "codegen:check": "pnpm codegen:api && git diff --exit-code packages/api-client/src/generated",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm codegen:check",
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-agent new:module"
   },

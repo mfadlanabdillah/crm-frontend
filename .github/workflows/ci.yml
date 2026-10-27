@@ -32,14 +32,8 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
-      - name: Format
-        run: pnpm format:check
       - name: Check
         run: pnpm check
-      - name: OpenAPI client up to date
-        run: |
-          pnpm codegen:api
-          git diff --exit-code packages/api-client/src/generated
 
   e2e:
     name: E2E (Playwright)
