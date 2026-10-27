@@ -14,8 +14,9 @@ Rules for AI coding agents and developers in this repo. Step-by-step recipes per
 
 - **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-agent`, the customer-service agent console SPA (phase 1 = case record type `CS`).
 - **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 (shadcn/ui pattern), Zod (React Hook Form is added with the first real form), Tiptap, i18next, MSW, Vitest, Playwright.
-- **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it.
+- **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.
+- **Terms:** "CS agent" (Indonesian: agen CS) is the customer-service staff member who uses the console; "AI agent" is a coding assistant reading this file. The app name `crm-agent` refers to the first.
 - **Glossary:** STT = shipment tracking number (Surat Tanda Terima) · Case = CS ticket (status, priority, queue, owner per tier) · Escalation tiers L1 (Frontline) -> L2 (Backline) -> L3; SWAT, Investigator, 3LC · DEX = Delivery Exception · RTS = Return to Sender · COD = Cash on Delivery · POD = Proof of Delivery · PII = phone, address, email, bank account, national ID; always masked by the server/BFF according to permission.
 
 ## Verify (definition of done)
@@ -109,7 +110,7 @@ packages/
 
 ## Known pitfalls
 
-- **The mock session lives in page memory.** In e2e, never `page.goto` after signing in; navigate through the router (`clientNavigate` in `apps/crm-agent/e2e/`). Wait for `networkidle` before ending the session in a test, or a 401 from the initial queries redirects first.
+- **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-agent/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
 - **The first e2e run after a dependency change is slow** (Vite re-bundles). Re-run before concluding there is a regression.
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
@@ -130,4 +131,4 @@ Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `s
 
 ## Keep the docs true
 
-When structure, commands, or rules change, update `README.md` and this file. `apps/crm-agent/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, and update the mock.
+When structure, commands, or rules change, update `README.md` and this file. `apps/crm-agent/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, update the mock, and update `docs/contract-status.md`.
