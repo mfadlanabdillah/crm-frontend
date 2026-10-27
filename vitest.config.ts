@@ -17,7 +17,7 @@ export default defineConfig({
       ],
       reporter: ['text-summary'],
       // Lantai regresi, bukan target: naikkan seiring tes bertambah.
-      thresholds: { statements: 36, branches: 31, functions: 31, lines: 35 },
+      thresholds: { statements: 38, branches: 34, functions: 34, lines: 37 },
     },
   },
 })
