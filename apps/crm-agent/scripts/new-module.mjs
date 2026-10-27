@@ -1,18 +1,18 @@
 /**
- * Membuat kerangka modul CRM baru.
+ * Creates the skeleton of a new CRM module.
  *
- *   pnpm new:module <id> [--path /<path>] [--icon <NamaIkonLucide>] [--permission <modul.aksi>]
- *   contoh: pnpm new:module customer --path /customers --icon UsersRound --permission customer.view
+ *   pnpm new:module <id> [--path /<path>] [--icon <LucideIconName>] [--permission <module.action>]
+ *   example: pnpm new:module customer --path /customers --icon UsersRound --permission customer.view
  *
- * Dengan --permission, module.ts memuat `permission` dan route diberi guard `requirePermission`.
- * Izin itu tetap harus ditambahkan di packages/auth/src/roles.ts.
+ * With --permission, module.ts carries `permission` and the route gets a `requirePermission` guard.
+ * The permission itself must still be added to packages/auth/src/roles.ts.
  *
- * Hasil:
+ * Output:
  *   src/modules/<id>/{module.ts,public.ts,api,queries,schemas,pages}
- *   src/routes/_authenticated/<path>/index.tsx  (route tipis)
- *   entri di src/app/modules/registry.ts
- * Lalu menjalankan `tsr generate`. Kerangka harus lolos `pnpm lint` dan `pnpm typecheck`
- * sebelum diisi. Teks i18n dan izin (permission) ditambahkan manual (lihat pesan di akhir).
+ *   src/routes/_authenticated/<path>/index.tsx  (thin route)
+ *   an entry in src/app/modules/registry.ts
+ * Then runs `tsr generate`. The skeleton must pass `pnpm lint` and `pnpm typecheck` before it is
+ * filled in. i18n text and the permission are added by hand (see the message printed at the end).
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -34,24 +34,25 @@ function fail(message) {
   process.exit(1)
 }
 
-if (!id) fail('pakai: pnpm new:module <id> [--path /<path>] [--icon <NamaIkonLucide>]')
+if (!id) fail('usage: pnpm new:module <id> [--path /<path>] [--icon <LucideIconName>]')
 if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id))
-  fail('id harus kebab-case huruf kecil, mis. "customer"')
+  fail('id must be lowercase kebab-case, e.g. "customer"')
 
 const urlPath = flag('--path') ?? `/${id}s`
-if (!/^\/[a-z0-9-]+$/.test(urlPath)) fail('--path harus berbentuk "/nama-path" (satu segmen)')
+if (!/^\/[a-z0-9-]+$/.test(urlPath)) fail('--path must look like "/some-path" (one segment)')
 const routeDir = urlPath.slice(1)
 const permission = flag('--permission')
 if (permission && !/^[a-z]+(\.[a-z]+)+$/.test(permission)) {
-  fail('--permission harus berbentuk "modul.aksi", mis. customer.view')
+  fail('--permission must look like "module.action", e.g. customer.view')
 }
 const icon = flag('--icon') ?? 'Box'
-if (!/^[A-Z][A-Za-z0-9]+$/.test(icon)) fail('--icon harus nama ikon lucide-react, mis. UsersRound')
+if (!/^[A-Z][A-Za-z0-9]+$/.test(icon))
+  fail('--icon must be a lucide-react icon name, e.g. UsersRound')
 
 const moduleDir = path.join(src, 'modules', id)
 const routeFile = path.join(src, 'routes/_authenticated', routeDir, 'index.tsx')
-if (existsSync(moduleDir)) fail(`modules/${id} sudah ada`)
-if (existsSync(routeFile)) fail(`route ${urlPath} sudah ada`)
+if (existsSync(moduleDir)) fail(`modules/${id} already exists`)
+if (existsSync(routeFile)) fail(`route ${urlPath} already exists`)
 
 const pascal = id.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase())
 const camel = pascal[0].toLowerCase() + pascal.slice(1)
@@ -67,19 +68,19 @@ export const ${camel}Module: ModuleDefinition = {
   icon: ${icon},
   basePath: '${urlPath}',
   nav: { to: '${urlPath}' },
-  ${permission ? `permission: '${permission}',` : `// permission: '${camel}.view',   // tambahkan di packages/auth/src/roles.ts, lalu guard route`}
+  ${permission ? `permission: '${permission}',` : `// permission: '${camel}.view',   // add it in packages/auth/src/roles.ts, then guard the route`}
 }
 `,
   [path.join(moduleDir, 'public.ts')]: `/**
- * Satu-satunya pintu masuk modul lain ke modul ini: queries, schemas, dan store saja,
- * bukan komponen. Ekspor di sini hanya yang memang dibutuhkan modul lain.
+ * The only entry point other modules may use: queries, schemas, and store, never components.
+ * Export here only what another module really needs.
  */
 export {}
 `,
   [path.join(moduleDir, 'api', `${id}.ts`)]: `/**
- * Semua akses ${id} lewat facade ini. Komponen tidak memanggil \`fetch\` atau \`api\` langsung.
- * Tambahkan endpoint di packages/api-client/openapi/openapi.yaml, jalankan \`pnpm codegen:api\`,
- * lalu bungkus metodenya di sini.
+ * All ${id} access goes through this facade. Components never call \`fetch\` or \`api\` directly.
+ * Add the endpoint in packages/api-client/openapi/openapi.yaml, run \`pnpm codegen:api\`, add the
+ * method to packages/api-client/src/index.ts, then wrap it here.
  */
 export const ${camel}Api = {}
 `,
@@ -92,7 +93,7 @@ export const ${camel}Api = {}
 `,
   [path.join(moduleDir, 'schemas', 'search.ts')]: `import { z } from 'zod'
 
-/** Filter hidup di URL; \`.catch()\` membuat URL usang tetap bisa dibuka. */
+/** Filters live in the URL; \`.catch()\` keeps stale URLs openable. */
 export const ${camel}SearchSchema = z.object({
   q: z.string().trim().max(120).optional().catch(undefined),
   page: z.coerce.number().int().min(1).max(10_000).default(1).catch(1),
@@ -139,7 +140,7 @@ ${
     : ''
 }  validateSearch: (search: Record<string, unknown>): ${pascal}Search =>
     ${camel}SearchSchema.parse(search),
-  // URL tetap ringkas: default tidak ikut ditulis.
+  // Keep URLs short: defaults are not written.
   search: { middlewares: [stripSearchParams(DEFAULT_${id.toUpperCase().replace(/-/g, '_')}_SEARCH)] },
   component: ${pascal}ListPage,
 })
@@ -159,7 +160,7 @@ const importRe = /^import \{ \w+ \} from '@\/modules\/[\w-]+\/module'\n/gm
 const lastImport = [...registry.matchAll(importRe)].at(-1)
 const arrayRe = /export const modules: readonly ModuleDefinition\[\] = \[([^\]]*)\]/
 if (!lastImport || !arrayRe.test(registry)) {
-  fail('format registry.ts tidak dikenali; daftarkan modul secara manual')
+  fail('registry.ts format not recognized; register the module by hand')
 }
 registry =
   registry.slice(0, lastImport.index + lastImport[0].length) +
@@ -174,7 +175,7 @@ registry = registry.replace(arrayRe, (_, list) => {
 })
 writeFileSync(registryFile, registry)
 
-// Dilewati oleh test generator, yang berjalan di folder sementara tanpa tsr/prettier.
+// Skipped by the generator test, which runs in a temp folder without tsr/prettier.
 if (!process.env.NEW_MODULE_SKIP_POSTPROCESS) {
   execFileSync('pnpm', ['exec', 'tsr', 'generate'], { cwd: appRoot, stdio: 'ignore' })
   execFileSync('pnpm', ['exec', 'prettier', '--write', moduleDir, routeFile, registryFile], {
@@ -183,17 +184,17 @@ if (!process.env.NEW_MODULE_SKIP_POSTPROCESS) {
   })
 }
 
-console.log(`Modul "${id}" dibuat di src/modules/${id} (route ${urlPath}) dan didaftarkan di registry.
+console.log(`Module "${id}" created in src/modules/${id} (route ${urlPath}) and registered in the registry.
 
-Langkah berikutnya:
-  1. Teks UI: tambahkan "${camel}.title" (dan teks lain) di packages/i18n/src/resources.ts, kedua locale.
-  2. Izin: ${
+Next steps:
+  1. UI text: add "${camel}.title" (and any other text) to packages/i18n/src/resources.ts, both locales.
+  2. Permission: ${
     permission
-      ? `tambahkan "${permission}" di packages/auth/src/roles.ts (module.ts dan route sudah memakainya).`
-      : `tambahkan "${camel}.view" di packages/auth/src/roles.ts, aktifkan baris "permission" di
-     modules/${id}/module.ts, dan pasang beforeLoad: requirePermission(...) di route (atau ulangi
-     generator dengan --permission).`
+      ? `add "${permission}" to packages/auth/src/roles.ts (module.ts and the route already use it).`
+      : `add "${camel}.view" to packages/auth/src/roles.ts, enable the "permission" line in
+     modules/${id}/module.ts, and add beforeLoad: requirePermission(...) to the route (or run the
+     generator again with --permission).`
   }
-  3. Kontrak API: openapi.yaml -> pnpm codegen:api -> facade di modules/${id}/api/${id}.ts.
-  4. Mock dev: handler MSW di src/mocks/handlers.ts.
-  5. Jalankan pnpm lint && pnpm typecheck && pnpm test.`)
+  3. API contract: openapi.yaml -> pnpm codegen:api -> facade in modules/${id}/api/${id}.ts.
+  4. Dev mock: MSW handler in src/mocks/handlers.ts.
+  5. Run pnpm lint && pnpm typecheck && pnpm test.`)
