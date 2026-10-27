@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { can, ROLES } from '@crm/auth'
 import { findActiveModule, getVisibleModules, modules } from './registry'
 
 describe('registry modul', () => {
@@ -7,10 +8,21 @@ describe('registry modul', () => {
     expect(new Set(modules.map((module) => module.basePath)).size).toBe(modules.length)
   })
 
-  it('agen L1 hanya melihat modul case; L2 ke atas juga melihat customer', () => {
-    expect(getVisibleModules('l1').map((module) => module.id)).toEqual(['case'])
-    expect(getVisibleModules('l2').map((module) => module.id)).toEqual(['case', 'customer'])
+  it('a role sees exactly the modules whose permission it holds', () => {
+    for (const role of ROLES) {
+      const expected = modules
+        .filter((module) => !module.permission || can(role, module.permission))
+        .map((module) => module.id)
+      expect(getVisibleModules(role).map((module) => module.id)).toEqual(expected)
+    }
     expect(getVisibleModules(null)).toEqual([])
+  })
+
+  it('L1 sees the case module but not customer; L2 sees both', () => {
+    const ids = (role: 'l1' | 'l2') => getVisibleModules(role).map((module) => module.id)
+    expect(ids('l1')).toContain('case')
+    expect(ids('l1')).not.toContain('customer')
+    expect(ids('l2')).toEqual(expect.arrayContaining(['case', 'customer']))
   })
 
   it('menentukan modul aktif dari awalan path', () => {
