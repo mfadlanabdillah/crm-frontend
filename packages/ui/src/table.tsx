@@ -32,6 +32,15 @@ export function Th({ className, scope = 'col', ...props }: ThHTMLAttributes<HTML
   )
 }
 
-export function Td({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn('px-3 py-2 first:px-6', className)} {...props} />
+export function Td({
+  nowrap = false,
+  className,
+  ...props
+}: TdHTMLAttributes<HTMLTableCellElement> & { nowrap?: boolean }) {
+  return (
+    <td
+      className={cn('px-3 py-2 first:px-6', nowrap && 'whitespace-nowrap', className)}
+      {...props}
+    />
+  )
 }
