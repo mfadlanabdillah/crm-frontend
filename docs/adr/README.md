@@ -13,6 +13,7 @@ Short records of decisions that are costly to reverse or easy to forget the reas
 | [0005](0005-ui-primitives-on-demand.md)            | UI primitives are added when a feature needs them                      | Accepted |
 | [0006](0006-english-first-language-policy.md)      | English for code and technical docs, Indonesian for README and product | Accepted |
 | [0007](0007-public-repository-neutral-branding.md) | Public repository with neutral branding and no license yet             | Accepted |
+| [0008](0008-shared-ui-package.md)                  | UI components live in a shared package, and lint enforces their use    | Accepted |
 
 Earlier stack decisions (React + Vite, TanStack, Tailwind, and so on) are in the internal proposal and
 RFC of the project this starter was created from; they are not repeated here.

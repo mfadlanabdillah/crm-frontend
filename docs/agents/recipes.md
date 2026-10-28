@@ -48,26 +48,25 @@ Reference: `modules/case/components/CaseForm.tsx` (used by `pages/CaseCreatePage
 
 1. Put the zod schema in `modules/<id>/schemas/`. Messages are **i18n keys** (`.min(3, 'cases.create.errors.subjectShort')`), added to both locales. Selects whose values are business codes start empty and are required; options come from master data, never from a hardcoded list.
 2. Build the form with `useForm({ resolver: zodResolver(schema), defaultValues })` from `react-hook-form` and `@hookform/resolvers/zod`. The form component is presentational: it receives `onSubmit(request)`, `onCancel`, `isPending`, and a server `error` string, and emits a ready-to-send request (see `toCreateCaseRequest`).
-3. Render each field with `FormField` (`components/ui/form-field.tsx`): it wires the label, hint, and error to the control through `id`, `aria-describedby`, and `aria-invalid`. Spread its render-prop argument and then `register('name')` onto the control: `{(control) => <Input {...control} {...register('subject')} />}`. Show errors with `t(errors.field?.message)`.
+3. Render each field with `FormField` (`packages/ui/src/form-field.tsx`): it wires the label, hint, and error to the control through `id`, `aria-describedby`, and `aria-invalid`. Spread its render-prop argument and then `register('name')` onto the control: `{(control) => <Input {...control} {...register('subject')} />}`. Show errors with `t(errors.field?.message)`.
 4. The page owns the mutation (`queries/useCreate<Thing>.ts`: `useMutation` + invalidate list/summary keys) and navigation. A server failure such as a 422 comes back as `ApiError`; pass `mutation.error?.message` to the form's `error` prop.
 5. Tests: a schema test (messages are keys), a component test with `userEvent` (translated errors, submit payload, pending state), and an e2e that fills the form. In e2e use `getByLabel(text, { exact: true })` or `getByRole('combobox', { name })`: label matching is a case-insensitive substring and can hit the list page's search box.
 6. Add the page to `e2e/a11y.spec.ts`, with and without validation errors showing.
 
 **Done when:** `pnpm check` and `pnpm test:e2e` are green.
 
-## Add a UI primitive
+## Add or change a UI component
 
-`components/ui/` is intentionally small (`button`, `input`, `select`, `textarea`, `badge`, `skeleton`, `form-field`, `data-state`). Add a new primitive only when a feature needs it. Dialog, dropdown, tooltip, and toast are not included until then.
+Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-standards.md](../ui-standards.md) and [ADR-0008](../adr/0008-shared-ui-package.md). Add a component only when a feature needs it ([ADR-0005](../adr/0005-ui-primitives-on-demand.md)): dialog, dropdown, tooltip, and toast are not included until then. First check the component table in the standards: the need may already be covered.
 
-1. From `apps/crm-agent`, run `pnpm dlx shadcn@4.22.1 add <component> --yes` (`components.json` is already configured; this version was verified, bump it deliberately).
-2. **Review everything it changed.** Verified with `dialog`, the CLI:
-   - adds `radix-ui` with a `^` range and an unrelated npm package named `cn`. Delete `cn` from `package.json` (our helper is `@/lib/cn`), pin `radix-ui` to an exact version, then run `pnpm install`;
-   - uses color tokens we do not define (`bg-background`, `text-muted-foreground`, `bg-accent`). Map them to ours (`bg-surface`, `bg-surface-raised`, `text-ink`, `text-ink-muted`, `border-border-subtle`, `bg-brand`, `bg-brand-soft`); unknown classes silently do nothing;
-   - uses `Button` variants that do not exist (`outline`). Our variants are `primary`, `secondary`, `ghost`, `danger`.
-3. Keep it styling-only: no business logic, no `modules/` imports.
-4. Add a small component test and, if it traps focus or renders in a portal, an axe check in `e2e/a11y.spec.ts`.
+1. Write it in `packages/ui/src/<name>.tsx`: styling and behavior only, design tokens only (no `gray-500`, no hex), no API calls, no feature imports. Extend through `className` and `cn`.
+2. Export it from `packages/ui/src/index.ts`.
+3. Add `packages/ui/src/<name>.test.tsx`: roles, states, and keyboard where it applies.
+4. Add it, in every state, to `apps/crm-agent/src/app/design-system/Gallery.tsx`; the axe e2e scans that page.
+5. Add a row to the component table in `docs/ui-standards.md`.
+6. If you start from the shadcn registry, pin the CLI version and review everything it adds: it brings an unrelated npm package named `cn`, a `radix-ui` range with `^` (pin it), color tokens this theme does not define (`bg-background`, `text-muted-foreground`; map them to `bg-surface`, `text-ink-muted`, ...), and `Button` variants that do not exist (`outline`; ours are `primary`, `secondary`, `ghost`, `danger`). Put the result in `packages/ui/src`.
 
-**Done when:** `pnpm check` is green and `package.json` has no `^` ranges or stray packages from the CLI.
+**Done when:** `pnpm check` and `pnpm test:e2e` are green and `package.json` has no `^` ranges or stray packages.
 
 ## Add UI text
 
@@ -95,7 +94,7 @@ Reference: `modules/case/components/CaseForm.tsx` (used by `pages/CaseCreatePage
 
 ## Errors, expired sessions, and logout
 
-- API errors become `ApiError` (`status`, `code`, `requestId`). Show them with `ErrorState` (`components/ui/data-state.tsx`); the message may come from the server, never show a stack trace.
+- API errors become `ApiError` (`status`, `code`, `requestId`). Show them with `ErrorState` (`packages/ui/src/data-state.tsx`); the message may come from the server, never show a stack trace.
 - A 401 from any query or mutation is handled globally (`lib/query-client.ts` calls the handler installed by `app/auth/session-expiry.ts`): client data is cleared and the app goes to `/login?redirect=...`. Do not add per-page 401 handling.
 - A module cleans its state through `onSignOut(reason)` in `module.ts`. `expired` may keep unsent work (example: `modules/case/store/drafts.ts`); `logout` must delete it.
 - Render errors are caught by `RouteError` (`app/layout/RouteFallbacks.tsx`) and reported through `reportError` in `lib/telemetry.ts`. Plug in an SDK with `setErrorReporter`.

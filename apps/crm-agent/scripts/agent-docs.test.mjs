@@ -4,7 +4,13 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..')
-const docs = ['AGENTS.md', 'README.md', 'docs/agents/recipes.md']
+const docs = [
+  'AGENTS.md',
+  'README.md',
+  'docs/agents/recipes.md',
+  'docs/system-design.md',
+  'docs/ui-standards.md',
+]
 const ROOTS = ['apps/', 'packages/', 'docs/', '.github/']
 
 /** Path repo yang ditulis dalam backtick; yang bertemplat (`<id>`, `*`) atau bersifat contoh dilewati. */
