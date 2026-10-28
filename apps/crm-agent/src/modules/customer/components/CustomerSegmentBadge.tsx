@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { CustomerSegment } from '@crm/api-client'
-import { Badge } from '@/components/ui/badge'
-import type { BadgeTone } from '@/components/ui/badge'
+import { Badge } from '@crm/ui'
+import type { BadgeTone } from '@crm/ui'
 
 const tones: Record<CustomerSegment, BadgeTone> = {
   regular: 'neutral',

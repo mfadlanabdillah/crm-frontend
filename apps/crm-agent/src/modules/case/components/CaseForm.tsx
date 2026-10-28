@@ -2,11 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { CreateCaseRequest } from '@crm/api-client'
-import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { Alert, Button, FormField, Input, Select, Textarea } from '@crm/ui'
 import { useMasterData } from '../queries/useMasterData'
 import { EMPTY_CREATE_CASE_FORM, createCaseSchema, toCreateCaseRequest } from '../schemas/create'
 import type { CreateCaseForm } from '../schemas/create'
@@ -85,11 +81,7 @@ export function CaseForm({ onSubmit, onCancel, isPending = false, error }: CaseF
         </FormField>
       </div>
 
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Alert>{error}</Alert> : null}
 
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel} disabled={isPending}>

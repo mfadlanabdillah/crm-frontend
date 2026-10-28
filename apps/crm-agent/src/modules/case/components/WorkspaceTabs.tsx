@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@crm/ui'
 import { cn } from '@/lib/cn'
 import { DEFAULT_CASE_SEARCH } from '@/modules/case/schemas/search'
 import { useWorkspaceStore } from '@/modules/case/store/workspace'
@@ -55,14 +56,15 @@ export function WorkspaceTabs() {
             >
               {tab.title}
             </Link>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => handleClose(tab.caseId)}
-              className="mr-1 rounded p-1 text-ink-muted hover:bg-surface-muted hover:text-ink"
+              className="mr-1 size-6"
               aria-label={`Tutup ${tab.title}`}
             >
               <X className="size-3.5" aria-hidden="true" />
-            </button>
+            </Button>
           </div>
         )
       })}
