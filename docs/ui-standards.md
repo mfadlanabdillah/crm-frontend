@@ -53,6 +53,9 @@ it changes every screen.
 | `DescriptionList`, `DescriptionItem`        | label and value pairs (a profile, a summary)                                                | tabular data with many rows                     |
 | `Table`, `THead`, `TBody`, `Tr`, `Th`, `Td` | simple paged data                                                                           | thousands of rows (virtualize, see below)       |
 | `Pagination`                                | previous and next with a page summary; the page lives in the URL                            | infinite scroll                                 |
+| `Stack`, `Inline`                           | spacing between children: a column, or a wrapping row (`gap`, `align`, `justify`)           | margins between siblings                        |
+| `StatCard`                                  | one figure with its name; put a link in the value for a drill-down                          | prose                                           |
+| `SectionHeading`                            | the heading of a section inside a page                                                      | the page title (use `PageHeader`)               |
 | `Page`, `PageHeader`                        | a scrollable page body with a readable width; a title, one purpose line, and actions        | full-bleed tools like the case list             |
 | `Alert`                                     | a short message tied to the content next to it; `danger` interrupts, other tones are polite | page-level failure (use `ErrorState`)           |
 | `EmptyState`, `ErrorState`, `Skeleton`      | nothing to show; the request failed (with retry); loading                                   | inline field errors (use `FormField`)           |
