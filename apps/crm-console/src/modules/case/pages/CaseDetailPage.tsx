@@ -132,6 +132,23 @@ export function CaseDetailPage() {
                     </Select>
                   </label>
 
+                  <Can permission="case.escalate">
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                      {t('cases.queue')}
+                      <Select
+                        value={data.queue}
+                        onChange={(event) => update.mutate({ queue: event.target.value })}
+                        disabled={update.isPending}
+                      >
+                        {masterData?.queues.map((queue) => (
+                          <option key={queue.code} value={queue.code}>
+                            {queue.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </label>
+                  </Can>
+
                   <Can permission="case.assign">
                     <Button
                       variant="secondary"

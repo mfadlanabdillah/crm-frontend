@@ -14,8 +14,11 @@ import {
   Skeleton,
 } from '@crm/ui'
 import { formatDateTime } from '@/lib/format'
+import { useMasterData } from '@/modules/case/public'
+import { CustomerCaseList } from '@/modules/customer/components/CustomerCaseList'
 import { CustomerSegmentBadge } from '@/modules/customer/components/CustomerSegmentBadge'
 import { useCustomer } from '@/modules/customer/queries/useCustomer'
+import { useCustomerCases } from '@/modules/customer/queries/useCustomerCases'
 import { DEFAULT_CUSTOMER_SEARCH } from '@/modules/customer/schemas/search'
 
 const route = getRouteApi('/_authenticated/customers/$customerId')
@@ -27,6 +30,10 @@ export function CustomerDetailPage() {
   const navigate = useNavigate()
   const { data, isPending, isError, error, refetch } = useCustomer(customerId)
   const notFound = error instanceof ApiError && error.status === 404
+  const customerCases = useCustomerCases(customerId)
+  const { data: masterData } = useMasterData()
+  const statusLabel = (code: string) =>
+    masterData?.statuses.find((status) => status.code === code)?.label ?? code
 
   return (
     <Page>
@@ -72,6 +79,19 @@ export function CustomerDetailPage() {
               {formatDateTime(data.createdAt)}
             </DescriptionItem>
           </DescriptionList>
+        </Card>
+      ) : null}
+
+      {data ? (
+        <Card as="section" className="mt-4">
+          <h3 className="text-sm font-semibold text-ink">{t('customer.cases.title')}</h3>
+          {customerCases.isPending ? (
+            <Skeleton className="mt-2 h-10 w-full" />
+          ) : customerCases.isError ? (
+            <ErrorState onRetry={() => void customerCases.refetch()} />
+          ) : (
+            <CustomerCaseList items={customerCases.data.items} statusLabel={statusLabel} />
+          )}
         </Card>
       ) : null}
     </Page>

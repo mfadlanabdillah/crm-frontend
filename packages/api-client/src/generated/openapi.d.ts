@@ -154,6 +154,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/finance/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Daftar permintaan refund (usulan; domain Finance belum disepakati) */
+        get: operations["listRefunds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/refunds/{refundId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Setujui atau tolak permintaan refund (usulan) */
+        patch: operations["decideRefund"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -192,6 +226,8 @@ export interface components {
             statuses: components["schemas"]["MasterDataItem"][];
             queues: components["schemas"]["MasterDataItem"][];
             priorities: components["schemas"]["MasterDataItem"][];
+            /** @description Status permintaan refund (usulan untuk modul Finance; opsional) */
+            refundStatuses?: components["schemas"]["MasterDataItem"][];
         };
         Session: {
             user: components["schemas"]["User"];
@@ -313,6 +349,34 @@ export interface components {
             priority?: components["schemas"]["Priority"];
             assignee?: components["schemas"]["User"] | null;
         };
+        Refund: {
+            id: string;
+            /** @example RF-2026-1001 */
+            code: string;
+            caseId: string;
+            caseCode: string;
+            customerName: string;
+            /** @description Rupiah */
+            amount: number;
+            reason: string;
+            /** @description Kode dari master data (refundStatuses) */
+            status: string;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decidedBy?: components["schemas"]["User"] | null;
+            note?: string | null;
+        };
+        RefundListResponse: {
+            items: components["schemas"]["Refund"][];
+            meta: components["schemas"]["PageMeta"];
+        };
+        DecideRefundRequest: {
+            /** @enum {string} */
+            decision: "approved" | "rejected";
+            note: string;
+        };
     };
     responses: {
         /** @description Sesi tidak ada atau kedaluwarsa */
@@ -419,6 +483,8 @@ export interface operations {
             query?: {
                 status?: components["schemas"]["CaseStatus"];
                 queue?: components["schemas"]["Queue"];
+                /** @description Hanya case milik customer ini (usulan; dipakai profil customer) */
+                customerId?: string;
                 view?: "all" | "mine" | "unassigned";
                 /** @description Pencarian teks pada kode, subjek, dan nama customer */
                 q?: string;
@@ -649,6 +715,80 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    listRefunds: {
+        parameters: {
+            query?: {
+                /** @description Kode status dari master data (refundStatuses) */
+                status?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Halaman permintaan refund */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundListResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    decideRefund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                refundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideRefundRequest"];
+            };
+        };
+        responses: {
+            /** @description Refund setelah diputuskan */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Refund"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Refund sudah diputuskan */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Isian tidak valid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
 }

@@ -1,51 +1,134 @@
-/* Reads the host's design tokens (defined in apps/crm-console/src/styles.css); no Tailwind build here. */
-.finance-poc {
-  max-width: 48rem;
+/* Prefixed: remote CSS shares one global namespace with the host and every other remote.
+   Reads the host's design tokens (apps/crm-console/src/styles.css); no Tailwind build here. */
+.finance {
+  max-width: 64rem;
   margin: 0 auto;
   padding: 1.5rem;
   color: var(--color-ink);
+  font-size: 0.875rem;
 }
 
-.finance-poc h2 {
+.finance h2 {
   font-size: 1rem;
   font-weight: 600;
 }
 
-.finance-poc__card {
-  margin-top: 1rem;
-  padding: 1rem 1.25rem;
+.finance a {
+  color: var(--color-brand-strong);
+}
+
+.finance__filter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.finance__filter select,
+.finance__panel textarea {
+  padding: 0.25rem 0.5rem;
   background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.5rem;
+  font: inherit;
+}
+
+.finance__table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.finance__table th,
+.finance__table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.finance__table th {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+.finance button {
+  padding: 0.25rem 0.75rem;
+  color: white;
+  background: var(--color-brand-strong);
+  border: 0;
+  border-radius: 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.finance button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.finance .finance__secondary,
+.finance__pager button {
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.finance__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 16rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-card);
 }
 
-.finance-poc dl {
+.finance__panel p {
+  margin: 0;
+}
+
+.finance__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.finance__hint {
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+}
+
+.finance__pager {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.finance__shared {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.375rem 1rem;
-  margin: 0;
-  font-size: 0.875rem;
-}
-
-.finance-poc dt {
+  gap: 0.25rem 1rem;
+  margin: 1.5rem 0 0;
+  padding-top: 0.75rem;
   color: var(--color-ink-muted);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: 0.75rem;
 }
 
-.finance-poc dd {
+.finance__shared dd {
   margin: 0;
 }
 
-.finance-poc button {
-  margin-top: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  color: white;
-  background: var(--color-brand);
-  border: 0;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  cursor: pointer;
+/* Links inside running text must not rely on color alone (WCAG 1.4.1). */
+.finance__panel a {
+  text-decoration: underline;
 }
 
-.finance-poc button:hover {
-  background: var(--color-brand-strong);
+.finance__table td:first-child {
+  white-space: nowrap;
 }

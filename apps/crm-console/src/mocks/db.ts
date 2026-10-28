@@ -12,7 +12,11 @@ import type {
   CustomerListResponse,
   CustomerProfile,
   CustomerSegment,
+  DecideRefundRequest,
   Queue,
+  Refund,
+  RefundListQuery,
+  RefundListResponse,
   Role,
   Session,
   TimelineEntry,
@@ -110,6 +114,11 @@ export const MASTER_DATA: MasterData = {
     { code: 'high', label: 'Tinggi', tone: 'warning' },
     { code: 'urgent', label: 'Urgent', tone: 'danger' },
   ],
+  refundStatuses: [
+    { code: 'pending', label: 'Menunggu', tone: 'warning' },
+    { code: 'approved', label: 'Disetujui', tone: 'success' },
+    { code: 'rejected', label: 'Ditolak', tone: 'danger' },
+  ],
 }
 
 function weightedStatus(): CaseStatus {
@@ -206,21 +215,69 @@ function createCase(index: number): Case {
 }
 
 const cases: Case[] = Array.from({ length: TOTAL_CASES }, (_, index) => createCase(index + 1))
+// The last 1,000 cases belong to customers that already have a case, so a customer profile can
+// show a real case history (case ids and codes stay as they were).
+const SHARED_CUSTOMER_OFFSET = 9_000
+for (let index = SHARED_CUSTOMER_OFFSET; index < cases.length; index += 1) {
+  const owner = cases[index - SHARED_CUSTOMER_OFFSET]
+  const repeat = cases[index]
+  if (owner && repeat) repeat.customer = owner.customer
+}
 const casesById = new Map(cases.map((item) => [item.id, item]))
 
 const SEGMENTS: CustomerSegment[] = ['regular', 'business', 'priority']
 
-/** Customer diturunkan dari data case supaya kedua modul konsisten (id sama). */
-const customers: CustomerProfile[] = cases.map((item, index) => {
+/** Customer diturunkan dari data case supaya kedua modul konsisten (id sama); satu per id. */
+const seenCustomerIds = new Set<string>()
+const customers: CustomerProfile[] = cases.flatMap((item, index) => {
+  if (seenCustomerIds.has(item.customer.id)) return []
+  seenCustomerIds.add(item.customer.id)
   const city = item.customer.address?.split(', ').at(-1) ?? 'Jakarta'
-  return {
-    ...item.customer,
-    segment: SEGMENTS[index % SEGMENTS.length] ?? 'regular',
-    city,
-    createdAt: item.createdAt,
-  }
+  return [
+    {
+      ...item.customer,
+      segment: SEGMENTS[index % SEGMENTS.length] ?? 'regular',
+      city,
+      createdAt: item.createdAt,
+    },
+  ]
 })
 const customersById = new Map(customers.map((item) => [item.id, item]))
+
+// Refund requests are mock-only seed data for the Finance PoC (see docs/poc/micro-frontend.md).
+const REFUND_REASONS = [
+  'Barang rusak saat diterima',
+  'Paket hilang dalam pengiriman',
+  'Biaya pengiriman tertagih dua kali',
+  'Klaim asuransi pengiriman',
+  'Pengiriman melewati batas waktu',
+]
+const refunds: Refund[] = cases
+  .filter((_, index) => index % 233 === 0)
+  .map((item, order) => {
+    const requestedAt = new Date(new Date(item.createdAt).getTime() + 3_600_000)
+    const status = order % 10 < 6 ? 'pending' : order % 10 < 8 ? 'approved' : 'rejected'
+    const decided = status !== 'pending'
+    return {
+      id: `refund-${String(order + 1).padStart(3, '0')}`,
+      code: `RF-2026-${1000 + order}`,
+      caseId: item.id,
+      caseCode: item.code,
+      customerName: item.customer.name,
+      amount: (3 + ((order * 7) % 58)) * 10_000,
+      reason: REFUND_REASONS[order % REFUND_REASONS.length] ?? 'Lainnya',
+      status,
+      requestedAt: requestedAt.toISOString(),
+      decidedAt: decided ? new Date(requestedAt.getTime() + 3 * 3_600_000).toISOString() : null,
+      decidedBy: decided ? USERS.supervisor : null,
+      note: !decided
+        ? null
+        : status === 'approved'
+          ? 'Disetujui sesuai bukti.'
+          : 'Bukti tidak memadai.',
+    }
+  })
+const refundsById = new Map(refunds.map((item) => [item.id, item]))
 const usersById = new Map(Object.values(USERS).map((user) => [user.id, user]))
 
 let currentSession: Session | null = null
@@ -251,6 +308,7 @@ export const db = {
     let filtered = cases.filter((item) => {
       if (query.status && item.status !== query.status) return false
       if (query.queue && item.queue !== query.queue) return false
+      if (query.customerId && item.customer.id !== query.customerId) return false
       if (query.view === 'mine' && item.assignee?.id !== currentSession?.user.id) return false
       if (query.view === 'unassigned' && item.assignee !== null) return false
       if (search) {
@@ -345,15 +403,21 @@ export const db = {
     }
 
     item.updatedAt = new Date().toISOString()
+    const queueLabel = MASTER_DATA.queues.find((queue) => queue.code === item.queue)?.label
+    const [type, body] = patch.status
+      ? (['status_change', `Status diubah menjadi ${patch.status}.`] as const)
+      : patch.queue
+        ? (['status_change', `Case dipindah ke ${queueLabel ?? item.queue}.`] as const)
+        : patch.priority
+          ? (['status_change', `Prioritas diubah menjadi ${patch.priority}.`] as const)
+          : (['assignment', `Case di-assign ke ${item.assignee?.name ?? 'tanpa PIC'}.`] as const)
     item.timeline = [
       ...item.timeline,
       {
         id: `entry-${Date.now()}`,
-        type: patch.status ? 'status_change' : 'assignment',
+        type,
         author: actor,
-        body: patch.status
-          ? `Status diubah menjadi ${patch.status}.`
-          : `Case di-assign ke ${item.assignee?.name ?? 'tanpa PIC'}.`,
+        body,
         visibility: 'internal',
         createdAt: item.updatedAt,
       },
@@ -414,5 +478,40 @@ export const db = {
     item.timeline = [...item.timeline, entry]
     item.updatedAt = entry.createdAt
     return entry
+  },
+
+  listRefunds(query: RefundListQuery): RefundListResponse {
+    const page = Math.max(1, query.page ?? 1)
+    const pageSize = Math.min(100, Math.max(10, query.page_size ?? 25))
+    const filtered = refunds
+      .filter((item) => !query.status || item.status === query.status)
+      .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))
+    const start = (page - 1) * pageSize
+
+    return {
+      items: filtered.slice(start, start + pageSize),
+      meta: {
+        page,
+        pageSize,
+        total: filtered.length,
+        totalPages: Math.max(1, Math.ceil(filtered.length / pageSize)),
+      },
+    }
+  },
+
+  decideRefund(
+    refundId: string,
+    body: DecideRefundRequest,
+    actor: User,
+  ): { refund: Refund } | { error: 'not_found' | 'conflict' } {
+    const item = refundsById.get(refundId)
+    if (!item) return { error: 'not_found' }
+    if (item.status !== 'pending') return { error: 'conflict' }
+
+    item.status = body.decision
+    item.decidedAt = new Date().toISOString()
+    item.decidedBy = actor
+    item.note = body.note
+    return { refund: { ...item } }
   },
 }
