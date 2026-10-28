@@ -27,7 +27,7 @@
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-console new:module",
     "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
-    "poc:mfe": "VITE_REMOTE_MODULES=crm_finance=http://localhost:5174/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-finance dev"
+    "poc:mfe": "VITE_REMOTE_MODULES=crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-finance --filter @crm/crm-investigator --filter @crm/crm-monitor dev"
   },
   "devDependencies": {
     "@crm/config-eslint": "workspace:*",

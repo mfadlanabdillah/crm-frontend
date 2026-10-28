@@ -1,5 +1,6 @@
 /** Kontrak antara shell dan modul. Letaknya di modules/ (bukan app/) supaya modul boleh mengimpornya. */
 import type { Permission } from '@crm/auth'
+import type { RemotePageProps } from '@crm/module-contract'
 import type { LinkOptions } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
@@ -23,8 +24,8 @@ export interface ModuleDefinition {
   nav: LinkOptions
   /** Modul disembunyikan bila peran tidak punya izin ini. */
   permission?: Permission
-  /** Page of a remote module, rendered by the generic `/remote/$moduleId` route. */
-  Page?: ComponentType
+  /** Page of a remote module, rendered by the generic `/remote/$moduleId` routes. */
+  Page?: ComponentType<RemotePageProps>
   /** Bagian sidebar milik modul, tampil saat modul aktif. */
   Sidebar?: ComponentType<{ variant?: 'sidebar' | 'inline' }>
   /** Baris tab di bawah header, tampil saat modul aktif. */

@@ -20,6 +20,7 @@
     "@crm/api-client": "workspace:*",
     "@crm/auth": "workspace:*",
     "@crm/i18n": "workspace:*",
+    "@crm/module-contract": "workspace:*",
     "@crm/ui": "workspace:*",
     "@hookform/resolvers": "5.9.1",
     "@module-federation/runtime": "2.9.2",

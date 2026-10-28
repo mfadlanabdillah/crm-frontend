@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { can, ROLES } from '@crm/auth'
 import type { ModuleDefinition } from '@/modules/types'
 import {
@@ -48,8 +48,16 @@ describe('registry modul', () => {
       basePath: '/remote/zz-remote',
     } as unknown as ModuleDefinition
 
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     registerRemoteModule(remote)
     registerRemoteModule(remote)
+    registerRemoteModule({ ...remote, id: 'zz-other' }) // same path as zz-remote
+
+    expect(warn).toHaveBeenCalledTimes(2)
+    expect(warn.mock.calls[0]?.[0]).toContain('zz-remote')
+    expect(allModules().some((module) => module.id === 'zz-other')).toBe(false)
+    warn.mockRestore()
 
     expect(allModules().filter((module) => module.id === 'zz-remote')).toHaveLength(1)
     expect(allModules().slice(0, modules.length)).toEqual(modules)
