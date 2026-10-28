@@ -1,4 +1,6 @@
+import type { RemoteModule } from '@crm/module-contract'
 import { loadRemote, registerRemotes } from '@module-federation/runtime'
+import type { LucideIcon } from 'lucide-react'
 import { registerRemoteModule } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
 
@@ -19,6 +21,15 @@ export function parseRemotes(raw: string | undefined): RemoteEntry[] {
   })
 }
 
+/** The two casts are the trust boundary: the contract types `icon` and `nav` loosely on purpose. */
+function toModuleDefinition(remote: RemoteModule): ModuleDefinition {
+  return {
+    ...remote,
+    icon: remote.icon as LucideIcon,
+    nav: remote.nav as ModuleDefinition['nav'],
+  }
+}
+
 function withTimeout<T>(promise: Promise<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('remote load timed out')), LOAD_TIMEOUT_MS)
@@ -35,16 +46,19 @@ export async function loadRemoteModules(raw: string | undefined): Promise<void> 
   if (remotes.length === 0) return
 
   registerRemotes(remotes.map(({ name, entry }) => ({ name, entry, type: 'module' })))
-  await Promise.all(
+  const loaded = await Promise.all(
     remotes.map(async ({ name }) => {
       try {
-        const loaded = await withTimeout(
-          loadRemote<{ default: ModuleDefinition }>(`${name}/module`),
-        )
-        if (loaded) registerRemoteModule(loaded.default)
+        return await withTimeout(loadRemote<{ default: RemoteModule }>(`${name}/module`))
       } catch (error) {
         console.error(`Remote "${name}" is unavailable; continuing without it.`, error)
+        return null
       }
     }),
   )
+  // Load in parallel, register in the configured order: the menu must not depend on which remote
+  // answered first.
+  for (const remote of loaded) {
+    if (remote) registerRemoteModule(toModuleDefinition(remote.default))
+  }
 }

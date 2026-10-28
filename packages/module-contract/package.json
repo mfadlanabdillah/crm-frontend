@@ -1,0 +1,25 @@
+{
+  "name": "@crm/module-contract",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@crm/api-client": "workspace:*",
+    "@crm/auth": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@crm/config-ts": "workspace:*",
+    "@types/react": "19.3.0",
+    "react": "19.3.1",
+    "typescript": "5.9.3"
+  }
+}

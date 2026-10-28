@@ -1,0 +1,107 @@
+/* Prefixed: remote CSS shares one global namespace with the host and every other remote.
+   Reads the host's design tokens (apps/crm-console/src/styles.css); no Tailwind build here. */
+.investigator {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+.investigator h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.investigator h3 {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.investigator h4 {
+  margin-top: 1.25rem;
+  font-weight: 600;
+}
+
+.investigator__link {
+  color: var(--color-brand-strong);
+}
+
+.investigator__table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.investigator__table th,
+.investigator__table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.investigator__table th {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+.investigator__pager {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.investigator__pager button {
+  padding: 0.25rem 0.75rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.investigator__pager button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.investigator__facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.375rem 1rem;
+  margin: 0.75rem 0 0;
+}
+
+.investigator__facts dt {
+  color: var(--color-ink-muted);
+}
+
+.investigator__facts dd {
+  margin: 0;
+}
+
+.investigator__timeline {
+  padding: 0;
+  list-style: none;
+}
+
+.investigator__timeline li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.investigator__timeline p {
+  margin: 0.25rem 0 0;
+}
+
+.investigator__badge {
+  margin-left: 0.5rem;
+  padding: 0 0.375rem;
+  color: var(--color-ink);
+  border: 1px solid var(--color-warning);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
