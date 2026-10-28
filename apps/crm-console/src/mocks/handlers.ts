@@ -6,7 +6,9 @@ import type {
   CreateCaseRequest,
   CreateReplyRequest,
   CustomerListQuery,
+  DecideRefundRequest,
   Queue,
+  RefundListQuery,
   Role,
   UpdateCaseRequest,
 } from '@crm/api-client'
@@ -98,6 +100,9 @@ export const handlers = [
         ? { status: url.searchParams.get('status') as CaseStatus }
         : {}),
       ...(url.searchParams.get('queue') ? { queue: url.searchParams.get('queue') as Queue } : {}),
+      ...(url.searchParams.get('customerId')
+        ? { customerId: url.searchParams.get('customerId') ?? undefined }
+        : {}),
       ...(url.searchParams.get('q') ? { q: url.searchParams.get('q') ?? undefined } : {}),
     }
 
@@ -168,11 +173,60 @@ export const handlers = [
     if (patch.status && !can(role, 'case.status.update')) {
       return jsonError(403, 'forbidden', 'Role Anda tidak boleh mengubah status')
     }
+    if (patch.queue && !can(role, 'case.escalate')) {
+      return jsonError(403, 'forbidden', 'Role Anda tidak boleh memindahkan antrean')
+    }
 
     const updated = db.updateCase(String(params.caseId), patch, session.user)
     return updated
       ? HttpResponse.json(maskCaseForRole(updated, role))
       : jsonError(404, 'not_found', 'Case tidak ditemukan')
+  }),
+
+  // Finance PoC: mock-only domain (Proposed in docs/contract-status.md). `case.export` stands in for
+  // a Finance permission, which is a business decision.
+  http.get('/v1/finance/refunds', async ({ request }) => {
+    await delay(NETWORK_DELAY_MS)
+    const session = requireSession()
+    if (!session) return unauthorized()
+    if (!can(session.user.role, 'case.export')) {
+      return jsonError(403, 'forbidden', 'Role Anda tidak boleh melihat refund')
+    }
+
+    const url = new URL(request.url)
+    const query: RefundListQuery = {
+      page: Number(url.searchParams.get('page') ?? 1),
+      page_size: Number(url.searchParams.get('page_size') ?? 25),
+      ...(url.searchParams.get('status')
+        ? { status: url.searchParams.get('status') ?? undefined }
+        : {}),
+    }
+    return HttpResponse.json(db.listRefunds(query))
+  }),
+
+  http.patch('/v1/finance/refunds/:refundId', async ({ params, request }) => {
+    await delay(NETWORK_DELAY_MS)
+    const session = requireSession()
+    if (!session) return unauthorized()
+    if (!can(session.user.role, 'case.export')) {
+      return jsonError(403, 'forbidden', 'Role Anda tidak boleh memutuskan refund')
+    }
+
+    const body = (await request.json()) as DecideRefundRequest
+    if (body.decision !== 'approved' && body.decision !== 'rejected') {
+      return jsonError(422, 'validation_error', 'Keputusan harus approved atau rejected')
+    }
+    if (!body.note || body.note.trim().length < 3) {
+      return jsonError(422, 'validation_error', 'Catatan minimal 3 karakter')
+    }
+
+    const result = db.decideRefund(String(params.refundId), body, session.user)
+    if ('error' in result) {
+      return result.error === 'not_found'
+        ? jsonError(404, 'not_found', 'Refund tidak ditemukan')
+        : jsonError(409, 'already_decided', 'Refund sudah diputuskan')
+    }
+    return HttpResponse.json(result.refund)
   }),
 
   http.post('/v1/cases/:caseId/replies', async ({ params, request }) => {

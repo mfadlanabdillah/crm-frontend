@@ -40,6 +40,10 @@ const idID = {
     back: 'Kembali ke daftar customer',
     notFoundTitle: 'Customer tidak ditemukan',
     notFoundDescription: 'Customer ini mungkin sudah dihapus atau ID-nya salah.',
+    cases: {
+      title: 'Case terkait',
+      empty: 'Belum ada case untuk customer ini.',
+    },
     segments: {
       regular: 'Reguler',
       business: 'Bisnis',
@@ -176,6 +180,10 @@ const enUS = {
     back: 'Back to customers',
     notFoundTitle: 'Customer not found',
     notFoundDescription: 'This customer may have been removed or the ID is wrong.',
+    cases: {
+      title: 'Related cases',
+      empty: 'No cases for this customer yet.',
+    },
     segments: {
       regular: 'Regular',
       business: 'Business',

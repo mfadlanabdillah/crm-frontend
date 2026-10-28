@@ -4,3 +4,4 @@
  */
 export { useDraftsStore } from '@/modules/case/store/drafts'
 export { useWorkspaceStore } from '@/modules/case/store/workspace'
+export { useMasterData } from '@/modules/case/queries/useMasterData'

@@ -100,6 +100,11 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/Queue'
+        - name: customerId
+          in: query
+          description: Hanya case milik customer ini (usulan; dipakai profil customer)
+          schema:
+            type: string
         - name: view
           in: query
           schema:
@@ -300,6 +305,85 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /v1/finance/refunds:
+    get:
+      tags: [finance]
+      operationId: listRefunds
+      summary: Daftar permintaan refund (usulan; domain Finance belum disepakati)
+      parameters:
+        - name: status
+          in: query
+          description: Kode status dari master data (refundStatuses)
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Halaman permintaan refund
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v1/finance/refunds/{refundId}:
+    patch:
+      tags: [finance]
+      operationId: decideRefund
+      summary: Setujui atau tolak permintaan refund (usulan)
+      parameters:
+        - name: refundId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideRefundRequest'
+      responses:
+        '200':
+          description: Refund setelah diputuskan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Refund sudah diputuskan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   parameters:
     CaseId:
@@ -392,6 +476,11 @@ components:
             $ref: '#/components/schemas/MasterDataItem'
         priorities:
           type: array
+          items:
+            $ref: '#/components/schemas/MasterDataItem'
+        refundStatuses:
+          type: array
+          description: Status permintaan refund (usulan untuk modul Finance; opsional)
           items:
             $ref: '#/components/schemas/MasterDataItem'
 
@@ -674,3 +763,65 @@ components:
           oneOf:
             - $ref: '#/components/schemas/User'
             - type: 'null'
+    Refund:
+      type: object
+      required: [id, code, caseId, caseCode, customerName, amount, reason, status, requestedAt]
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+          examples: [RF-2026-1001]
+        caseId:
+          type: string
+        caseCode:
+          type: string
+        customerName:
+          type: string
+        amount:
+          type: integer
+          description: Rupiah
+        reason:
+          type: string
+        status:
+          type: string
+          description: Kode dari master data (refundStatuses)
+        requestedAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decidedBy:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'
+        note:
+          type:
+            - string
+            - 'null'
+
+    RefundListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Refund'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    DecideRefundRequest:
+      type: object
+      required: [decision, note]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        note:
+          type: string
+          minLength: 3
+          maxLength: 500

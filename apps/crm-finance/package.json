@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@crm/api-client": "workspace:*",
     "@crm/auth": "workspace:*",
     "@crm/module-contract": "workspace:*",
     "@tanstack/react-query": "5.104.5",

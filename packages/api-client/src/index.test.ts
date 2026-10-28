@@ -99,4 +99,33 @@ describe('createApiClient', () => {
     await expect(api.logout()).rejects.toBeInstanceOf(ApiError)
     expect(onError).toHaveBeenCalledTimes(1)
   })
+
+  it('lists refunds with the status filter and decides one with a CSRF-protected PATCH', async () => {
+    const { api, fetch } = setup((request) =>
+      request.method === 'PATCH'
+        ? json({ id: 'r1', status: 'approved' })
+        : json({ items: [], meta: {} }),
+    )
+
+    await api.listRefunds({ status: 'pending', page: 2 })
+    await api.decideRefund('r1', { decision: 'approved', note: 'Sesuai bukti' })
+
+    const [list, decide] = fetch.mock.calls.map(([request]) => request)
+    expect(new URL(list?.url ?? '').pathname).toBe('/v1/finance/refunds')
+    expect(new URL(list?.url ?? '').searchParams.get('status')).toBe('pending')
+    expect(decide?.method).toBe('PATCH')
+    expect(new URL(decide?.url ?? '').pathname).toBe('/v1/finance/refunds/r1')
+    expect(decide?.headers.get('X-CSRF-Token')).toBe('csrf-1')
+    expect(await decide?.clone().json()).toEqual({ decision: 'approved', note: 'Sesuai bukti' })
+  })
+
+  it('passes customerId when listing the cases of one customer', async () => {
+    const { api, fetch } = setup(() => json({ items: [], meta: {} }))
+
+    await api.listCases({ customerId: 'cust-1', page_size: 10 })
+
+    expect(new URL(fetch.mock.calls[0]?.[0].url ?? '').searchParams.get('customerId')).toBe(
+      'cust-1',
+    )
+  })
 })

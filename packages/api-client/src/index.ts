@@ -27,6 +27,13 @@ export type CustomerListQuery = NonNullable<paths['/v1/customers']['get']['param
 
 export type CaseListQuery = NonNullable<paths['/v1/cases']['get']['parameters']['query']>
 
+export type Refund = components['schemas']['Refund']
+export type RefundListResponse = components['schemas']['RefundListResponse']
+export type DecideRefundRequest = components['schemas']['DecideRefundRequest']
+export type RefundListQuery = NonNullable<
+  paths['/v1/finance/refunds']['get']['parameters']['query']
+>
+
 export interface ApiClientOptions {
   /** Same-origin base URL, contoh `/`. Jangan pernah mengarah langsung ke backend. */
   baseUrl: string
@@ -181,6 +188,21 @@ export function createApiClient(options: ApiClientOptions) {
         client.POST('/v1/cases/{caseId}/replies', {
           params: { path: { caseId } },
           body: reply,
+        }),
+      )
+    },
+
+    listRefunds(query: RefundListQuery, signal?: AbortSignal): Promise<RefundListResponse> {
+      return unwrap(
+        client.GET('/v1/finance/refunds', { params: { query }, ...(signal ? { signal } : {}) }),
+      )
+    },
+
+    decideRefund(refundId: string, body: DecideRefundRequest): Promise<Refund> {
+      return unwrap(
+        client.PATCH('/v1/finance/refunds/{refundId}', {
+          params: { path: { refundId } },
+          body,
         }),
       )
     },

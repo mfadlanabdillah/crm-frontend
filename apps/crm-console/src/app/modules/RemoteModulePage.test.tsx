@@ -8,7 +8,7 @@ import { registerRemoteModule } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
 import { RemoteModulePage } from './RemoteModulePage'
 
-function ProbePage({ api, subPath, navigate }: RemotePageProps) {
+function ProbePage({ api, subPath, navigate, openHostPath }: RemotePageProps) {
   return (
     <div>
       <p>sub:{subPath}</p>
@@ -18,6 +18,12 @@ function ProbePage({ api, subPath, navigate }: RemotePageProps) {
       </button>
       <button type="button" onClick={() => navigate('')}>
         root
+      </button>
+      <button type="button" onClick={() => openHostPath('/cases?queue=l1')}>
+        host
+      </button>
+      <button type="button" onClick={() => openHostPath('//evil.example')}>
+        evil
       </button>
     </div>
   )
@@ -57,6 +63,16 @@ describe('RemoteModulePage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'root' }))
 
     expect(router.state.location.pathname).toBe('/remote/zz-page')
+  })
+
+  it('opens internal host paths and ignores anything else', async () => {
+    const { router } = await renderWithRouter(<RemoteModulePage moduleId="zz-page" subPath="" />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'evil' }))
+    expect(router.state.location.pathname).toBe('/')
+
+    await userEvent.click(screen.getByRole('button', { name: 'host' }))
+    expect(router.state.location.pathname).toBe('/cases')
   })
 
   it('says the module is unavailable when it is not registered', async () => {

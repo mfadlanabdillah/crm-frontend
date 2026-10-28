@@ -332,6 +332,9 @@ importers:
 
   apps/crm-finance:
     dependencies:
+      '@crm/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@crm/auth':
         specifier: workspace:*
         version: link:../../packages/auth

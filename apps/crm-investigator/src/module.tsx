@@ -28,6 +28,11 @@ const resources = {
     assignee: 'Penanggung jawab',
     stt: 'Nomor STT',
     unassigned: 'Belum di-assign',
+    queue: 'Antrean',
+    note: 'Catatan internal',
+    addNote: 'Tambah catatan',
+    openInCase: 'Buka di Case',
+    actions: 'Tindakan',
   },
   'en-US': {
     title: 'Investigator',
@@ -52,6 +57,11 @@ const resources = {
     assignee: 'Assignee',
     stt: 'STT number',
     unassigned: 'Unassigned',
+    queue: 'Queue',
+    note: 'Internal note',
+    addNote: 'Add note',
+    openInCase: 'Open in Case',
+    actions: 'Actions',
   },
 } as const
 
