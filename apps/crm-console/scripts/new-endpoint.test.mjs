@@ -148,9 +148,9 @@ describe('new:endpoint', () => {
     expect(run('missing', 'getThing', '--path', '/v1/things').ok).toBe(false)
 
     expect(snapshot()).toEqual(before)
-    expect(
-      existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts')),
-    ).toBe(false)
+    expect(existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts'))).toBe(
+      false,
+    )
   })
 
   it('writes nothing when one anchor is not recognized', () => {
@@ -162,8 +162,8 @@ describe('new:endpoint', () => {
     expect(result.ok).toBe(false)
     expect(result.stderr).toContain('handlers.ts format not recognized')
     expect(snapshot()).toEqual(before)
-    expect(
-      existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts')),
-    ).toBe(false)
+    expect(existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts'))).toBe(
+      false,
+    )
   })
 })

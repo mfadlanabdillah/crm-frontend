@@ -1,0 +1,51 @@
+/* Reads the host's design tokens (defined in apps/crm-console/src/styles.css); no Tailwind build here. */
+.finance-poc {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: var(--color-ink);
+}
+
+.finance-poc h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.finance-poc__card {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.finance-poc dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.375rem 1rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.finance-poc dt {
+  color: var(--color-ink-muted);
+}
+
+.finance-poc dd {
+  margin: 0;
+}
+
+.finance-poc button {
+  margin-top: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  color: white;
+  background: var(--color-brand);
+  border: 0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.finance-poc button:hover {
+  background: var(--color-brand-strong);
+}

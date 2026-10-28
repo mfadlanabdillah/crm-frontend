@@ -5,6 +5,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { installSessionExpiry } from './app/auth/session-expiry'
+import { loadRemoteModules } from './app/modules/remote'
 import { env } from './lib/env'
 import { queryClient } from './lib/query-client'
 import { initWebVitals, installGlobalErrorHandlers } from './lib/telemetry'
@@ -18,6 +19,9 @@ async function bootstrap() {
     const { startMockWorker } = await import('./mocks/browser')
     await startMockWorker()
   }
+
+  // After i18n (a remote adds its texts to it); a remote that is down never blocks startup.
+  await loadRemoteModules(env.remoteModules)
 
   installGlobalErrorHandlers()
   initWebVitals()

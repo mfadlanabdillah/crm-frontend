@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { can, ROLES } from '@crm/auth'
-import { findActiveModule, getVisibleModules, modules } from './registry'
+import type { ModuleDefinition } from '@/modules/types'
+import {
+  allModules,
+  findActiveModule,
+  getVisibleModules,
+  modules,
+  registerRemoteModule,
+} from './registry'
 
 describe('registry modul', () => {
   it('id dan basePath setiap modul unik', () => {
@@ -31,5 +38,22 @@ describe('registry modul', () => {
     expect(findActiveModule('/customers/cust-1')?.id).toBe('customer')
     expect(findActiveModule('/casesX')).toBeUndefined()
     expect(findActiveModule('/login')).toBeUndefined()
+  })
+
+  // Keep last: a registered remote module stays in the registry for the rest of the file.
+  it('adds remote modules once, shows them to every role, and finds them by path', () => {
+    const remote = {
+      id: 'zz-remote',
+      labelKey: 'zz.title',
+      basePath: '/remote/zz-remote',
+    } as unknown as ModuleDefinition
+
+    registerRemoteModule(remote)
+    registerRemoteModule(remote)
+
+    expect(allModules().filter((module) => module.id === 'zz-remote')).toHaveLength(1)
+    expect(allModules().slice(0, modules.length)).toEqual(modules)
+    expect(getVisibleModules('l1').map((module) => module.id)).toContain('zz-remote')
+    expect(findActiveModule('/remote/zz-remote')?.id).toBe('zz-remote')
   })
 })

@@ -18,6 +18,7 @@ import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedCasesNewRouteImport } from './routes/_authenticated/cases/new'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
+import { Route as AuthenticatedRemoteModuleIdRouteImport } from './routes/_authenticated/remote/$moduleId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +68,12 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRemoteModuleIdRoute =
+  AuthenticatedRemoteModuleIdRouteImport.update({
+    id: '/remote/$moduleId',
+    path: '/remote/$moduleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/cases/new': typeof AuthenticatedCasesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/remote/$moduleId': typeof AuthenticatedRemoteModuleIdRoute
   '/cases/': typeof AuthenticatedCasesIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
 }
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/cases/new': typeof AuthenticatedCasesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/remote/$moduleId': typeof AuthenticatedRemoteModuleIdRoute
   '/cases': typeof AuthenticatedCasesIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
 }
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/_authenticated/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/_authenticated/cases/new': typeof AuthenticatedCasesNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/_authenticated/remote/$moduleId': typeof AuthenticatedRemoteModuleIdRoute
   '/_authenticated/cases/': typeof AuthenticatedCasesIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
 }
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/cases/$caseId'
     | '/cases/new'
     | '/customers/$customerId'
+    | '/remote/$moduleId'
     | '/cases/'
     | '/customers/'
   fileRoutesByTo: FileRoutesByTo
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/cases/$caseId'
     | '/cases/new'
     | '/customers/$customerId'
+    | '/remote/$moduleId'
     | '/cases'
     | '/customers'
   id:
@@ -130,6 +142,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cases/$caseId'
     | '/_authenticated/cases/new'
     | '/_authenticated/customers/$customerId'
+    | '/_authenticated/remote/$moduleId'
     | '/_authenticated/cases/'
     | '/_authenticated/customers/'
   fileRoutesById: FileRoutesById
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/remote/$moduleId': {
+      id: '/_authenticated/remote/$moduleId'
+      path: '/remote/$moduleId'
+      fullPath: '/remote/$moduleId'
+      preLoaderRoute: typeof AuthenticatedRemoteModuleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -213,6 +233,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
   AuthenticatedCasesNewRoute: typeof AuthenticatedCasesNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedRemoteModuleIdRoute: typeof AuthenticatedRemoteModuleIdRoute
   AuthenticatedCasesIndexRoute: typeof AuthenticatedCasesIndexRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
@@ -222,6 +243,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
   AuthenticatedCasesNewRoute: AuthenticatedCasesNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
+  AuthenticatedRemoteModuleIdRoute: AuthenticatedRemoteModuleIdRoute,
   AuthenticatedCasesIndexRoute: AuthenticatedCasesIndexRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
 }
