@@ -65,6 +65,7 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 | `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                         |
 | `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                             |
 | `pnpm poc:mfe`                      | PoC micro frontend: host + 3 remote (Finance, Investigator, Monitor), lihat `docs/poc/micro-frontend.md` |
+| `pnpm test:e2e:mfe`                 | E2E PoC micro frontend: alur lintas semua menu (host + 3 remote), tidak ikut CI                          |
 | `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                                |
 
 ## Cara kerjanya

@@ -1,33 +1,78 @@
 # Micro frontend PoC
 
 Status: proof of concept on a feature branch. It answers "can this app be split into micro
-frontends?" with a working host and three remotes that behave like separate teams' modules. It is
-not an accepted architecture decision; if the team adopts it, record that as an ADR
-(`docs/adr/README.md`).
+frontends?" with a working host and three remotes that behave like separate teams' modules, every
+menu with a complete flow, all on a mock backend. It is not an accepted architecture decision; if
+the team adopts it, record that as an ADR (`docs/adr/README.md`).
 
-| Investigator (list)                                       | Investigator (detail)                                         |
-| --------------------------------------------------------- | ------------------------------------------------------------- |
-| ![Investigator list](../images/mfe-investigator-list.png) | ![Investigator detail](../images/mfe-investigator-detail.png) |
-| **Monitor**                                               | **Finance**                                                   |
-| ![Monitor](../images/mfe-monitor.png)                     | ![Finance](../images/mfe-finance.png)                         |
+| Finance (decision panel)              | Investigator (detail and actions)                             |
+| ------------------------------------- | ------------------------------------------------------------- |
+| ![Finance](../images/mfe-finance.png) | ![Investigator detail](../images/mfe-investigator-detail.png) |
+| **Monitor**                           | **Customer (case history)**                                   |
+| ![Monitor](../images/mfe-monitor.png) | ![Customer](../images/mfe-customer.png)                       |
+
+## What each menu does
+
+| Menu         | Where it lives          | Permission      | Flow                                                                                                                              |
+| ------------ | ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Case         | host (`crm-console`)      | `case.view`     | List with filters, create a case, detail with timeline, reply, change status or priority, assign to me, **move to another queue** |
+| Customer     | host (`crm-console`)      | `customer.view` | List, profile with PII masked by role, **case history** with links to each case                                                   |
+| Finance      | `apps/crm-finance`      | `case.export`   | Refund requests: filter by status, approve or reject with a required note, who decided and when, link to the case                 |
+| Investigator | `apps/crm-investigator` | `case.escalate` | Escalated cases: list with paging, detail, add an internal note, change status or queue, open the case in Case                    |
+| Monitor      | `apps/crm-monitor`      | `case.reassign` | Queue load: unassigned, overdue, open per queue; queues and unassigned link to the filtered Case list; refreshes every 30 seconds |
+
+The menus are connected by what a user does, not only by shared data: an L2 agent or supervisor
+moves a case to the escalation queue in **Case**, it shows up first in **Investigator**, an
+investigator adds a note and changes the status, **Case** shows both without a reload, and
+**Monitor** links to the filtered list. Finance reaches the case of a refund the same way.
+
+### What was invented, and what was not
+
+Be clear about this when presenting:
+
+- **Real, from the existing contract:** everything in Case, Customer, Investigator, and Monitor
+  except the two additions below. They use `GET /v1/cases`, `GET /v1/cases/{caseId}`,
+  `PATCH /v1/cases/{caseId}`, `POST /v1/cases/{caseId}/replies`, `GET /v1/cases/summary`,
+  `GET /v1/customers`, and `GET /v1/master-data`.
+- **Small additions to the existing contract (Proposed):** an optional `customerId` filter on
+  `GET /v1/cases` (customer history) and an optional `refundStatuses` list in master data.
+- **Invented for the PoC (Proposed, mock only): the whole Finance domain.** `GET /v1/finance/refunds`
+  and `PATCH /v1/finance/refunds/{refundId}`, the refund fields, the statuses (pending, approved,
+  rejected), the `409` for an already decided refund, and the seed data. Nobody agreed on any of it.
+  The rows are marked **Proposed** in `docs/contract-status.md`.
+- **Stand-in permissions.** `case.export`, `case.escalate`, and `case.reassign` already exist and
+  were reused, so the PoC makes no business decision. A permission per team is for the product
+  owners. The queue code `escalated` is an assumption; if master data lacks it, Investigator says
+  so instead of showing another queue.
+- **Mock data quirk.** The last 1,000 cases share customers with the first 1,000, so a customer
+  profile can show a history. Case ids and codes did not change.
+
+## Demo script (about five minutes)
+
+Run `pnpm poc:mfe` and open http://localhost:5173 (signed in as supervisor, all five menus).
+
+1. **Case:** open a case, change its queue to _Eskalasi_ ("Antrean" select).
+2. **Investigator:** the case is first in the list. Open it, add an internal note, set the status to
+   _Menunggu_. Click _Buka di Case_: the note and the status are already there. This menu is a
+   different app, loaded at runtime.
+3. **Monitor:** click _Eskalasi_: the host opens the escalation queue of Case.
+4. **Finance:** filter _Menunggu_, click _Putuskan_, try the buttons without a note (disabled), write
+   a note, approve one and reject another, then filter _Disetujui_ and _Ditolak_.
+5. **Customer:** open a profile, see the case history, click a case.
+6. **Other teams:** open `http://localhost:5173/cases?role=l1` (then `l2`): the menu changes, and a
+   direct URL such as `/remote/monitor` goes back to Case.
+7. **Resilience:** stop one remote (for example the process on port 5175), reload: the other
+   menus keep working and the stopped one disappears.
+
+Data lives in page memory, so a reload resets it. Stay in the app by clicking while you demo.
 
 ## The remotes
 
-| App                     | Port (dev / preview) | Module id      | Needs permission | Shows                                                                  |
-| ----------------------- | -------------------- | -------------- | ---------------- | ---------------------------------------------------------------------- |
-| `apps/crm-finance`      | 5174 / 4175          | `finance`      | none             | Placeholder: what a remote shares with the host (session, cache, i18n) |
-| `apps/crm-investigator` | 5175 / 4176          | `investigator` | `case.escalate`  | Escalated cases: list with pagination, then detail with the timeline   |
-| `apps/crm-monitor`      | 5176 / 4177          | `monitor`      | `case.reassign`  | Queue load: unassigned, overdue, open cases per queue                  |
-
-Investigator and Monitor use only data that already exists in the contract (`GET /v1/cases`,
-`GET /v1/cases/{caseId}`, `GET /v1/cases/summary`, `GET /v1/master-data`). Finance has no data
-because the contract has none for it; nothing was invented.
-
-**The permissions are stand-ins.** `case.escalate` (L2, supervisor, admin) and `case.reassign`
-(supervisor, admin) already exist in `packages/auth/src/roles.ts` and were reused so the PoC makes
-no business decision. A dedicated permission per team is for the product owners to decide. The
-escalation queue code `escalated` is an assumption on the provisional contract; if master data does
-not have it, Investigator says so instead of showing another queue.
+| App                     | Port (dev / preview) | Module id      |
+| ----------------------- | -------------------- | -------------- |
+| `apps/crm-finance`      | 5174 / 4175          | `finance`      |
+| `apps/crm-investigator` | 5175 / 4176          | `investigator` |
+| `apps/crm-monitor`      | 5176 / 4177          | `monitor`      |
 
 ## What it proves
 
@@ -40,17 +85,18 @@ not have it, Investigator says so instead of showing another queue.
 | Different teams see different things                                  | See the role matrix below, including direct URLs                                                                                    |
 | A remote can own routes under its prefix                              | Investigator has a list at `/remote/investigator` and details at `/remote/investigator/case/<id>`; deep links survive a hard reload |
 | Remotes use the host's API client                                     | Same session, CSRF handling, and PII masking as built-in modules; no second client                                                  |
+| Remotes and host can open each other's pages                          | `openHostPath` goes from a remote to a host path (Case, filtered lists); Case links into the remotes through the menu               |
 | Failures are contained                                                | Stop one remote: the others and the host keep working. Stop all: the host works, remote paths show "Modul tidak tersedia"           |
 | The host's session handling covers remotes                            | A 401 on a remote's query sends the user to `/login?redirect=/remote/...`; signing out clears the remotes' cached data              |
 | The menu is stable                                                    | Remotes load in parallel but register in the configured order, so the menu does not depend on which answered first                  |
 
-### Role matrix (mock roles, `VITE_MOCK_ROLE`)
+### Role matrix (mock roles)
 
-| Role         | Menu                                           | `/remote/investigator` | `/remote/monitor` |
-| ------------ | ---------------------------------------------- | ---------------------- | ----------------- |
-| `l1`         | Case, Finance                                  | redirected to `/cases` | redirected        |
-| `l2`         | Case, Customer, Finance, Investigator          | opens                  | redirected        |
-| `supervisor` | Case, Customer, Finance, Investigator, Monitor | opens                  | opens             |
+| Role         | Menu                                           | `/remote/finance` | `/remote/investigator` | `/remote/monitor` |
+| ------------ | ---------------------------------------------- | ----------------- | ---------------------- | ----------------- |
+| `l1`         | Case                                           | back to `/cases`  | back to `/cases`       | back to `/cases`  |
+| `l2`         | Case, Customer, Investigator                   | back to `/cases`  | opens                  | back to `/cases`  |
+| `supervisor` | Case, Customer, Finance, Investigator, Monitor | opens             | opens                  | opens             |
 
 ## How it works
 
@@ -61,8 +107,9 @@ apps/crm-console             host: shell, session, routing, shared singletons
   src/app/modules/remote.ts      reads VITE_REMOTE_MODULES, loads each `<name>/module`, registers in order
   src/app/modules/registry.ts    registerRemoteModule(): ignores an id or path that is taken, with a warning
   src/app/modules/guard.ts       beforeLoad guard: permission comes from the loaded module
-  src/app/modules/RemoteModulePage.tsx   gives the page `api`, `subPath`, `navigate`; or "unavailable"
+  src/app/modules/RemoteModulePage.tsx   gives the page `api`, `subPath`, `navigate`, `openHostPath`; or "unavailable"
   src/routes/_authenticated/remote/$moduleId/   index and splat routes, one pair for every remote
+  src/mocks/browser.ts           dev only: `?role=l1` opens the app as that role
 apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add their own i18n texts
 ```
 
@@ -72,8 +119,10 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
   `VITE_REMOTE_MODULES` (`name=entryUrl`, comma separated; empty means no remotes), so one host
   build can point to different remotes per environment.
 - **What the host gives a remote page** (`RemotePageProps`): `api` (the host's API client),
-  `subPath` (the path below `/remote/<id>/`), and `navigate(subPath)` (moves inside the host router
-  without a reload). Remote links keep a real `href` so "open in a new tab" works.
+  `subPath` (the path below `/remote/<id>/`), `navigate(subPath)` (inside the remote's own prefix,
+  no reload), and `openHostPath(path)` (a host page such as `/cases/case-00001`; only internal
+  paths are accepted, through the same `safeRedirectPath` that protects the login redirect). Remote
+  links keep a real `href` so "open in a new tab" works.
 - **Shared singletons** (`react`, `react-dom`, `react-i18next`, `@tanstack/react-query`,
   `@crm/auth`): the host and every remote declare the same list. Anything that holds state or
   context must be shared, or hooks break and contexts split. `@crm/module-contract` is type-only,
@@ -90,9 +139,10 @@ pnpm install
 pnpm poc:mfe          # host :5173 (mock backend) + the three remotes
 ```
 
-Open http://localhost:5173. The mock signs in as supervisor; to see other teams' views, set the
-role: `VITE_MOCK_ROLE=l1 pnpm poc:mfe` (or `l2`). To see the host without any remote, run `pnpm dev`.
-To load a production build of one remote:
+Open http://localhost:5173. The mock signs in as supervisor. To see another team's view, add
+`?role=l1` (or `l2`, `supervisor`) to the URL; it is read once when the page loads, and signing out
+and in again returns to the role from `VITE_MOCK_ROLE`. To see the host without any remote, run
+`pnpm dev`. To load a production build of one remote:
 
 ```bash
 pnpm --filter @crm/crm-finance build
@@ -102,6 +152,14 @@ VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
 
 `poc:mfe` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL). It uses
 `--no-bail`, so stopping one remote does not stop the host or the others.
+
+### Tests
+
+`pnpm test:e2e:mfe` runs `apps/crm-console/e2e-mfe/` against the host and the three remotes
+(config: `apps/crm-console/playwright.mfe.config.ts`; servers that are already running are reused).
+It is not part of CI, which never starts the remotes. It covers the journey across menus, the
+Finance decisions, the customer history, the role matrix, and axe scans (WCAG 2.1 AA) of every
+remote page. `pnpm test:e2e` (host alone) and `pnpm check` stay green without any remote.
 
 ## Add another remote
 
@@ -125,8 +183,10 @@ Rules for a remote:
 - **i18n:** write only under your own module id. The merge uses `overwrite`, so a remote could
   replace a host text; nothing enforces the namespace.
 - **CSS:** one global namespace. Prefix every class with the module id.
-- **Query keys:** prefix with the module id. The host's own invalidations (for example after a
-  reply on a case) do not refresh a remote's view; a remote must refetch on its own schedule.
+- **Query keys:** prefix your own with the module id. After a write, a remote that must refresh
+  host views has to invalidate the host's keys itself (Investigator invalidates `['cases']`), which
+  couples it to the host's key names. The host's own invalidations do not refresh a remote's view,
+  so remote pages refetch when opened (`staleTime: 0`).
 
 ## What it does not cover
 
@@ -137,16 +197,16 @@ Rules for a remote:
 - **Versioning.** Host and remotes share singletons by name only. A breaking change in a shared
   library (for example React) or in `@crm/module-contract` needs a coordinated release; nothing
   here enforces it. Changing the contract already forces every remote to change.
-- **Writes.** The remotes are read-only. Mutations would need cache invalidation across the
-  boundary and the contract's write endpoints, which are not agreed yet.
 - **Shared UI.** `components/ui` still lives inside `apps/crm-console`, so each remote re-implements
   its small tables and buttons in plain CSS. Extract the primitives to a package first.
+- **Real-time.** The mock has no event stream (set `VITE_MOCK_EVENTS=true` to simulate it in the
+  host), so remote views refresh on open or on a timer, not by push.
 - **Escalation scope.** Investigator lists every case in the escalation queue (all statuses), while
   Monitor counts open cases; which view a team needs is a domain decision.
-- **Domain.** Finance has no real content, and no team-specific permission exists yet.
-- **Tests.** The host side (loader, registry, guard, page, props) has unit tests. The remotes have
-  none and no end-to-end test starts all apps; CI never runs a remote and stays green without one.
-  The behaviors above were verified by hand in a browser.
+- **Finance beyond the PoC.** No refund creation from a case, no amounts or limits per role, no
+  audit trail beyond the decision note.
+- **Tests.** The host side (loader, registry, guard, page, props, customer history) has unit tests.
+  The remotes have no unit tests; their behavior is covered by the `e2e-mfe` suite described above.
 
 ## Security: a remote is not isolated from the host
 
