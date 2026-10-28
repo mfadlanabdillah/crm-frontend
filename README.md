@@ -73,10 +73,10 @@ apps/crm-agent/src
   routes/        # URL; tipis, hanya merangkai halaman dari modul
   modules/<id>/  # satu folder per fitur CRM (case, customer, ...)
   app/           # shell aplikasi: layout, login, daftar modul
-  components/ui/ # komponen dasar
   lib/           # helper umum
   mocks/         # backend tiruan (hanya dev)
 packages/
+  ui/            # komponen dan token desain bersama (@crm/ui)
   api-client/    # tipe dan klien dari kontrak OpenAPI
   auth/          # peran, izin, masking data pribadi
   i18n/          # teks id-ID dan en-US

@@ -1,7 +1,8 @@
 # AGENTS.md
 
 Rules for AI coding agents and developers in this repo. Step-by-step recipes per task type are in
-[docs/agents/recipes.md](docs/agents/recipes.md); read the matching one before you start.
+[docs/agents/recipes.md](docs/agents/recipes.md); read the matching one before you start. How the system fits
+together is in [docs/system-design.md](docs/system-design.md); UI rules are in [docs/ui-standards.md](docs/ui-standards.md).
 
 ## Working agreement
 
@@ -13,7 +14,7 @@ Rules for AI coding agents and developers in this repo. Step-by-step recipes per
 ## Context
 
 - **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-agent`, the customer-service agent console SPA (phase 1 = case record type `CS`).
-- **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 (shadcn/ui pattern), Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
+- **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 with the shared `@crm/ui` components, Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
 - **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.
 - **Terms:** "CS agent" (Indonesian: agen CS) is the customer-service staff member who uses the console; "AI agent" is a coding assistant reading this file. The app name `crm-agent` refers to the first.
@@ -41,31 +42,30 @@ apps/crm-agent/src
     api/ queries/ schemas/ components/ pages/ store/
   modules/types.ts   # ModuleDefinition contract
   app/               # shell: layout/AppShell, auth/, modules/registry (module list)
-  components/ui      # shadcn-style primitives (styling only)
   lib/               # helpers that know nothing about modules (+ *.test.ts)
   mocks/             # MSW handlers + in-memory db + mock masking (dev only, not in the prod bundle)
 packages/
-  api-client/  auth/  i18n/  test-utils/  config-ts/  config-eslint/
+  ui/  api-client/  auth/  i18n/  test-utils/  config-ts/  config-eslint/
 ```
 
-| To add...         | Put it in...                                                                                                                                     |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CRM module        | `pnpm new:module <id> --path /<path>` (skeleton + route + registry entry)                                                                        |
-| Page / URL        | thin route in `src/routes/`; page body in `src/modules/<id>/pages/`                                                                              |
-| Module component  | `src/modules/<id>/components/`                                                                                                                   |
-| Generic primitive | `src/components/ui/`                                                                                                                             |
-| API endpoint      | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/` |
-| Permission        | `packages/auth/src/roles.ts`                                                                                                                     |
-| UI text           | `packages/i18n/src/resources.ts` (both locales)                                                                                                  |
-| Dev mock          | `src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                         |
+| To add...        | Put it in...                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CRM module       | `pnpm new:module <id> --path /<path>` (skeleton + route + registry entry)                                                                        |
+| Page / URL       | thin route in `src/routes/`; page body in `src/modules/<id>/pages/`                                                                              |
+| Module component | `src/modules/<id>/components/`                                                                                                                   |
+| UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                   |
+| API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/` |
+| Permission       | `packages/auth/src/roles.ts`                                                                                                                     |
+| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                  |
+| Dev mock         | `src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                         |
 
 ### Layer boundaries (enforced by ESLint, `eslint.config.js`)
 
-- `lib/` and `components/ui/` must not import `modules/`, `app/`, or `routes/`.
+- `lib/` must not import `modules/`, `app/`, or `routes/`; `packages/ui` must not import any app.
 - `modules/<m>/` must not import `app/`, `routes/`, or another module, except `@/modules/<other>/public` (queries, schemas, store; never components). Cross-module links go through routes (`<Link to="/customers/$customerId">`).
 - Inside a module, cross-folder imports use the alias `@/modules/<m>/...`; relative paths must not climb with `../../`.
 - `app/` imports only a module's `module.ts` / `public.ts`; modules reach the shell through `app/modules/registry.ts`.
-- Used by 3+ modules: move it to `lib/`, `components/ui/`, or a package.
+- Used by 3+ modules: move it to `lib/`, `packages/ui`, or another package.
 
 ## Rules
 
@@ -88,6 +88,7 @@ packages/
 **UI**
 
 - Tailwind only, no CSS-in-JS; use `cn` from `@/lib/cn`.
+- Build screens from `@crm/ui`. A raw `button`/`input`/`select`/`textarea`/table element, or a Tailwind palette color or hex value in a class string, is a lint error: use the component or a design token (see [docs/ui-standards.md](docs/ui-standards.md)).
 - UI text exists in both locales (`id-ID` default, `en-US`); a test in `packages/i18n` rejects mismatched keys or `{{...}}` placeholders.
 - Accessibility: labels/aria on interactive elements, WCAG AA contrast, managed focus. `e2e/a11y.spec.ts` axe-scans the main pages and must stay clean. Never use an ARIA role without the matching children/pattern.
 - Large tables use `useVirtualizer`; heavy libraries (e.g. Tiptap in `ReplyComposer`) load via `lazy()` + `Suspense`.
