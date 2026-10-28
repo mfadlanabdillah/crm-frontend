@@ -4,7 +4,7 @@ import { AlertTriangle } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@crm/api-client'
-import { Button } from '@/components/ui/button'
+import { Button } from '@crm/ui'
 import { reportError } from '@/lib/telemetry'
 
 /** Dipakai root dan `defaultErrorComponent`: error halaman muncul di dalam shell, bukan menggantinya. */

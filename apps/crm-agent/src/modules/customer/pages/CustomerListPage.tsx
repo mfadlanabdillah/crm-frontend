@@ -2,10 +2,22 @@ import { Link, getRouteApi } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { maskEmail, maskPhone, useAuth } from '@crm/auth'
-import { Button } from '@/components/ui/button'
-import { EmptyState, ErrorState } from '@/components/ui/data-state'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageHeader,
+  Pagination,
+  Skeleton,
+  Table,
+  TBody,
+  Td,
+  Th,
+  THead,
+  Tr,
+  textLinkClasses,
+} from '@crm/ui'
 import { formatNumber } from '@/lib/format'
 import { useCustomers } from '@/modules/customer/queries/useCustomers'
 import { CustomerSegmentBadge } from '@/modules/customer/components/CustomerSegmentBadge'
@@ -22,23 +34,22 @@ export function CustomerListPage() {
   const { data, isPending, isError, refetch } = useCustomers(search)
 
   const meta = data?.meta
-  const canGoBack = search.page > 1
-  const canGoForward = meta ? search.page < meta.totalPages : false
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 border-b border-border-subtle bg-surface-raised px-6 py-4">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h2 className="text-base font-semibold text-ink">{t('customer.title')}</h2>
-            <p className="text-xs text-ink-muted">{t('customer.subtitle')}</p>
-          </div>
-          {meta ? (
-            <p className="text-xs text-ink-muted tabular-nums">
-              {t('customer.total', { total: formatNumber(meta.total) })}
-            </p>
-          ) : null}
-        </div>
+        <PageHeader
+          className="mb-3"
+          title={t('customer.title')}
+          description={t('customer.subtitle')}
+          actions={
+            meta ? (
+              <p className="text-xs text-ink-muted tabular-nums">
+                {t('customer.total', { total: formatNumber(meta.total) })}
+              </p>
+            ) : null
+          }
+        />
 
         <form
           role="search"
@@ -81,86 +92,46 @@ export function CustomerListPage() {
         ) : data && data.items.length === 0 ? (
           <EmptyState title={t('common.emptyTitle')} description={t('common.emptyDescription')} />
         ) : data ? (
-          <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 bg-surface-raised text-xs text-ink-muted uppercase">
-              <tr className="border-b border-border-subtle">
-                <th scope="col" className="px-6 py-2 font-medium">
-                  {t('customer.name')}
-                </th>
-                <th scope="col" className="px-3 py-2 font-medium">
-                  {t('customer.segment')}
-                </th>
-                <th scope="col" className="px-3 py-2 font-medium">
-                  {t('customer.city')}
-                </th>
-                <th scope="col" className="px-3 py-2 font-medium">
-                  {t('customer.phone')}
-                </th>
-                <th scope="col" className="px-3 py-2 font-medium">
-                  {t('customer.email')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <THead>
+              <Tr>
+                <Th>{t('customer.name')}</Th>
+                <Th>{t('customer.segment')}</Th>
+                <Th>{t('customer.city')}</Th>
+                <Th>{t('customer.phone')}</Th>
+                <Th>{t('customer.email')}</Th>
+              </Tr>
+            </THead>
+            <TBody>
               {data.items.map((customer) => (
-                <tr
-                  key={customer.id}
-                  className="border-b border-border-subtle hover:bg-surface-muted"
-                >
-                  <td className="px-6 py-2">
+                <Tr key={customer.id}>
+                  <Td>
                     <Link
                       to="/customers/$customerId"
                       params={{ customerId: customer.id }}
-                      className="font-medium text-brand-strong hover:underline"
+                      className={textLinkClasses}
                     >
                       {customer.name}
                     </Link>
-                  </td>
-                  <td className="px-3 py-2">
+                  </Td>
+                  <Td>
                     <CustomerSegmentBadge segment={customer.segment} />
-                  </td>
-                  <td className="px-3 py-2 text-ink-muted">{customer.city}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{maskPhone(customer.phone, role)}</td>
-                  <td className="px-3 py-2 text-xs break-all">{maskEmail(customer.email, role)}</td>
-                </tr>
+                  </Td>
+                  <Td className="text-ink-muted">{customer.city}</Td>
+                  <Td className="font-mono text-xs">{maskPhone(customer.phone, role)}</Td>
+                  <Td className="text-xs break-all">{maskEmail(customer.email, role)}</Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         ) : null}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border-subtle bg-surface-raised px-6 py-2">
-        <p className="text-xs text-ink-muted tabular-nums">
-          {meta
-            ? t('customer.pageOf', {
-                page: formatNumber(meta.page),
-                totalPages: formatNumber(Math.max(1, meta.totalPages)),
-              })
-            : null}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() =>
-              void navigate({ search: (prev) => ({ ...prev, page: search.page - 1 }) })
-            }
-            disabled={!canGoBack}
-          >
-            {t('common.previous')}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() =>
-              void navigate({ search: (prev) => ({ ...prev, page: search.page + 1 }) })
-            }
-            disabled={!canGoForward}
-          >
-            {t('common.next')}
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={search.page}
+        totalPages={meta?.totalPages ?? 1}
+        onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}
+      />
     </div>
   )
 }
