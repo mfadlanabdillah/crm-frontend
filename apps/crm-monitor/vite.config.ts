@@ -21,6 +21,7 @@ export default defineConfig({
         'react-i18next': singleton,
         '@tanstack/react-query': singleton,
         '@crm/auth': singleton,
+        '@crm/ui': singleton,
       },
     }),
     // No React Compiler here on purpose: the host uses it, and each app compiles on its own.

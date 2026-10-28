@@ -13,6 +13,7 @@
     "@crm/api-client": "workspace:*",
     "@crm/auth": "workspace:*",
     "@crm/module-contract": "workspace:*",
+    "@crm/ui": "workspace:*",
     "@tanstack/react-query": "5.104.5",
     "lucide-react": "1.61.0",
     "react": "19.3.1",

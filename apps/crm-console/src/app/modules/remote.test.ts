@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRemote, registerRemotes } from '@module-federation/runtime'
 import { allModules } from '@/app/modules/registry'
-import { loadRemoteModules, parseRemotes } from './remote'
+import { LOAD_TIMEOUT_MS, loadRemoteModules, parseRemotes } from './remote'
 
 vi.mock('@module-federation/runtime', () => ({
   loadRemote: vi.fn(),
@@ -80,7 +80,7 @@ describe('loadRemoteModules', () => {
     vi.mocked(loadRemote).mockReturnValue(new Promise(() => {}))
 
     const loading = loadRemoteModules('zz_slow=http://localhost:1/e.js')
-    await vi.advanceTimersByTimeAsync(5_001)
+    await vi.advanceTimersByTimeAsync(LOAD_TIMEOUT_MS + 1)
     await loading
 
     expect(error).toHaveBeenCalled()

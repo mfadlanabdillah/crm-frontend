@@ -15,11 +15,15 @@ async function expectNoViolations(page: Page) {
 test('Finance list and decision panel have no WCAG AA violations', async ({ page }) => {
   await openAs(page, 'supervisor')
   await moduleNav(page).getByRole('link', { name: 'Finance' }).click()
-  await expect(page.locator('.finance__table tbody tr').first()).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'Finance' }).locator('tbody tr').first(),
+  ).toBeVisible()
   await expectNoViolations(page)
 
   await page.getByRole('combobox', { name: 'Status' }).selectOption({ label: 'Menunggu' })
-  await expect(page.locator('.finance__table tbody tr').first()).toContainText('Menunggu')
+  await expect(
+    page.getByRole('table', { name: 'Finance' }).locator('tbody tr').first(),
+  ).toContainText('Menunggu')
   await page.getByRole('button', { name: 'Putuskan' }).first().click()
   await expect(page.getByLabel('Catatan keputusan')).toBeVisible()
   await expectNoViolations(page)
@@ -28,18 +32,27 @@ test('Finance list and decision panel have no WCAG AA violations', async ({ page
 test('Investigator list and detail have no WCAG AA violations', async ({ page }) => {
   await openAs(page, 'supervisor')
   await moduleNav(page).getByRole('link', { name: 'Investigator' }).click()
-  await expect(page.locator('.investigator__table tbody tr').first()).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'Investigator' }).locator('tbody tr').first(),
+  ).toBeVisible()
   await expectNoViolations(page)
 
-  await page.locator('.investigator__table tbody tr').first().getByRole('link').click()
-  await expect(page.locator('.investigator__timeline')).toBeVisible()
+  await page
+    .getByRole('table', { name: 'Investigator' })
+    .locator('tbody tr')
+    .first()
+    .getByRole('link')
+    .click()
+  await expect(page.getByRole('list', { name: 'Timeline' })).toBeVisible()
   await expectNoViolations(page)
 })
 
 test('Monitor has no WCAG AA violations', async ({ page }) => {
   await openAs(page, 'supervisor')
   await moduleNav(page).getByRole('link', { name: 'Monitor' }).click()
-  await expect(page.locator('.monitor__table tbody tr').first()).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'Monitor' }).locator('tbody tr').first(),
+  ).toBeVisible()
   await expectNoViolations(page)
 })
 

@@ -4,7 +4,8 @@ import type { LucideIcon } from 'lucide-react'
 import { registerRemoteModule } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
 
-const LOAD_TIMEOUT_MS = 5_000
+// A dev server compiles a remote on first request, which takes longer than serving a built one.
+export const LOAD_TIMEOUT_MS = import.meta.env.DEV ? 20_000 : 5_000
 
 export interface RemoteEntry {
   name: string

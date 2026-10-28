@@ -1,16 +1,37 @@
 import { useAuth } from '@crm/auth'
 import type { MasterDataItem, Refund } from '@crm/api-client'
 import type { RemotePageProps } from '@crm/module-contract'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  DescriptionItem,
+  DescriptionList,
+  EmptyState,
+  ErrorState,
+  FormField,
+  Inline,
+  Page,
+  PageHeader,
+  Pagination,
+  Select,
+  Skeleton,
+  Stack,
+  Table,
+  TBody,
+  Td,
+  TextLink,
+  Textarea,
+  Th,
+  THead,
+  Tr,
+} from '@crm/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import './finance.css'
 
 const PAGE_SIZE = 10
-
-const label = (items: MasterDataItem[] | undefined, code: string) =>
-  items?.find((item) => item.code === code)?.label ?? code
 
 function DecisionPanel({
   refund,
@@ -28,49 +49,48 @@ function DecisionPanel({
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['finance'] }),
     onSuccess: onDone,
   })
-
-  const openCase = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    event.preventDefault()
-    openHostPath(`/cases/${refund.caseId}`)
-  }
   const ready = note.trim().length >= 3 && !decide.isPending
 
   return (
-    <div className="finance__panel">
-      <p>
-        {refund.reason} ·{' '}
-        <a href={`/cases/${refund.caseId}`} onClick={openCase}>
-          {t('finance.openCase')} {refund.caseCode}
-        </a>
-      </p>
-      <label htmlFor={`note-${refund.id}`}>{t('finance.note')}</label>
-      <textarea
-        id={`note-${refund.id}`}
-        value={note}
-        rows={2}
-        aria-describedby={`hint-${refund.id}`}
-        onChange={(event) => setNote(event.target.value)}
-      />
-      <p id={`hint-${refund.id}`} className="finance__hint">
-        {t('finance.noteHint')}
-      </p>
-      <div className="finance__actions">
-        <button type="button" disabled={!ready} onClick={() => decide.mutate('approved')}>
-          {t('finance.approve')}
-        </button>
-        <button
-          type="button"
-          className="finance__secondary"
-          disabled={!ready}
-          onClick={() => decide.mutate('rejected')}
-        >
-          {t('finance.reject')}
-        </button>
-      </div>
-      {decide.isError ? <p role="alert">{decide.error.message}</p> : null}
-    </div>
+    <Card>
+      <Stack gap="sm">
+        <p>
+          {refund.reason} ·{' '}
+          <TextLink
+            inline
+            href={`/cases/${refund.caseId}`}
+            onNavigate={() => openHostPath(`/cases/${refund.caseId}`)}
+          >
+            {t('finance.openCase')} {refund.caseCode}
+          </TextLink>
+        </p>
+        <FormField label={t('finance.note')} hint={t('finance.noteHint')}>
+          {(control) => (
+            <Textarea
+              {...control}
+              rows={2}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          )}
+        </FormField>
+        <Inline gap="sm">
+          <Button disabled={!ready} onClick={() => decide.mutate('approved')}>
+            {t('finance.approve')}
+          </Button>
+          <Button variant="secondary" disabled={!ready} onClick={() => decide.mutate('rejected')}>
+            {t('finance.reject')}
+          </Button>
+        </Inline>
+        {decide.isError ? <Alert>{decide.error.message}</Alert> : null}
+      </Stack>
+    </Card>
   )
+}
+
+function statusBadge(items: MasterDataItem[] | undefined, code: string) {
+  const item = items?.find((candidate) => candidate.code === code)
+  return <Badge tone={item?.tone ?? 'neutral'}>{item?.label ?? code}</Badge>
 }
 
 export function FinancePage({ api, openHostPath }: RemotePageProps) {
@@ -100,112 +120,111 @@ export function FinancePage({ api, openHostPath }: RemotePageProps) {
   const statuses = master.data?.refundStatuses
 
   let body
-  if (refunds.isPending || master.isPending) body = <p>{t('finance.loading')}</p>
-  else if (refunds.isError || master.isError) body = <p role="alert">{t('finance.failed')}</p>
-  else if (refunds.data.items.length === 0) body = <p>{t('finance.empty')}</p>
-  else {
+  if (refunds.isPending || master.isPending) {
+    body = (
+      <Stack gap="sm" aria-busy="true">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </Stack>
+    )
+  } else if (refunds.isError || master.isError) {
+    body = <ErrorState onRetry={() => void refunds.refetch()} />
+  } else if (refunds.data.items.length === 0) {
+    body = <EmptyState title={t('finance.empty')} description={t('common.emptyDescription')} />
+  } else {
     const { items, meta } = refunds.data
     body = (
-      <>
-        <table className="finance__table">
-          <thead>
-            <tr>
-              {['code', 'customer', 'amount', 'requested', 'filter'].map((key) => (
-                <th key={key} scope="col">
-                  {t(`finance.${key}`)}
-                </th>
+      <Card padded={false}>
+        <Table aria-label={t('finance.title')}>
+          <THead>
+            <Tr>
+              {['code', 'customer', 'amount', 'requested', 'filter', 'decision'].map((key) => (
+                <Th key={key}>{t(`finance.${key}`)}</Th>
               ))}
-              <th scope="col" />
-            </tr>
-          </thead>
-          <tbody>
+              <Th aria-label={t('finance.decide')} />
+            </Tr>
+          </THead>
+          <TBody>
             {items.map((refund) => (
-              <tr key={refund.id}>
-                <td>{refund.code}</td>
-                <td>{refund.customerName}</td>
-                <td>{money.format(refund.amount)}</td>
-                <td>{new Date(refund.requestedAt).toLocaleDateString(i18n.language)}</td>
-                <td>
-                  {label(statuses, refund.status)}
-                  {refund.decidedBy ? (
-                    <small className="finance__hint">
-                      {' '}
-                      {t('finance.decidedBy', { name: refund.decidedBy.name })}
-                    </small>
-                  ) : null}
-                </td>
-                <td>
+              <Tr key={refund.id}>
+                <Td nowrap>{refund.code}</Td>
+                <Td>{refund.customerName}</Td>
+                <Td nowrap>{money.format(refund.amount)}</Td>
+                <Td>{new Date(refund.requestedAt).toLocaleDateString(i18n.language)}</Td>
+                <Td>{statusBadge(statuses, refund.status)}</Td>
+                <Td>
+                  {refund.decidedBy ? t('finance.decidedBy', { name: refund.decidedBy.name }) : '—'}
+                </Td>
+                <Td>
                   {refund.status === 'pending' ? (
-                    <button
-                      type="button"
-                      className="finance__secondary"
-                      aria-expanded={openId === refund.id}
-                      onClick={() => setOpenId(openId === refund.id ? null : refund.id)}
-                    >
-                      {openId === refund.id ? t('finance.close') : t('finance.decide')}
-                    </button>
+                    <Stack gap="sm">
+                      <Inline>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          aria-expanded={openId === refund.id}
+                          onClick={() => setOpenId(openId === refund.id ? null : refund.id)}
+                        >
+                          {openId === refund.id ? t('finance.close') : t('finance.decide')}
+                        </Button>
+                      </Inline>
+                      {openId === refund.id ? (
+                        <DecisionPanel
+                          refund={refund}
+                          api={api}
+                          openHostPath={openHostPath}
+                          onDone={() => setOpenId(null)}
+                        />
+                      ) : null}
+                    </Stack>
                   ) : null}
-                  {openId === refund.id && refund.status === 'pending' ? (
-                    <DecisionPanel
-                      refund={refund}
-                      api={api}
-                      openHostPath={openHostPath}
-                      onDone={() => setOpenId(null)}
-                    />
-                  ) : null}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
-          </tbody>
-        </table>
-        <div className="finance__pager">
-          <button type="button" disabled={meta.page <= 1} onClick={() => setPage(meta.page - 1)}>
-            {t('finance.previous')}
-          </button>
-          <span>{t('finance.pageOf', { page: meta.page, total: meta.totalPages })}</span>
-          <button
-            type="button"
-            disabled={meta.page >= meta.totalPages}
-            onClick={() => setPage(meta.page + 1)}
-          >
-            {t('finance.next')}
-          </button>
-        </div>
-      </>
+          </TBody>
+        </Table>
+        <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />
+      </Card>
     )
   }
 
   return (
-    <div className="finance">
-      <h2>{t('finance.title')}</h2>
-      <p>{t('finance.intro')}</p>
-      <label className="finance__filter">
-        {t('finance.filter')}
-        <select
-          value={status}
-          onChange={(event) => {
-            setStatus(event.target.value)
-            setPage(1)
-            setOpenId(null)
-          }}
-        >
-          <option value="">{t('finance.all')}</option>
-          {statuses?.map((item) => (
-            <option key={item.code} value={item.code}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {body}
-      <dl className="finance__shared" aria-label={t('finance.sharedTitle')}>
-        <dt>{t('finance.user')}</dt>
-        <dd>{session?.user.name ?? '-'}</dd>
-        <dt>{t('finance.role')}</dt>
-        <dd>{role ?? '-'}</dd>
-        <dt>{t('finance.cachedQueries')}</dt>
-        <dd>{queryClient.getQueryCache().getAll().length}</dd>
-      </dl>
-    </div>
+    <Page width="lg">
+      <Stack gap="lg">
+        <PageHeader title={t('finance.title')} description={t('finance.intro')} />
+        <Inline>
+          <FormField label={t('finance.filter')}>
+            {(control) => (
+              <Select
+                {...control}
+                value={status}
+                onChange={(event) => {
+                  setStatus(event.target.value)
+                  setPage(1)
+                  setOpenId(null)
+                }}
+              >
+                <option value="">{t('finance.all')}</option>
+                {statuses?.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.label}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </FormField>
+        </Inline>
+        {body}
+        <Card as="section" aria-label={t('finance.sharedTitle')}>
+          <DescriptionList layout="grid">
+            <DescriptionItem label={t('finance.user')}>{session?.user.name ?? '-'}</DescriptionItem>
+            <DescriptionItem label={t('finance.role')}>{role ?? '-'}</DescriptionItem>
+            <DescriptionItem label={t('finance.cachedQueries')}>
+              {queryClient.getQueryCache().getAll().length}
+            </DescriptionItem>
+          </DescriptionList>
+        </Card>
+      </Stack>
+    </Page>
   )
 }

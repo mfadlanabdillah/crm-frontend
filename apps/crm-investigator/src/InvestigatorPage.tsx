@@ -6,11 +6,37 @@ import type {
   UpdateCaseRequest,
 } from '@crm/api-client'
 import type { RemotePageProps } from '@crm/module-contract'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  DescriptionItem,
+  DescriptionList,
+  EmptyState,
+  ErrorState,
+  FormField,
+  Inline,
+  Page,
+  PageHeader,
+  Pagination,
+  SectionHeading,
+  Select,
+  Skeleton,
+  Stack,
+  Table,
+  TBody,
+  Td,
+  TextLink,
+  Textarea,
+  Th,
+  THead,
+  Tr,
+} from '@crm/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import type { MouseEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import './investigator.css'
 
 /**
  * Assumption on the provisional contract: master data has an escalation queue with this code (the
@@ -20,29 +46,9 @@ const ESCALATION_QUEUE = 'escalated'
 const PAGE_SIZE = 10
 const BASE = '/remote/investigator'
 
-const label = (items: MasterDataItem[] | undefined, code: string) =>
-  items?.find((item) => item.code === code)?.label ?? code
-
-// A real href keeps "open in new tab" working; a plain click moves inside the host router.
-function RemoteLink({
-  to,
-  navigate,
-  children,
-}: {
-  to: string
-  navigate: (subPath: string) => void
-  children: ReactNode
-}) {
-  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    event.preventDefault()
-    navigate(to)
-  }
-  return (
-    <a className="investigator__link" href={to ? `${BASE}/${to}` : BASE} onClick={onClick}>
-      {children}
-    </a>
-  )
+function levelBadge(items: MasterDataItem[] | undefined, code: string) {
+  const item = items?.find((candidate) => candidate.code === code)
+  return <Badge tone={item?.tone ?? 'neutral'}>{item?.label ?? code}</Badge>
 }
 
 function useMasterData(api: ApiClient) {
@@ -51,6 +57,16 @@ function useMasterData(api: ApiClient) {
     queryFn: ({ signal }) => api.getMasterData(signal),
     staleTime: 5 * 60_000,
   })
+}
+
+function LoadingRows() {
+  return (
+    <Stack gap="sm" aria-busy="true">
+      <Skeleton size="row" />
+      <Skeleton size="row" />
+      <Skeleton size="row" />
+    </Stack>
+  )
 }
 
 function CaseList({ api, navigate }: Pick<RemotePageProps, 'api' | 'navigate'>) {
@@ -67,57 +83,52 @@ function CaseList({ api, navigate }: Pick<RemotePageProps, 'api' | 'navigate'>) 
     staleTime: 0,
   })
 
-  if (master.isPending) return <p>{t('investigator.loading')}</p>
-  if (master.isError) return <p role="alert">{t('investigator.failed')}</p>
-  if (!hasQueue) return <p>{t('investigator.noQueue')}</p>
-  if (cases.isPending) return <p>{t('investigator.loading')}</p>
-  if (cases.isError) return <p role="alert">{t('investigator.failed')}</p>
-  if (cases.data.items.length === 0) return <p>{t('investigator.empty')}</p>
+  if (master.isPending) return <LoadingRows />
+  if (master.isError) return <ErrorState onRetry={() => void master.refetch()} />
+  if (!hasQueue) {
+    return (
+      <EmptyState title={t('investigator.noQueue')} description={t('common.emptyDescription')} />
+    )
+  }
+  if (cases.isPending) return <LoadingRows />
+  if (cases.isError) return <ErrorState onRetry={() => void cases.refetch()} />
+  if (cases.data.items.length === 0) {
+    return <EmptyState title={t('investigator.empty')} description={t('common.emptyDescription')} />
+  }
 
   const { items, meta } = cases.data
   return (
-    <>
-      <table className="investigator__table">
-        <thead>
-          <tr>
+    <Card padded={false}>
+      <Table aria-label={t('investigator.title')}>
+        <THead>
+          <Tr>
             {['code', 'subject', 'customer', 'status', 'priority', 'updated'].map((key) => (
-              <th key={key} scope="col">
-                {t(`investigator.${key}`)}
-              </th>
+              <Th key={key}>{t(`investigator.${key}`)}</Th>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </Tr>
+        </THead>
+        <TBody>
           {items.map((item) => (
-            <tr key={item.id}>
-              <td>{item.code}</td>
-              <td>
-                <RemoteLink to={`case/${item.id}`} navigate={navigate}>
+            <Tr key={item.id}>
+              <Td>{item.code}</Td>
+              <Td>
+                <TextLink
+                  href={`${BASE}/case/${item.id}`}
+                  onNavigate={() => navigate(`case/${item.id}`)}
+                >
                   {item.subject}
-                </RemoteLink>
-              </td>
-              <td>{item.customer.name}</td>
-              <td>{label(master.data?.statuses, item.status)}</td>
-              <td>{label(master.data?.priorities, item.priority)}</td>
-              <td>{new Date(item.updatedAt).toLocaleString(i18n.language)}</td>
-            </tr>
+                </TextLink>
+              </Td>
+              <Td>{item.customer.name}</Td>
+              <Td>{levelBadge(master.data?.statuses, item.status)}</Td>
+              <Td>{levelBadge(master.data?.priorities, item.priority)}</Td>
+              <Td>{new Date(item.updatedAt).toLocaleString(i18n.language)}</Td>
+            </Tr>
           ))}
-        </tbody>
-      </table>
-      <div className="investigator__pager">
-        <button type="button" disabled={meta.page <= 1} onClick={() => setPage(meta.page - 1)}>
-          {t('investigator.previous')}
-        </button>
-        <span>{t('investigator.pageOf', { page: meta.page, total: meta.totalPages })}</span>
-        <button
-          type="button"
-          disabled={meta.page >= meta.totalPages}
-          onClick={() => setPage(meta.page + 1)}
-        >
-          {t('investigator.next')}
-        </button>
-      </div>
-    </>
+        </TBody>
+      </Table>
+      <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />
+    </Card>
   )
 }
 
@@ -150,63 +161,69 @@ function CaseActions({
     },
   })
 
-  const openCase = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    event.preventDefault()
-    openHostPath(`/cases/${item.id}`)
-  }
-
   return (
-    <section className="investigator__actions" aria-label={t('investigator.actions')}>
-      <label>
-        {t('investigator.status')}
-        <select
-          value={item.status}
-          disabled={update.isPending}
-          onChange={(event) => update.mutate({ status: event.target.value })}
-        >
-          {master?.statuses.map((status) => (
-            <option key={status.code} value={status.code}>
-              {status.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        {t('investigator.queue')}
-        <select
-          value={item.queue}
-          disabled={update.isPending}
-          onChange={(event) => update.mutate({ queue: event.target.value })}
-        >
-          {master?.queues.map((queue) => (
-            <option key={queue.code} value={queue.code}>
-              {queue.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <a className="investigator__link" href={`/cases/${item.id}`} onClick={openCase}>
-        {t('investigator.openInCase')}
-      </a>
-      {update.isError ? <p role="alert">{update.error.message}</p> : null}
+    <Card as="section" aria-label={t('investigator.actions')}>
+      <Stack gap="lg">
+        <Inline gap="lg" align="end">
+          <FormField label={t('investigator.status')}>
+            {(control) => (
+              <Select
+                {...control}
+                value={item.status}
+                disabled={update.isPending}
+                onChange={(event) => update.mutate({ status: event.target.value })}
+              >
+                {master?.statuses.map((status) => (
+                  <option key={status.code} value={status.code}>
+                    {status.label}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </FormField>
+          <FormField label={t('investigator.queue')}>
+            {(control) => (
+              <Select
+                {...control}
+                value={item.queue}
+                disabled={update.isPending}
+                onChange={(event) => update.mutate({ queue: event.target.value })}
+              >
+                {master?.queues.map((queue) => (
+                  <option key={queue.code} value={queue.code}>
+                    {queue.label}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </FormField>
+          <TextLink href={`/cases/${item.id}`} onNavigate={() => openHostPath(`/cases/${item.id}`)}>
+            {t('investigator.openInCase')}
+          </TextLink>
+        </Inline>
+        {update.isError ? <Alert>{update.error.message}</Alert> : null}
 
-      <label htmlFor="investigator-note">{t('investigator.note')}</label>
-      <textarea
-        id="investigator-note"
-        rows={2}
-        value={note}
-        onChange={(event) => setNote(event.target.value)}
-      />
-      <button
-        type="button"
-        disabled={note.trim().length === 0 || addNote.isPending}
-        onClick={() => addNote.mutate()}
-      >
-        {t('investigator.addNote')}
-      </button>
-      {addNote.isError ? <p role="alert">{addNote.error.message}</p> : null}
-    </section>
+        <FormField label={t('investigator.note')}>
+          {(control) => (
+            <Textarea
+              {...control}
+              rows={2}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          )}
+        </FormField>
+        <Inline>
+          <Button
+            disabled={note.trim().length === 0 || addNote.isPending}
+            onClick={() => addNote.mutate()}
+          >
+            {t('investigator.addNote')}
+          </Button>
+        </Inline>
+        {addNote.isError ? <Alert>{addNote.error.message}</Alert> : null}
+      </Stack>
+    </Card>
   )
 }
 
@@ -225,17 +242,17 @@ function CaseDetail({
   })
 
   const back = (
-    <RemoteLink to="" navigate={navigate}>
+    <TextLink href={BASE} onNavigate={() => navigate('')}>
       ← {t('investigator.back')}
-    </RemoteLink>
+    </TextLink>
   )
-  if (detail.isPending) return <p>{t('investigator.loading')}</p>
+  if (detail.isPending) return <LoadingRows />
   if (detail.isError) {
     return (
-      <>
-        <p role="alert">{t('investigator.failed')}</p>
+      <Stack>
+        <ErrorState onRetry={() => void detail.refetch()} />
         {back}
-      </>
+      </Stack>
     )
   }
 
@@ -243,40 +260,46 @@ function CaseDetail({
   // does not need them.
   const item = detail.data
   return (
-    <>
+    <Stack gap="lg">
       {back}
-      <h3>
-        {item.code} · {item.subject}
-      </h3>
-      <dl className="investigator__facts">
-        <dt>{t('investigator.customer')}</dt>
-        <dd>{item.customer.name}</dd>
-        <dt>{t('investigator.status')}</dt>
-        <dd>{label(master.data?.statuses, item.status)}</dd>
-        <dt>{t('investigator.priority')}</dt>
-        <dd>{label(master.data?.priorities, item.priority)}</dd>
-        <dt>{t('investigator.assignee')}</dt>
-        <dd>{item.assignee?.name ?? t('investigator.unassigned')}</dd>
-        <dt>{t('investigator.stt')}</dt>
-        <dd>{item.sttNumber ?? '—'}</dd>
-      </dl>
+      <PageHeader title={`${item.code} · ${item.subject}`} description={item.customer.name} />
+      <Card>
+        <DescriptionList layout="grid">
+          <DescriptionItem label={t('investigator.status')}>
+            {levelBadge(master.data?.statuses, item.status)}
+          </DescriptionItem>
+          <DescriptionItem label={t('investigator.priority')}>
+            {levelBadge(master.data?.priorities, item.priority)}
+          </DescriptionItem>
+          <DescriptionItem label={t('investigator.assignee')}>
+            {item.assignee?.name ?? t('investigator.unassigned')}
+          </DescriptionItem>
+          <DescriptionItem label={t('investigator.stt')}>{item.sttNumber ?? '—'}</DescriptionItem>
+        </DescriptionList>
+      </Card>
       <CaseActions api={api} item={item} master={master.data} openHostPath={openHostPath} />
-      <h4>{t('investigator.timeline')}</h4>
-      <ul className="investigator__timeline">
-        {item.timeline.map((entry) => (
-          <li key={entry.id}>
-            <strong>{entry.author.name}</strong>
-            {entry.visibility === 'internal' ? (
-              <span className="investigator__badge">{t('investigator.internal')}</span>
-            ) : null}{' '}
-            <time dateTime={entry.createdAt}>
-              {new Date(entry.createdAt).toLocaleString(i18n.language)}
-            </time>
-            {entry.body ? <p>{entry.body}</p> : null}
-          </li>
-        ))}
-      </ul>
-    </>
+      <Stack gap="sm">
+        <SectionHeading>{t('investigator.timeline')}</SectionHeading>
+        <Stack gap="sm" role="list" aria-label={t('investigator.timeline')}>
+          {item.timeline.map((entry) => (
+            <Card key={entry.id} role="listitem">
+              <Stack gap="sm">
+                <Inline gap="sm">
+                  <strong>{entry.author.name}</strong>
+                  {entry.visibility === 'internal' ? (
+                    <Badge tone="warning">{t('investigator.internal')}</Badge>
+                  ) : null}
+                  <time dateTime={entry.createdAt}>
+                    {new Date(entry.createdAt).toLocaleString(i18n.language)}
+                  </time>
+                </Inline>
+                {entry.body ? <p>{entry.body}</p> : null}
+              </Stack>
+            </Card>
+          ))}
+        </Stack>
+      </Stack>
+    </Stack>
   )
 }
 
@@ -285,16 +308,20 @@ export function InvestigatorPage({ api, subPath, navigate, openHostPath }: Remot
   const [section, id] = subPath.split('/')
 
   let body: ReactNode
-  if (subPath === '') body = <CaseList api={api} navigate={navigate} />
-  else if (section === 'case' && id) {
+  if (subPath === '') {
+    body = (
+      <Stack gap="lg">
+        <PageHeader title={t('investigator.title')} description={t('investigator.intro')} />
+        <CaseList api={api} navigate={navigate} />
+      </Stack>
+    )
+  } else if (section === 'case' && id) {
     body = <CaseDetail api={api} navigate={navigate} openHostPath={openHostPath} caseId={id} />
-  } else body = <p>{t('investigator.notFound')}</p>
+  } else {
+    body = (
+      <EmptyState title={t('investigator.notFound')} description={t('common.emptyDescription')} />
+    )
+  }
 
-  return (
-    <div className="investigator">
-      <h2>{t('investigator.title')}</h2>
-      <p>{t('investigator.intro')}</p>
-      {body}
-    </div>
-  )
+  return <Page width="lg">{body}</Page>
 }
