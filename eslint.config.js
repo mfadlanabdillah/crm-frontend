@@ -3,7 +3,7 @@ import config from '@crm/config-eslint'
 
 /**
  * Batas arsitektur apps/crm-agent (lihat AGENTS.md):
- *   lib, components/ui  ->  tidak boleh mengimpor modules, app, routes
+ *   lib                 ->  tidak boleh mengimpor modules, app, routes
  *   modules/<m>         ->  tidak boleh mengimpor app, routes, atau modul lain (kecuali public.ts)
  *   app                 ->  hanya boleh mengimpor `module.ts` / `public.ts` sebuah modul
  *   routes              ->  bebas (lapisan tipis yang merangkai halaman modul)
@@ -22,12 +22,11 @@ const importRule = (patterns) => ({
 })
 
 const leafBoundary = {
-  files: [`${srcDir}/lib/**/*.{ts,tsx}`, `${srcDir}/components/ui/**/*.{ts,tsx}`],
+  files: [`${srcDir}/lib/**/*.{ts,tsx}`],
   rules: importRule([
     {
       group: ['@/modules/**', '@/app/**', '@/routes/**'],
-      message:
-        'lib dan components/ui bersifat generik: tidak boleh bergantung pada modul, app, atau routes.',
+      message: 'lib is generic: it must not depend on modules, app, or routes.',
     },
   ]),
 }
@@ -87,4 +86,42 @@ const noRawFetch = {
   },
 }
 
-export default [...config, leafBoundary, appBoundary, ...moduleBoundaries, noRawFetch]
+/**
+ * UI standard (docs/ui-standards.md): screens are built from @crm/ui. Raw controls and colors from
+ * the Tailwind palette are errors, so a pattern lives in one place and the look changes in one place.
+ */
+const PALETTE_UTILITY =
+  '(?:bg|text|border|ring|outline|fill|stroke|from|via|to|divide|decoration|accent|caret|shadow)-' +
+  '(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\\d{2,3}'
+const paletteColor = {
+  selector: `Literal[value=/(^|\\s)(?:${PALETTE_UTILITY}|[a-z:-]*-\\[#[0-9a-fA-F]{3,8}\\])(\\s|$)/]`,
+  message:
+    'Use a design token (bg-brand, text-ink-muted, bg-success-soft, ...), not a Tailwind palette color or a hex value. See docs/ui-standards.md.',
+}
+const rawControl = {
+  selector:
+    "JSXOpeningElement[name.type='JSXIdentifier'][name.name=/^(button|input|select|textarea|table|thead|tbody|tr|th|td)$/]",
+  message:
+    'Use the component from @crm/ui (Button, Input, Select, Textarea, Table, ...). A virtualized table is the exception: disable this rule on that line and say why.',
+}
+const notTests = ['**/*.test.{ts,tsx}']
+const uiStandardApps = {
+  files: ['apps/*/src/**/*.{ts,tsx}'],
+  ignores: notTests,
+  rules: { 'no-restricted-syntax': ['error', rawControl, paletteColor] },
+}
+const uiStandardPackage = {
+  files: ['packages/ui/src/**/*.{ts,tsx}'],
+  ignores: notTests,
+  rules: { 'no-restricted-syntax': ['error', paletteColor] },
+}
+
+export default [
+  ...config,
+  leafBoundary,
+  appBoundary,
+  ...moduleBoundaries,
+  noRawFetch,
+  uiStandardApps,
+  uiStandardPackage,
+]
