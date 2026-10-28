@@ -64,6 +64,7 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 | `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
 | `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                |
 | `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
+| `pnpm poc:mfe`                      | PoC micro frontend: host + remote Finance (lihat `docs/poc/micro-frontend.md`)                  |
 | `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
 
 ## Cara kerjanya
