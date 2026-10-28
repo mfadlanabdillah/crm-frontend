@@ -49,6 +49,22 @@ describe('loadRemoteModules', () => {
     expect(allModules().some((module) => module.id === 'zz-remote')).toBe(true)
   })
 
+  it('registers modules in the configured order, not the order they answer', async () => {
+    const make = (id: string) => ({ default: { ...fixtureModule, id, basePath: `/remote/${id}` } })
+    vi.mocked(loadRemote).mockImplementation(async (name) => {
+      const id = String(name).split('/')[0] ?? ''
+      // The first remote answers last.
+      await new Promise((resolve) => setTimeout(resolve, id === 'zz_a' ? 30 : 1))
+      return make(id) as never
+    })
+
+    await loadRemoteModules('zz_a=http://localhost:1/a.js,zz_b=http://localhost:1/b.js')
+
+    const ids = allModules().map((module) => module.id)
+    expect(ids.indexOf('zz_a')).toBeGreaterThan(-1)
+    expect(ids.indexOf('zz_a')).toBeLessThan(ids.indexOf('zz_b'))
+  })
+
   it('logs and continues when a remote cannot be loaded', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.mocked(loadRemote).mockRejectedValue(new Error('network down'))

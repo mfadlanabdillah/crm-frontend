@@ -1,3 +1,4 @@
+import type { RemoteModule } from '@crm/module-contract'
 import { Landmark } from 'lucide-react'
 import { getI18n } from 'react-i18next'
 import { FinancePage } from './FinancePage'
@@ -35,15 +36,13 @@ for (const [locale, bundle] of Object.entries(resources)) {
   i18n.addResourceBundle(locale, 'translation', { finance: bundle }, true, true)
 }
 
-/**
- * shortcut: structural copy of the host's `ModuleDefinition` (apps/crm-console/src/modules/types.ts),
- * which imports host code. Move the contract to a shared package before a second remote exists.
- */
-export default {
+const financeModule = {
   id: 'finance',
   labelKey: 'finance.title',
   icon: Landmark,
   basePath: '/remote/finance',
   nav: { to: '/remote/$moduleId', params: { moduleId: 'finance' } },
   Page: FinancePage,
-}
+} satisfies RemoteModule
+
+export default financeModule
