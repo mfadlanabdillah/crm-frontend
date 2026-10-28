@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     projects: [
-      'apps/crm-agent',
+      'apps/crm-console',
       'packages/api-client',
       'packages/auth',
       'packages/i18n',
@@ -11,14 +11,14 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['apps/crm-agent/src/**', 'packages/*/src/**'],
+      include: ['apps/crm-console/src/**', 'packages/*/src/**'],
       // Kode penghubung (routes, main, router) diuji lewat Playwright; mock dev bukan kode produksi.
       exclude: [
         '**/*.test.{ts,tsx}',
         '**/generated/**',
         '**/routeTree.gen.ts',
-        'apps/crm-agent/src/{main.tsx,router.tsx,routes/**,test/**}',
-        'apps/crm-agent/src/mocks/{browser,db,handlers}.ts',
+        'apps/crm-console/src/{main.tsx,router.tsx,routes/**,test/**}',
+        'apps/crm-console/src/mocks/{browser,db,handlers}.ts',
         'packages/test-utils/**',
       ],
       reporter: ['text-summary'],

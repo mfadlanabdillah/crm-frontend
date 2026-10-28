@@ -9,9 +9,9 @@
     "pnpm": ">=12.0.0"
   },
   "scripts": {
-    "dev": "pnpm --filter @crm/crm-agent dev",
-    "build": "pnpm --filter @crm/crm-agent build",
-    "preview": "pnpm --filter @crm/crm-agent preview",
+    "dev": "pnpm --filter @crm/crm-console dev",
+    "build": "pnpm --filter @crm/crm-console build",
+    "preview": "pnpm --filter @crm/crm-console preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -19,14 +19,14 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:e2e": "pnpm --filter @crm/crm-agent test:e2e",
-    "size": "pnpm --filter @crm/crm-agent size",
+    "test:e2e": "pnpm --filter @crm/crm-console test:e2e",
+    "size": "pnpm --filter @crm/crm-console size",
     "codegen:api": "pnpm --filter @crm/api-client codegen",
     "codegen:check": "pnpm codegen:api && git diff --exit-code packages/api-client/src/generated",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm codegen:check",
     "prepare": "husky",
-    "new:module": "pnpm --filter @crm/crm-agent new:module",
-    "new:endpoint": "pnpm --filter @crm/crm-agent new:endpoint"
+    "new:module": "pnpm --filter @crm/crm-console new:module",
+    "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint"
   },
   "devDependencies": {
     "@crm/config-eslint": "workspace:*",

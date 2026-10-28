@@ -6,7 +6,7 @@ Kerangka frontend untuk **konsol agen customer service**: daftar case dengan fil
 detail case dengan timeline dan balasan rich text, profil customer, dan hak akses per peran. Seluruh
 backend ditiru oleh mock di browser, jadi proyek ini langsung jalan tanpa server apa pun.
 
-Istilah: **agen CS** adalah staf customer service yang memakai konsol ini; **AI agent** adalah asisten kode (lihat bagian terakhir). Nama app `crm-agent` merujuk ke agen CS.
+Istilah: **agen CS** adalah staf customer service yang memakai konsol ini; **AI agent** adalah asisten kode (lihat bagian terakhir). Nama app `crm-console` merujuk ke konsolnya, yang akan dipakai banyak tim, bukan ke agen CS.
 
 Cocok dipakai sebagai titik awal tim frontend: pola data, routing, keamanan, tes, dan CI sudah
 tertata, tinggal menambah modul.
@@ -33,7 +33,7 @@ Butuh Node >= 22.12 (lihat `.nvmrc`) dan pnpm >= 12 (`corepack enable`).
 
 ```bash
 pnpm install
-cp apps/crm-agent/.env.example apps/crm-agent/.env.local
+cp apps/crm-console/.env.example apps/crm-console/.env.local
 pnpm dev            # http://localhost:5173
 ```
 
@@ -45,7 +45,7 @@ Sebelum membuat PR, jalankan `pnpm check`.
 Untuk menjalankan e2e (`pnpm test:e2e`), pasang browser Playwright sekali:
 
 ```bash
-pnpm --filter @crm/crm-agent exec playwright install chromium
+pnpm --filter @crm/crm-console exec playwright install chromium
 # Linux/WSL yang baru: tambahkan --with-deps (butuh sudo), seperti di CI
 ```
 
@@ -53,23 +53,23 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 
 ## Perintah
 
-| Perintah                            | Fungsi                                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev`                          | Dev server dengan backend mock                                                                  |
-| `pnpm check`                        | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR) |
-| `pnpm test`                         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
-| `pnpm test:e2e`                     | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                  |
-| `pnpm size`                         | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                    |
-| `pnpm --filter @crm/crm-agent perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
-| `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
-| `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                |
-| `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
-| `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
+| Perintah                              | Fungsi                                                                                          |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm dev`                            | Dev server dengan backend mock                                                                  |
+| `pnpm check`                          | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR) |
+| `pnpm test`                           | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
+| `pnpm test:e2e`                       | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                  |
+| `pnpm size`                           | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                    |
+| `pnpm --filter @crm/crm-console perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
+| `pnpm codegen:api`                    | Generate ulang klien dari `packages/api-client/openapi/`                                        |
+| `pnpm new:module`                     | Buat kerangka modul baru (lihat bagian di bawah)                                                |
+| `pnpm new:endpoint`                   | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
+| `pnpm format`                         | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
 
 ## Cara kerjanya
 
 ```text
-apps/crm-agent/src
+apps/crm-console/src
   routes/        # URL; tipis, hanya merangkai halaman dari modul
   modules/<id>/  # satu folder per fitur CRM (case, customer, ...)
   app/           # shell aplikasi: layout, login, daftar modul
@@ -108,8 +108,8 @@ Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](do
 ## Docker
 
 ```bash
-docker build -t crm-agent .
-docker run -p 8080:8080 crm-agent        # http://localhost:8080
+docker build -t crm-console .
+docker run -p 8080:8080 crm-console        # http://localhost:8080
 ```
 
 Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header keamanan di

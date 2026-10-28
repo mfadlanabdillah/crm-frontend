@@ -14,7 +14,7 @@ record type `CS`). This repository is the frontend only.
 flowchart LR
   user([CS agent / supervisor]) --> spa
   subgraph browser[Browser]
-    spa[crm-agent<br/>React SPA]
+    spa[crm-console<br/>React SPA]
     msw[MSW mock backend<br/>dev and tests only]
   end
   spa -- "same-origin /v1/* , cookie + CSRF" --> bff
@@ -34,7 +34,7 @@ flowchart LR
 ## 2. Structure
 
 ```text
-apps/crm-agent/src
+apps/crm-console/src
   routes/          URL files (TanStack Router, file-based): validateSearch, a guard, a page from a module
   modules/<id>/    one folder per CRM module: module.ts, public.ts, api/, queries/, schemas/, components/, pages/, store/
   app/             shell: layout, auth, module registry, design-system gallery (dev only)

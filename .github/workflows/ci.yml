@@ -56,14 +56,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install browsers
-        run: pnpm --filter @crm/crm-agent exec playwright install --with-deps chromium
+        run: pnpm --filter @crm/crm-console exec playwright install --with-deps chromium
       - name: E2E
         run: pnpm test:e2e
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:
           name: playwright-report
-          path: apps/crm-agent/playwright-report
+          path: apps/crm-console/playwright-report
           retention-days: 7
 
   image:
@@ -73,10 +73,10 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build
-        run: docker build -t crm-agent:${{ github.sha }} .
+        run: docker build -t crm-console:${{ github.sha }} .
       - name: nginx config valid
-        run: docker run --rm crm-agent:${{ github.sha }} nginx -t
+        run: docker run --rm crm-console:${{ github.sha }} nginx -t
       - name: No source maps or MSW worker in image
         run: |
-          docker run --rm --entrypoint sh crm-agent:${{ github.sha }} -c \
+          docker run --rm --entrypoint sh crm-console:${{ github.sha }} -c \
             '! find /usr/share/nginx/html \( -name "*.map" -o -name mockServiceWorker.js \) | grep .'

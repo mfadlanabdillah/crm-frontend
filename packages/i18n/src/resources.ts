@@ -1,6 +1,6 @@
 const idID = {
   common: {
-    appName: 'CRM Agen',
+    appName: 'CRM',
     loading: 'Memuat…',
     retry: 'Coba lagi',
     cancel: 'Batal',
@@ -122,7 +122,7 @@ const idID = {
     notFound: 'Halaman tidak ditemukan.',
   },
   login: {
-    title: 'Masuk ke CRM Agen',
+    title: 'Masuk ke CRM',
     description: 'Gunakan akun SSO internal untuk melanjutkan.',
     button: 'Masuk lewat SSO',
     devHint: 'Mode mock: sesi dibuat lokal oleh MSW, tidak ada data produksi.',
@@ -131,7 +131,7 @@ const idID = {
 
 const enUS = {
   common: {
-    appName: 'Agent CRM',
+    appName: 'CRM',
     loading: 'Loading…',
     retry: 'Try again',
     cancel: 'Cancel',
@@ -253,7 +253,7 @@ const enUS = {
     notFound: 'Page not found.',
   },
   login: {
-    title: 'Sign in to Agent CRM',
+    title: 'Sign in to CRM',
     description: 'Use your internal SSO account to continue.',
     button: 'Sign in with SSO',
     devHint: 'Mock mode: the session is created locally by MSW; no production data.',

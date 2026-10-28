@@ -142,7 +142,7 @@ design change needs a new host build, so remote independence covers logic and da
 1. Write it in `packages/ui/src/<name>.tsx`, styling and behavior only, tokens only.
 2. Export it from `packages/ui/src/index.ts`.
 3. Add `<name>.test.tsx` next to it (roles, states, keyboard where it applies).
-4. Add it, in every state, to `apps/crm-agent/src/app/design-system/Gallery.tsx`.
+4. Add it, in every state, to `apps/crm-console/src/app/design-system/Gallery.tsx`.
 5. Add a row to the component table above.
 6. Run `pnpm check` and `pnpm test:e2e`.
 

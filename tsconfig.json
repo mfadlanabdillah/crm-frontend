@@ -5,6 +5,6 @@
     { "path": "./packages/auth" },
     { "path": "./packages/i18n" },
     { "path": "./packages/test-utils" },
-    { "path": "./apps/crm-agent" }
+    { "path": "./apps/crm-console" }
   ]
 }

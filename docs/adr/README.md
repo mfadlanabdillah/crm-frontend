@@ -15,6 +15,9 @@ Short records of decisions that are costly to reverse or easy to forget the reas
 | [0007](0007-public-repository-neutral-branding.md) | Public repository with neutral branding and no license yet             | Accepted |
 | [0008](0008-shared-ui-package.md)                  | UI components live in a shared package, and lint enforces their use    | Accepted |
 
+ADRs written before 2026-10-28 call the app `crm-agent`; it is now `crm-console` (`apps/crm-console`). They are
+left as written, as the rules above require.
+
 Earlier stack decisions (React + Vite, TanStack, Tailwind, and so on) are in the internal proposal and
 RFC of the project this starter was created from; they are not repeated here.
 
@@ -32,7 +35,7 @@ a bug fix or a refactor.
 4. Never rewrite an accepted ADR to change its decision: add a new one and mark the old one
    `Superseded by ADR-NNNN`. Fix typos and add links freely.
 
-A test (`apps/crm-agent/scripts/agent-docs.test.mjs`) checks the numbering, the required headings, a valid
+A test (`apps/crm-console/scripts/agent-docs.test.mjs`) checks the numbering, the required headings, a valid
 status, and that every ADR is listed above.
 
 ## Template

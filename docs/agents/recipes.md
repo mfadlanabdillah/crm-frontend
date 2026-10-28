@@ -3,16 +3,16 @@
 Step-by-step procedures per task type. Rules and boundaries live in [AGENTS.md](../../AGENTS.md).
 Each recipe ends with **Done when**; run that command and report the result as it is.
 
-Living references: module `case` (`apps/crm-agent/src/modules/case/`) and `customer`.
+Living references: module `case` (`apps/crm-console/src/modules/case/`) and `customer`.
 
 ## Add an API endpoint
 
-For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --path /v1/<segments>[/{param}] [--permission <module.action>]` (`apps/crm-agent/scripts/new-endpoint.mjs`). It does steps 1 to 5 and 8 with placeholders and adds a mock stub that answers 501. You then fill in the response schema (step 1, re-run `pnpm codegen:api`), the mock body and PII masking (step 6), the `enabled` gate (step 7), and the tests (step 9). For other methods or query filters, follow the steps by hand.
+For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --path /v1/<segments>[/{param}] [--permission <module.action>]` (`apps/crm-console/scripts/new-endpoint.mjs`). It does steps 1 to 5 and 8 with placeholders and adds a mock stub that answers 501. You then fill in the response schema (step 1, re-run `pnpm codegen:api`), the mock body and PII masking (step 6), the `enabled` gate (step 7), and the tests (step 9). For other methods or query filters, follow the steps by hand.
 
 1. Add the path and schema to `packages/api-client/openapi/openapi.yaml`. Business codes (status, queue, priority) are plain `string`; their values come from master data, not an OpenAPI enum.
 2. Run `pnpm codegen:api` (it writes `packages/api-client/src/generated/openapi.d.ts`; never edit that file).
 3. Export the type and add a method to `createApiClient` in `packages/api-client/src/index.ts`, wrapped in `unwrap(...)` like the others so errors become `ApiError`.
-4. Wrap it in the module facade `apps/crm-agent/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
+4. Wrap it in the module facade `apps/crm-console/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
 5. Add a query hook in `modules/<id>/queries/` using `queryOptions` and the module's own key factory in `modules/<id>/queries/keys.ts` (`caseKeys`, `customerKeys`; `src/lib/query-keys.ts` holds only cross-module keys such as `sessionKey` and `masterDataKey`). Example: `useMasterData.ts`.
 6. Dev mock: data in `src/mocks/db.ts`, handler in `src/mocks/handlers.ts`. Mask PII per role through `src/mocks/mask.ts`. If only some roles may call the endpoint, enforce it in the handler with `can(role, 'x')` and answer 403, like the existing handlers.
 7. If only some roles may call it, do not fire the request for the others: gate the query with `enabled` (`useQuery({ ...options, enabled: can('x') })`, with `can` from `useAuth()`), otherwise they trigger a 403 on every visit.
@@ -62,7 +62,7 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 1. Write it in `packages/ui/src/<name>.tsx`: styling and behavior only, design tokens only (no `gray-500`, no hex), no API calls, no feature imports. Extend through `className` and `cn`.
 2. Export it from `packages/ui/src/index.ts`.
 3. Add `packages/ui/src/<name>.test.tsx`: roles, states, and keyboard where it applies.
-4. Add it, in every state, to `apps/crm-agent/src/app/design-system/Gallery.tsx`; the axe e2e scans that page.
+4. Add it, in every state, to `apps/crm-console/src/app/design-system/Gallery.tsx`; the axe e2e scans that page.
 5. Add a row to the component table in `docs/ui-standards.md`.
 6. If you start from the shadcn registry, pin the CLI version and review everything it adds: it brings an unrelated npm package named `cn`, a `radix-ui` range with `^` (pin it), color tokens this theme does not define (`bg-background`, `text-muted-foreground`; map them to `bg-surface`, `text-ink-muted`, ...), and `Button` variants that do not exist (`outline`; ours are `primary`, `secondary`, `ghost`, `danger`). Put the result in `packages/ui/src`.
 
@@ -99,13 +99,13 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 - A module cleans its state through `onSignOut(reason)` in `module.ts`. `expired` may keep unsent work (example: `modules/case/store/drafts.ts`); `logout` must delete it.
 - Render errors are caught by `RouteError` (`app/layout/RouteFallbacks.tsx`) and reported through `reportError` in `lib/telemetry.ts`. Plug in an SDK with `setErrorReporter`.
 
-**Done when:** the new behavior has a unit test and, if it changes the session flow, an e2e (`apps/crm-agent/e2e/case-workspace.spec.ts` is the example).
+**Done when:** the new behavior has a unit test and, if it changes the session flow, an e2e (`apps/crm-console/e2e/case-workspace.spec.ts` is the example).
 
 ## Write tests
 
 - **Unit/component:** `*.test.ts(x)` next to the code. For components using queries, use `renderWithProviders` from `@crm/test-utils` and seed the cache with `setQueryData`. For i18n text, `await createI18n()` in `beforeAll`.
 - **Router:** components that render a `Link`, use `useNavigate`, or show route errors: `await renderWithRouter(<Thing />, { linkTargets: ['/cases/$caseId'] })` from `@crm/test-utils` (memory router + query client; `rootOptions` passes `errorComponent` and friends). Example: `app/layout/RouteFallbacks.test.tsx`.
-- **E2E (Playwright, `apps/crm-agent/e2e/`):** dev server with MSW. Import `test` and `expect` from `e2e/support.ts` and take `signedInPage` (already signed in on `/cases`). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
+- **E2E (Playwright, `apps/crm-console/e2e/`):** dev server with MSW. Import `test` and `expect` from `e2e/support.ts` and take `signedInPage` (already signed in on `/cases`). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
 - **Accessibility:** add new pages to `e2e/a11y.spec.ts`; `expectNoViolations` must stay clean.
 - The coverage floor is in `vitest.config.ts`; raise it when tests grow.
 
@@ -113,6 +113,6 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 
 ## Change dependencies, CI, or Docker
 
-Only when asked. Pin exact versions (`.npmrc` already has `save-exact`), prefer releases older than two weeks, and explain why. After editing `package.json`, run `pnpm install` and commit `pnpm-lock.yaml`. For the image: `docker build -t crm-agent .`, then `docker run --rm crm-agent nginx -t` must succeed.
+Only when asked. Pin exact versions (`.npmrc` already has `save-exact`), prefer releases older than two weeks, and explain why. After editing `package.json`, run `pnpm install` and commit `pnpm-lock.yaml`. For the image: `docker build -t crm-console .`, then `docker run --rm crm-console nginx -t` must succeed.
 
 **Done when:** `pnpm install --frozen-lockfile` and `pnpm check` are green.
