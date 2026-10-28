@@ -36,10 +36,12 @@ test('a case escalated in Case shows up in Investigator, and the work flows back
   await row.getByRole('link').click()
   await expect(page).toHaveURL(new RegExp(`/remote/investigator/case/${CASE_ID}$`))
 
-  const actions = page.locator('.investigator__actions')
+  const actions = page.getByRole('region', { name: 'Tindakan' })
   await page.getByLabel('Catatan internal').fill('Catatan dari investigator')
   await page.getByRole('button', { name: 'Tambah catatan' }).click()
-  await expect(page.locator('.investigator__timeline')).toContainText('Catatan dari investigator')
+  await expect(page.getByRole('list', { name: 'Timeline' })).toContainText(
+    'Catatan dari investigator',
+  )
 
   const statusChanged = waitForPatch(page)
   await actions.getByRole('combobox', { name: 'Status' }).selectOption({ label: 'Menunggu' })
@@ -67,7 +69,9 @@ test('Monitor shows the same open-case figures as the Case sidebar', async ({ pa
     .innerText()
 
   await moduleNav(page).getByRole('link', { name: 'Monitor' }).click()
-  const monitorRow = page.locator('.monitor__table tbody tr', { hasText: 'Eskalasi' })
+  const monitorRow = page
+    .getByRole('table', { name: 'Monitor' })
+    .locator('tbody tr', { hasText: 'Eskalasi' })
   await expect(monitorRow).toBeVisible()
 
   const digits = (text: string) => text.replace(/\D/g, '')
@@ -78,7 +82,10 @@ test('Monitor links the unassigned figure to the unassigned view of Case', async
   await openAs(page, 'supervisor')
 
   await moduleNav(page).getByRole('link', { name: 'Monitor' }).click()
-  await page.locator('.monitor__stat').first().getByRole('link').click()
+  await page
+    .getByRole('link', { name: /^[\d.]+$/ })
+    .first()
+    .click()
 
   await expect(page).toHaveURL(/\/cases\?.*view=unassigned/)
 })

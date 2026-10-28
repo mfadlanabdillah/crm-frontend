@@ -23,6 +23,7 @@ export default defineConfig({
         'react-i18next': singleton,
         '@tanstack/react-query': singleton,
         '@crm/auth': singleton,
+        '@crm/ui': singleton,
       },
     }),
     // Harus sebelum plugin React: plugin ini menghasilkan routeTree.gen.ts.

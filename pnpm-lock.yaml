@@ -341,6 +341,9 @@ importers:
       '@crm/module-contract':
         specifier: workspace:*
         version: link:../../packages/module-contract
+      '@crm/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: 5.104.5
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)
@@ -390,6 +393,9 @@ importers:
       '@crm/module-contract':
         specifier: workspace:*
         version: link:../../packages/module-contract
+      '@crm/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: 5.104.5
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)
@@ -439,6 +445,9 @@ importers:
       '@crm/module-contract':
         specifier: workspace:*
         version: link:../../packages/module-contract
+      '@crm/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: 5.104.5
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)

@@ -1,32 +1,26 @@
 import type { RemotePageProps } from '@crm/module-contract'
+import {
+  Card,
+  EmptyState,
+  ErrorState,
+  Inline,
+  Page,
+  PageHeader,
+  Skeleton,
+  Stack,
+  StatCard,
+  Table,
+  TBody,
+  Td,
+  TextLink,
+  Th,
+  THead,
+  Tr,
+} from '@crm/ui'
 import { useQuery } from '@tanstack/react-query'
-import type { MouseEvent, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import './monitor.css'
 
 const REFRESH_MS = 30_000
-
-/** A real href keeps "open in new tab" working; a plain click opens the host path in the host router. */
-function HostLink({
-  to,
-  open,
-  children,
-}: {
-  to: string
-  open: (path: string) => void
-  children: ReactNode
-}) {
-  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    event.preventDefault()
-    open(to)
-  }
-  return (
-    <a className="monitor__link" href={to} onClick={onClick}>
-      {children}
-    </a>
-  )
-}
 
 /** Read-only view of the queue load: it uses the host's API client and writes nothing. */
 export function MonitorPage({ api, openHostPath }: RemotePageProps) {
@@ -47,56 +41,80 @@ export function MonitorPage({ api, openHostPath }: RemotePageProps) {
   })
 
   let body
-  if (summary.isPending || master.isPending) body = <p>{t('monitor.loading')}</p>
-  else if (summary.isError || master.isError) body = <p role="alert">{t('monitor.failed')}</p>
-  else {
+  if (summary.isPending || master.isPending) {
+    body = (
+      <Stack gap="sm" aria-busy="true">
+        <Skeleton size="row" />
+        <Skeleton size="row" />
+      </Stack>
+    )
+  } else if (summary.isError || master.isError) {
+    body = (
+      <ErrorState
+        onRetry={() => {
+          void summary.refetch()
+          void master.refetch()
+        }}
+      />
+    )
+  } else if (master.data.queues.length === 0) {
+    body = <EmptyState title={t('monitor.empty')} description={t('common.emptyDescription')} />
+  } else {
     const { queues, unassigned, overdue } = summary.data
     body = (
       <>
-        <div className="monitor__stats">
-          <div className="monitor__stat">
-            <span>{t('monitor.unassigned')}</span>
-            <strong>
-              <HostLink to="/cases?view=unassigned" open={openHostPath}>
+        <Inline gap="lg" align="start">
+          <StatCard
+            label={t('monitor.unassigned')}
+            value={
+              <TextLink
+                href="/cases?view=unassigned"
+                onNavigate={() => openHostPath('/cases?view=unassigned')}
+              >
                 {number.format(unassigned)}
-              </HostLink>
-            </strong>
-          </div>
-          <div className="monitor__stat">
-            <span>{t('monitor.overdue')}</span>
-            <strong>{number.format(overdue)}</strong>
-          </div>
-        </div>
-        <table className="monitor__table">
-          <thead>
-            <tr>
-              <th scope="col">{t('monitor.queue')}</th>
-              <th scope="col">{t('monitor.open')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {master.data.queues.map((queue) => (
-              <tr key={queue.code}>
-                <td>
-                  <HostLink to={`/cases?queue=${queue.code}`} open={openHostPath}>
-                    {queue.label}
-                  </HostLink>
-                </td>
-                <td>{number.format(queues[queue.code] ?? 0)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="monitor__note">{t('monitor.refreshed')}</p>
+              </TextLink>
+            }
+          />
+          <StatCard label={t('monitor.overdue')} value={number.format(overdue)} />
+        </Inline>
+        <Card padded={false}>
+          <Table aria-label={t('monitor.title')}>
+            <THead>
+              <Tr>
+                <Th>{t('monitor.queue')}</Th>
+                <Th>{t('monitor.open')}</Th>
+              </Tr>
+            </THead>
+            <TBody>
+              {master.data.queues.map((queue) => (
+                <Tr key={queue.code}>
+                  <Td>
+                    <TextLink
+                      href={`/cases?queue=${queue.code}`}
+                      onNavigate={() => openHostPath(`/cases?queue=${queue.code}`)}
+                    >
+                      {queue.label}
+                    </TextLink>
+                  </Td>
+                  <Td>{number.format(queues[queue.code] ?? 0)}</Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        </Card>
       </>
     )
   }
 
   return (
-    <div className="monitor">
-      <h2>{t('monitor.title')}</h2>
-      <p>{t('monitor.intro')}</p>
-      {body}
-    </div>
+    <Page width="md">
+      <Stack gap="lg">
+        <PageHeader
+          title={t('monitor.title')}
+          description={`${t('monitor.intro')} ${t('monitor.refreshed')}`}
+        />
+        {body}
+      </Stack>
+    </Page>
   )
 }

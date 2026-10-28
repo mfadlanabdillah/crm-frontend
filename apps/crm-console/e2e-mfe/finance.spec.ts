@@ -5,7 +5,7 @@ test('Finance approves and rejects refund requests, and keeps the decision', asy
   await moduleNav(page).getByRole('link', { name: 'Finance' }).click()
 
   const filter = page.getByRole('combobox', { name: 'Status' })
-  const rows = page.locator('.finance__table tbody tr')
+  const rows = page.getByRole('table', { name: 'Finance' }).locator('tbody tr')
   await expect(rows.first()).toBeVisible()
   await filter.selectOption({ label: 'Menunggu' })
   await expect(rows.first()).toContainText('Menunggu')
@@ -19,28 +19,30 @@ test('Finance approves and rejects refund requests, and keeps the decision', asy
   await expect(approve).toBeDisabled()
   await page.getByLabel('Catatan keputusan').fill('Sesuai bukti foto')
   await approve.click()
-  await expect(page.locator('.finance__table')).not.toContainText(approvedCode)
+  await expect(page.getByRole('table', { name: 'Finance' })).not.toContainText(approvedCode)
 
   // Reject the next one.
   const rejectedCode = (await rows.first().locator('td').first().innerText()).trim()
   await rows.first().getByRole('button', { name: 'Putuskan' }).click()
   await page.getByLabel('Catatan keputusan').fill('Bukti tidak memadai')
   await page.getByRole('button', { name: 'Tolak' }).click()
-  await expect(page.locator('.finance__table')).not.toContainText(rejectedCode)
+  await expect(page.getByRole('table', { name: 'Finance' })).not.toContainText(rejectedCode)
 
   // Both decisions are kept, with who decided.
   await filter.selectOption({ label: 'Disetujui' })
-  await expect(page.locator('.finance__table')).toContainText(approvedCode)
-  await expect(page.locator('.finance__table')).toContainText('Diputuskan oleh Sari Wulandari')
+  await expect(page.getByRole('table', { name: 'Finance' })).toContainText(approvedCode)
+  await expect(page.getByRole('table', { name: 'Finance' })).toContainText(
+    'Diputuskan oleh Sari Wulandari',
+  )
   await filter.selectOption({ label: 'Ditolak' })
-  await expect(page.locator('.finance__table')).toContainText(rejectedCode)
+  await expect(page.getByRole('table', { name: 'Finance' })).toContainText(rejectedCode)
 })
 
 test('a refund request links to its case in the host', async ({ page }) => {
   await openAs(page, 'supervisor')
   await moduleNav(page).getByRole('link', { name: 'Finance' }).click()
 
-  const rows = page.locator('.finance__table tbody tr')
+  const rows = page.getByRole('table', { name: 'Finance' }).locator('tbody tr')
   // Wait for the Finance table: the Case list has a Status select too.
   await expect(rows.first()).toBeVisible()
   await page.getByRole('combobox', { name: 'Status' }).selectOption({ label: 'Menunggu' })

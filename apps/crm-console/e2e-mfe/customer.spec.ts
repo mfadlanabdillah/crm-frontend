@@ -4,6 +4,8 @@ test('a customer profile shows the case history and links to each case', async (
   await openAs(page, 'supervisor')
   await moduleNav(page).getByRole('link', { name: 'Customer' }).click()
 
+  // Wait for the customer table, not what is left of the case table during the route change.
+  await expect(page.getByRole('columnheader', { name: 'Nama' })).toBeVisible()
   // The first customers own more than one case in the mock data.
   const firstCustomer = page.getByRole('row').nth(1).getByRole('link')
   await expect(firstCustomer).toBeVisible()
