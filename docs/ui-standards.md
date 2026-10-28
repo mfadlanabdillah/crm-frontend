@@ -134,6 +134,8 @@ A remote builds its screens from `@crm/ui` only and writes no Tailwind utilities
 needs comes from the host, which compiles the classes it can see, so a class the host never saw renders
 unstyled. Share `@crm/ui` as a singleton across the host and the remotes so component code and CSS always
 come from the same build. Remote CSS, if any, uses the tokens and prefixes every class with the module id.
+The consequence is that a remote cannot restyle itself on its own: a new component, a new variant, or a
+design change needs a new host build, so remote independence covers logic and data, not appearance.
 
 ## Changing or adding a component
 
