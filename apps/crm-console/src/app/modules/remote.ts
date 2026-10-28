@@ -1,0 +1,50 @@
+import { loadRemote, registerRemotes } from '@module-federation/runtime'
+import { registerRemoteModule } from '@/app/modules/registry'
+import type { ModuleDefinition } from '@/modules/types'
+
+const LOAD_TIMEOUT_MS = 5_000
+
+export interface RemoteEntry {
+  name: string
+  entry: string
+}
+
+/** `name=entryUrl,name=entryUrl`; a pair without both parts is ignored. */
+export function parseRemotes(raw: string | undefined): RemoteEntry[] {
+  return (raw ?? '').split(',').flatMap((pair) => {
+    const at = pair.indexOf('=')
+    const name = pair.slice(0, at).trim()
+    const entry = pair.slice(at + 1).trim()
+    return at > 0 && name && entry ? [{ name, entry }] : []
+  })
+}
+
+function withTimeout<T>(promise: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('remote load timed out')), LOAD_TIMEOUT_MS)
+    promise.then(resolve, reject).finally(() => clearTimeout(timer))
+  })
+}
+
+/**
+ * Registers the remotes and loads each one's `./module` into the module registry. A remote that is
+ * down or slow must never break the host: the failure is logged and the host starts without it.
+ */
+export async function loadRemoteModules(raw: string | undefined): Promise<void> {
+  const remotes = parseRemotes(raw)
+  if (remotes.length === 0) return
+
+  registerRemotes(remotes.map(({ name, entry }) => ({ name, entry, type: 'module' })))
+  await Promise.all(
+    remotes.map(async ({ name }) => {
+      try {
+        const loaded = await withTimeout(
+          loadRemote<{ default: ModuleDefinition }>(`${name}/module`),
+        )
+        if (loaded) registerRemoteModule(loaded.default)
+      } catch (error) {
+        console.error(`Remote "${name}" is unavailable; continuing without it.`, error)
+      }
+    }),
+  )
+}
