@@ -28,6 +28,7 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 | `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                          |
 | `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                       |
 | `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-console exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
+| `pnpm test:e2e:mfe`                | Micro frontend PoC only: journeys across every menu on the host plus the three remotes (`apps/crm-console/e2e-mfe/`). Not part of CI; it starts or reuses four dev servers                                                                       |
 | `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                  |
 | `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                            |
 
@@ -123,6 +124,7 @@ packages/
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
 - **Session expiry vs logout:** `ModuleDefinition.onSignOut(reason)` receives `'logout'` or `'expired'`. Unsent drafts are deleted only on `logout`.
+- **Mock role in dev:** the mock session starts as `VITE_MOCK_ROLE`; `?role=l1|l2|supervisor|admin` on the URL overrides it for that page load (dev only, `src/mocks/browser.ts`). Mock data lives in page memory, so a reload resets it.
 
 ## Agent boundaries
 
