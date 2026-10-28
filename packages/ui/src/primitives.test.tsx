@@ -54,6 +54,13 @@ describe('primitives', () => {
     expect(screen.getByLabelText('catatan')).toHaveClass('min-h-24')
   })
 
+  it('Skeleton has preset sizes that className can still override', () => {
+    const { container } = render(<Skeleton size="row" className="w-1/2" />)
+
+    expect(container.firstElementChild).toHaveClass('h-10', 'w-1/2')
+    expect(container.firstElementChild).not.toHaveClass('w-full')
+  })
+
   it('Skeleton is hidden from assistive technology', () => {
     const { container } = render(<Skeleton className="h-4" />)
 
