@@ -4,7 +4,7 @@ coverage/
 playwright-report/
 test-results/
 blob-report/
-apps/crm-agent/perf/results/
+apps/crm-console/perf/results/
 .tanstack/
 *.local
 .env

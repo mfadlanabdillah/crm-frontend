@@ -2,14 +2,14 @@ import { readdirSync } from 'node:fs'
 import config from '@crm/config-eslint'
 
 /**
- * Batas arsitektur apps/crm-agent (lihat AGENTS.md):
+ * Batas arsitektur apps/crm-console (lihat AGENTS.md):
  *   lib                 ->  tidak boleh mengimpor modules, app, routes
  *   modules/<m>         ->  tidak boleh mengimpor app, routes, atau modul lain (kecuali public.ts)
  *   app                 ->  hanya boleh mengimpor `module.ts` / `public.ts` sebuah modul
  *   routes              ->  bebas (lapisan tipis yang merangkai halaman modul)
  * Daftar modul dibaca dari folder, jadi modul baru otomatis ikut dijaga.
  */
-const srcDir = 'apps/crm-agent/src'
+const srcDir = 'apps/crm-console/src'
 // Dibaca relatif terhadap file ini, bukan cwd, supaya ESLint boleh dijalankan dari subfolder.
 const moduleIds = readdirSync(new URL(`./${srcDir}/modules`, import.meta.url), {
   withFileTypes: true,

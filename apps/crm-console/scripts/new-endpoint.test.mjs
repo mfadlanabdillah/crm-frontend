@@ -20,8 +20,8 @@ let root
 const TOUCHED = [
   'packages/api-client/openapi/openapi.yaml',
   'packages/api-client/src/index.ts',
-  'apps/crm-agent/src/modules/customer/api/customer.ts',
-  'apps/crm-agent/src/mocks/handlers.ts',
+  'apps/crm-console/src/modules/customer/api/customer.ts',
+  'apps/crm-console/src/mocks/handlers.ts',
   'docs/contract-status.md',
 ]
 
@@ -33,12 +33,12 @@ function copyFromRepo(rel) {
 /** Minimal copy of the repo: the script derives its paths from its own location, so the real repo stays untouched. */
 beforeEach(() => {
   root = mkdtempSync(path.join(tmpdir(), 'new-endpoint-'))
-  copyFromRepo('apps/crm-agent/scripts/new-endpoint.mjs')
-  for (const rel of [...TOUCHED, 'apps/crm-agent/src/modules/customer/queries/keys.ts']) {
+  copyFromRepo('apps/crm-console/scripts/new-endpoint.mjs')
+  for (const rel of [...TOUCHED, 'apps/crm-console/src/modules/customer/queries/keys.ts']) {
     copyFromRepo(rel)
   }
   // A module fresh from `new:module`: empty facade, keys file only.
-  const zz = path.join(root, 'apps/crm-agent/src/modules/zz')
+  const zz = path.join(root, 'apps/crm-console/src/modules/zz')
   mkdirSync(path.join(zz, 'api'), { recursive: true })
   mkdirSync(path.join(zz, 'queries'), { recursive: true })
   writeFileSync(path.join(zz, 'api/zz.ts'), '/** Facade. */\nexport const zzApi = {}\n')
@@ -52,7 +52,7 @@ afterEach(() => rmSync(root, { recursive: true, force: true }))
 
 function run(...args) {
   try {
-    execFileSync('node', [path.join(root, 'apps/crm-agent/scripts/new-endpoint.mjs'), ...args], {
+    execFileSync('node', [path.join(root, 'apps/crm-console/scripts/new-endpoint.mjs'), ...args], {
       env: { ...process.env, NEW_ENDPOINT_SKIP_POSTPROCESS: '1' },
       stdio: 'pipe',
     })
@@ -82,15 +82,15 @@ describe('new:endpoint', () => {
     )
     expect(client).toContain("client.GET('/v1/zz-items/{zzItemId}'")
 
-    const facade = read('apps/crm-agent/src/modules/zz/api/zz.ts')
+    const facade = read('apps/crm-console/src/modules/zz/api/zz.ts')
     expect(facade).toContain("import { api } from '@/lib/api'")
     expect(facade).toContain('zzItem: (zzItemId: string, signal?: AbortSignal) =>')
 
-    const hook = read('apps/crm-agent/src/modules/zz/queries/useZzItem.ts')
+    const hook = read('apps/crm-console/src/modules/zz/queries/useZzItem.ts')
     expect(hook).toContain('export function useZzItem(zzItemId: string)')
     expect(hook).toContain("queryKey: [...zzKeys.all, 'zzItem', zzItemId]")
 
-    const handlers = read('apps/crm-agent/src/mocks/handlers.ts')
+    const handlers = read('apps/crm-console/src/mocks/handlers.ts')
     expect(handlers).toContain("http.get('/v1/zz-items/:zzItemId'")
     expect(handlers).toContain("jsonError(501, 'not_implemented'")
     expect(handlers.endsWith('  }),\n]\n')).toBe(true)
@@ -112,11 +112,11 @@ describe('new:endpoint', () => {
       ).ok,
     ).toBe(true)
 
-    const facade = read('apps/crm-agent/src/modules/customer/api/customer.ts')
+    const facade = read('apps/crm-console/src/modules/customer/api/customer.ts')
     expect(facade).toContain('zzCustomerFixture: (customerId: string, signal?: AbortSignal) =>')
     expect(facade).toContain('detail: (customerId')
     expect(facade.trimEnd().endsWith('\n}')).toBe(true)
-    expect(read('apps/crm-agent/src/mocks/handlers.ts')).toContain(
+    expect(read('apps/crm-console/src/mocks/handlers.ts')).toContain(
       "can(session.user.role, 'customer.view')",
     )
     expect(read('packages/api-client/openapi/openapi.yaml')).toContain("'403':")
@@ -128,7 +128,7 @@ describe('new:endpoint', () => {
     expect(read('packages/api-client/src/index.ts')).toContain(
       "client.GET('/v1/zz-stats', signal ? { signal } : {})",
     )
-    expect(read('apps/crm-agent/src/modules/zz/queries/useZzStats.ts')).toContain(
+    expect(read('apps/crm-console/src/modules/zz/queries/useZzStats.ts')).toContain(
       'export function useZzStats()',
     )
   })
@@ -148,13 +148,13 @@ describe('new:endpoint', () => {
     expect(run('missing', 'getThing', '--path', '/v1/things').ok).toBe(false)
 
     expect(snapshot()).toEqual(before)
-    expect(existsSync(path.join(root, 'apps/crm-agent/src/modules/zz/queries/useZzItem.ts'))).toBe(
-      false,
-    )
+    expect(
+      existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts')),
+    ).toBe(false)
   })
 
   it('writes nothing when one anchor is not recognized', () => {
-    writeFileSync(path.join(root, 'apps/crm-agent/src/mocks/handlers.ts'), 'export {}\n')
+    writeFileSync(path.join(root, 'apps/crm-console/src/mocks/handlers.ts'), 'export {}\n')
     const before = snapshot()
 
     const result = run('zz', 'getZzItem', '--path', '/v1/zz-items/{zzItemId}')
@@ -162,8 +162,8 @@ describe('new:endpoint', () => {
     expect(result.ok).toBe(false)
     expect(result.stderr).toContain('handlers.ts format not recognized')
     expect(snapshot()).toEqual(before)
-    expect(existsSync(path.join(root, 'apps/crm-agent/src/modules/zz/queries/useZzItem.ts'))).toBe(
-      false,
-    )
+    expect(
+      existsSync(path.join(root, 'apps/crm-console/src/modules/zz/queries/useZzItem.ts')),
+    ).toBe(false)
   })
 })

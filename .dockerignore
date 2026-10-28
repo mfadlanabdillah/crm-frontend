@@ -11,7 +11,7 @@ node_modules
 coverage
 playwright-report
 test-results
-apps/crm-agent/perf/results
+apps/crm-console/perf/results
 *.local
 .env
 .env.*

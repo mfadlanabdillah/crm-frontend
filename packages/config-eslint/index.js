@@ -13,8 +13,8 @@ export const ignores = [
   '**/node_modules/**',
   '**/playwright-report/**',
   '**/test-results/**',
-  'apps/crm-agent/src/routeTree.gen.ts',
-  'apps/crm-agent/public/mockServiceWorker.js',
+  'apps/crm-console/src/routeTree.gen.ts',
+  'apps/crm-console/public/mockServiceWorker.js',
   'packages/api-client/src/generated/**',
 ]
 
