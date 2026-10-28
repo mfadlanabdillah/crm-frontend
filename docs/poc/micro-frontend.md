@@ -76,19 +76,19 @@ Data lives in page memory, so a reload resets it. Stay in the app by clicking wh
 
 ## What it proves
 
-| Claim                                                                 | Evidence                                                                                                                            |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Separate apps plug modules into the console at runtime                | Each remote is built and served on its own; the host loads its `remoteEntry.js` in the browser                                      |
-| Remotes appear in the navigation through the existing module contract | Each remote exports a module definition (id, label key, icon, path, permission)                                                     |
-| One React, one session, one `QueryClient`, one i18n instance          | Remote pages use hooks, show the signed-in user, and write to the host cache; no React chunk is downloaded per remote               |
-| A remote can ship on its own                                          | Change a remote, rebuild only that app, reload the host: the change shows, the host is untouched                                    |
-| Different teams see different things                                  | See the role matrix below, including direct URLs                                                                                    |
-| A remote can own routes under its prefix                              | Investigator has a list at `/remote/investigator` and details at `/remote/investigator/case/<id>`; deep links survive a hard reload |
-| Remotes use the host's API client                                     | Same session, CSRF handling, and PII masking as built-in modules; no second client                                                  |
-| Remotes and host can open each other's pages                          | `openHostPath` goes from a remote to a host path (Case, filtered lists); Case links into the remotes through the menu               |
-| Failures are contained                                                | Stop one remote: the others and the host keep working. Stop all: the host works, remote paths show "Modul tidak tersedia"           |
-| The host's session handling covers remotes                            | A 401 on a remote's query sends the user to `/login?redirect=/remote/...`; signing out clears the remotes' cached data              |
-| The menu is stable                                                    | Remotes load in parallel but register in the configured order, so the menu does not depend on which answered first                  |
+| Claim                                                                 | Evidence                                                                                                                                                                                                    |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Separate apps plug modules into the console at runtime                | Each remote is built and served on its own; the host loads its `remoteEntry.js` in the browser                                                                                                              |
+| Remotes appear in the navigation through the existing module contract | Each remote exports a module definition (id, label key, icon, path, permission)                                                                                                                             |
+| One React, one session, one `QueryClient`, one i18n instance          | Remote pages use hooks, show the signed-in user, and write to the host cache; no React chunk is downloaded per remote                                                                                       |
+| A remote can ship its logic and data on its own                       | Change a remote's logic, texts, or how it composes `@crm/ui` components, rebuild only that app, reload the host: the change shows, the host is untouched. **Not** its look: see "Visual independence" below |
+| Different teams see different things                                  | See the role matrix below, including direct URLs                                                                                                                                                            |
+| A remote can own routes under its prefix                              | Investigator has a list at `/remote/investigator` and details at `/remote/investigator/case/<id>`; deep links survive a hard reload                                                                         |
+| Remotes use the host's API client                                     | Same session, CSRF handling, and PII masking as built-in modules; no second client                                                                                                                          |
+| Remotes and host can open each other's pages                          | `openHostPath` goes from a remote to a host path (Case, filtered lists); Case links into the remotes through the menu                                                                                       |
+| Failures are contained                                                | Stop one remote: the others and the host keep working. Stop all: the host works, remote paths show "Modul tidak tersedia"                                                                                   |
+| The host's session handling covers remotes                            | A 401 on a remote's query sends the user to `/login?redirect=/remote/...`; signing out clears the remotes' cached data                                                                                      |
+| The menu is stable                                                    | Remotes load in parallel but register in the configured order, so the menu does not depend on which answered first                                                                                          |
 
 ### Role matrix (mock roles)
 
@@ -124,13 +124,17 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
   paths are accepted, through the same `safeRedirectPath` that protects the login redirect). Remote
   links keep a real `href` so "open in a new tab" works.
 - **Shared singletons** (`react`, `react-dom`, `react-i18next`, `@tanstack/react-query`,
-  `@crm/auth`): the host and every remote declare the same list. Anything that holds state or
+  `@crm/auth`, `@crm/ui`): the host and every remote declare the same list. Anything that holds state or
   context must be shared, or hooks break and contexts split. `@crm/module-contract` is type-only,
   so it is never bundled or shared.
-- **Styling:** remotes have no Tailwind build. Their plain CSS reads the host's design tokens
-  (`--color-ink`, `--color-brand`, ...), so the look stays consistent.
-- **Failure handling:** loading has a 5 second timeout and any failure is logged with
-  `console.error`; the host starts without that remote.
+- **Styling:** a remote is built from `@crm/ui` components and writes no CSS and no Tailwind
+  utilities of its own. The host compiles the classes (it scans `packages/ui`), and `@crm/ui` is a shared
+  singleton, so component code and CSS always come from the same build. A remote that needs a layout
+  or a pattern the package lacks adds it to `packages/ui` (Stack, Inline, StatCard, SectionHeading,
+  Skeleton sizes, and a no-wrap table cell came from exactly this). Lint enforces the rest: no raw
+  controls and no palette colors in a remote.
+- **Failure handling:** loading has a 5 second timeout (20 in dev, where a remote is compiled on
+  first request) and any failure is logged with `console.error`; the host starts without that remote.
 
 ## Run it
 
@@ -182,7 +186,8 @@ Rules for a remote:
 - **Id and path:** a module whose id or `basePath` is already taken is ignored with a warning.
 - **i18n:** write only under your own module id. The merge uses `overwrite`, so a remote could
   replace a host text; nothing enforces the namespace.
-- **CSS:** one global namespace. Prefix every class with the module id.
+- **UI:** build screens from `@crm/ui` only. Write no CSS and no Tailwind utilities: a class the
+  host never compiled renders unstyled. If something is missing, add it to `packages/ui`.
 - **Query keys:** prefix your own with the module id. After a write, a remote that must refresh
   host views has to invalidate the host's keys itself (Investigator invalidates `['cases']`), which
   couples it to the host's key names. The host's own invalidations do not refresh a remote's view,
@@ -190,6 +195,12 @@ Rules for a remote:
 
 ## What it does not cover
 
+- **Visual independence.** A remote has no CSS of its own: it uses `@crm/ui`, shared as a singleton, and
+  the host's Tailwind build creates the styles, only for the classes it saw at build time. Opened alone,
+  a remote renders unstyled. A remote can recompose existing components freely, but a new component, a
+  new variant, or a design change in `@crm/ui` needs a new host build (and a release of the package).
+  So "a remote releases on its own" holds for logic and data, not for appearance. Presenting this as
+  full independence would overstate it.
 - **Production hosting.** A production host build has no mock backend, so signing in needs the real
   BFF. Remotes must be served over HTTPS with CORS allowing the host origin, and the CSP in
   `security-headers.inc` (`script-src 'self'`) must allow their origins. CI, Docker, and nginx are
@@ -197,8 +208,6 @@ Rules for a remote:
 - **Versioning.** Host and remotes share singletons by name only. A breaking change in a shared
   library (for example React) or in `@crm/module-contract` needs a coordinated release; nothing
   here enforces it. Changing the contract already forces every remote to change.
-- **Shared UI.** `components/ui` still lives inside `apps/crm-console`, so each remote re-implements
-  its small tables and buttons in plain CSS. Extract the primitives to a package first.
 - **Real-time.** The mock has no event stream (set `VITE_MOCK_EVENTS=true` to simulate it in the
   host), so remote views refresh on open or on a timer, not by push.
 - **Escalation scope.** Investigator lists every case in the escalation queue (all statuses), while
