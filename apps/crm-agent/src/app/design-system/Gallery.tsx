@@ -198,7 +198,7 @@ export function Gallery() {
 
         <Section title="Loading, empty, and error">
           <div className="space-y-2" aria-busy="true">
-            <Skeleton className="h-10 w-full" />
+            <Skeleton size="row" />
             <Skeleton className="h-10 w-2/3" />
           </div>
           <Card padded={false}>
