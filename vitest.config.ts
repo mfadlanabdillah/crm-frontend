@@ -2,7 +2,13 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    projects: ['apps/crm-agent', 'packages/api-client', 'packages/auth', 'packages/i18n'],
+    projects: [
+      'apps/crm-agent',
+      'packages/api-client',
+      'packages/auth',
+      'packages/i18n',
+      'packages/ui',
+    ],
     coverage: {
       provider: 'v8',
       include: ['apps/crm-agent/src/**', 'packages/*/src/**'],

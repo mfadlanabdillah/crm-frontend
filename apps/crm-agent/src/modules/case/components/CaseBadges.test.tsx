@@ -28,7 +28,7 @@ describe('CaseBadges', () => {
 
   it('memakai master data untuk prioritas', () => {
     renderWithProviders(<CasePriorityBadge priority="urgent" />, { queryClient: seeded() })
-    expect(screen.getByText('Mendesak').className).toContain('text-red-700')
+    expect(screen.getByText('Mendesak').className).toContain('text-danger-ink')
   })
 
   it('kode yang tidak dikenal tampil apa adanya dengan warna netral', () => {

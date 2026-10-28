@@ -1,5 +1,5 @@
 import type { CasePriority, CaseStatus, MasterDataItem } from '@crm/api-client'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@crm/ui'
 import { findMasterItem, useMasterData } from '@/modules/case/queries/useMasterData'
 
 function MasterBadge({ item, code }: { item: MasterDataItem | undefined; code: string }) {

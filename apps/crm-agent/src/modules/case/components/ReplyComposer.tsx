@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@crm/auth'
 import type { CreateReplyRequest } from '@crm/api-client'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/cn'
+import { Alert, Button, Card, SegmentedControl } from '@crm/ui'
 import { stripHtml } from '@/lib/text'
 import { useReplyToCase } from '../queries/useReplyToCase'
 import { draftKey, useDraftsStore } from '../store/drafts'
@@ -64,34 +63,21 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
   }
 
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-raised">
+    <Card as="section" padded={false}>
       <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle px-3 py-2">
-        <div
-          role="group"
+        <SegmentedControl
           aria-label={t('cases.detail.visibility')}
-          className="flex rounded-lg bg-surface-muted p-0.5"
-        >
-          {(['customer', 'internal'] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => {
-                setVisibility(option)
-                const draft = useDraftsStore.getState().drafts[key]
-                if (draft) useDraftsStore.getState().setDraft(key, { ...draft, visibility: option })
-              }}
-              aria-pressed={visibility === option}
-              className={cn(
-                'rounded-md px-2.5 py-1 text-xs font-medium',
-                visibility === option ? 'bg-surface-raised text-ink shadow-sm' : 'text-ink-muted',
-              )}
-            >
-              {option === 'customer'
-                ? t('cases.detail.customerVisibility')
-                : t('cases.detail.internal')}
-            </button>
-          ))}
-        </div>
+          value={visibility}
+          options={[
+            { value: 'customer', label: t('cases.detail.customerVisibility') },
+            { value: 'internal', label: t('cases.detail.internal') },
+          ]}
+          onChange={(option) => {
+            setVisibility(option)
+            const draft = useDraftsStore.getState().drafts[key]
+            if (draft) useDraftsStore.getState().setDraft(key, { ...draft, visibility: option })
+          }}
+        />
 
         <div className="ml-auto flex items-center gap-1">
           <Button
@@ -128,9 +114,7 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
 
       <div className="flex items-center justify-between gap-3 border-t border-border-subtle px-3 py-2">
         {mutation.isError ? (
-          <p role="alert" className="text-xs text-danger">
-            {mutation.error.message}
-          </p>
+          <Alert className="text-xs">{mutation.error.message}</Alert>
         ) : (
           <p role="status" className="text-xs text-ink-muted">
             {mutation.isPending
@@ -152,6 +136,6 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
           {t('cases.detail.send')}
         </Button>
       </div>
-    </section>
+    </Card>
   )
 }

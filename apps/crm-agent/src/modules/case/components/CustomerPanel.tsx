@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { Case } from '@crm/api-client'
 import { Can, maskAddress, maskEmail, maskPhone, useAuth } from '@crm/auth'
-import { Badge } from '@/components/ui/badge'
+import { Badge, Card, DescriptionItem, DescriptionList } from '@crm/ui'
 
 export function CustomerPanel({ caseItem }: { caseItem: Case }) {
   const { t } = useTranslation()
@@ -11,7 +11,7 @@ export function CustomerPanel({ caseItem }: { caseItem: Case }) {
   const tags = caseItem.tags ?? []
 
   return (
-    <aside className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4">
+    <Card as="aside" className="space-y-4">
       <div>
         <h2 className="text-sm font-semibold text-ink">{t('cases.detail.customerPanel')}</h2>
         <p className="mt-1 text-base font-medium text-ink">{customer.name}</p>
@@ -27,32 +27,19 @@ export function CustomerPanel({ caseItem }: { caseItem: Case }) {
         </Can>
       </div>
 
-      <dl className="space-y-3 text-sm">
-        <div>
-          <dt className="text-xs font-medium tracking-wide text-ink-muted uppercase">Telepon</dt>
-          <dd className="text-ink">{maskPhone(customer.phone, role)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs font-medium tracking-wide text-ink-muted uppercase">Email</dt>
-          <dd className="break-all text-ink">{maskEmail(customer.email, role)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs font-medium tracking-wide text-ink-muted uppercase">Alamat</dt>
-          <dd className="text-ink">{maskAddress(customer.address, role)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs font-medium tracking-wide text-ink-muted uppercase">
-            {t('cases.detail.stt')}
-          </dt>
-          <dd className="font-mono text-xs text-ink">{caseItem.sttNumber ?? '—'}</dd>
-        </div>
-        <div>
-          <dt className="text-xs font-medium tracking-wide text-ink-muted uppercase">
-            {t('cases.detail.shipment')}
-          </dt>
-          <dd className="font-mono text-xs text-ink">{caseItem.shipmentId ?? '—'}</dd>
-        </div>
-      </dl>
+      <DescriptionList>
+        <DescriptionItem label="Telepon">{maskPhone(customer.phone, role)}</DescriptionItem>
+        <DescriptionItem label="Email" valueClassName="break-all">
+          {maskEmail(customer.email, role)}
+        </DescriptionItem>
+        <DescriptionItem label="Alamat">{maskAddress(customer.address, role)}</DescriptionItem>
+        <DescriptionItem label={t('cases.detail.stt')} valueClassName="font-mono text-xs">
+          {caseItem.sttNumber ?? '—'}
+        </DescriptionItem>
+        <DescriptionItem label={t('cases.detail.shipment')} valueClassName="font-mono text-xs">
+          {caseItem.shipmentId ?? '—'}
+        </DescriptionItem>
+      </DescriptionList>
 
       {tags.length > 0 ? (
         <div className="flex flex-wrap gap-1">
@@ -63,6 +50,6 @@ export function CustomerPanel({ caseItem }: { caseItem: Case }) {
           ))}
         </div>
       ) : null}
-    </aside>
+    </Card>
   )
 }

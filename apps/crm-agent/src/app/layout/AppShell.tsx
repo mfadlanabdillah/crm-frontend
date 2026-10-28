@@ -3,9 +3,8 @@ import { useAuth } from '@crm/auth'
 import { LogOut } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import type { BadgeTone } from '@/components/ui/badge'
+import { Badge, Button } from '@crm/ui'
+import type { BadgeTone } from '@crm/ui'
 import { useSignOut } from '@/app/auth/sign-out'
 import { useConnectionStore, worstStatus } from '@/app/modules/connection'
 import { findActiveModule, getVisibleModules } from '@/app/modules/registry'
@@ -39,10 +38,10 @@ function ConnectionBadge({ status }: { status: StreamStatus }) {
         aria-hidden="true"
         className={
           status === 'live'
-            ? 'size-1.5 rounded-full bg-emerald-500'
+            ? 'size-1.5 rounded-full bg-success'
             : status === 'offline'
-              ? 'size-1.5 rounded-full bg-red-500'
-              : 'size-1.5 animate-pulse rounded-full bg-amber-500'
+              ? 'size-1.5 rounded-full bg-danger'
+              : 'size-1.5 animate-pulse rounded-full bg-warning'
         }
       />
       {label}

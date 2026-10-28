@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
+import { Alert, Button } from '@crm/ui'
 import { useSignIn, sessionQueryOptions } from '@/app/auth/session'
 import { DEFAULT_CASE_SEARCH } from '@/modules/case/schemas/search'
 import { env } from '@/lib/env'
@@ -63,11 +63,7 @@ function LoginPage() {
           {signIn.isPending ? t('common.loading') : t('login.button')}
         </Button>
 
-        {signIn.isError ? (
-          <p role="alert" className="mt-3 text-sm text-danger">
-            {signIn.error.message}
-          </p>
-        ) : null}
+        {signIn.isError ? <Alert className="mt-3">{signIn.error.message}</Alert> : null}
 
         {env.mocksEnabled ? (
           <p className="mt-4 text-xs text-ink-muted">{t('login.devHint')}</p>

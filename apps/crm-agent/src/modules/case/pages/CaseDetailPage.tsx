@@ -4,10 +4,7 @@ import { ApiError } from '@crm/api-client'
 import { ArrowLeft, UserPlus } from 'lucide-react'
 import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
-import { Select } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState, ErrorState } from '@/components/ui/data-state'
+import { Alert, Button, Card, EmptyState, ErrorState, Select, Skeleton } from '@crm/ui'
 import { CasePriorityBadge, CaseStatusBadge } from '@/modules/case/components/CaseBadges'
 import { CustomerPanel } from '@/modules/case/components/CustomerPanel'
 import { Timeline } from '@/modules/case/components/Timeline'
@@ -74,7 +71,7 @@ export function CaseDetailPage() {
         ) : data ? (
           <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="min-w-0 space-y-4">
-              <header className="rounded-xl border border-border-subtle bg-surface-raised p-4">
+              <Card as="header">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-mono text-xs text-ink-muted">{data.code}</p>
@@ -149,27 +146,22 @@ export function CaseDetailPage() {
                 </div>
 
                 {update.isError ? (
-                  <p role="alert" className="mt-2 text-sm text-danger">
-                    {update.error.message}
-                  </p>
+                  <Alert className="mt-2">{update.error.message}</Alert>
                 ) : update.isSuccess ? (
-                  <p role="status" className="mt-2 text-xs text-success">
+                  <Alert tone="success" className="mt-2 text-xs">
                     {t('cases.detail.statusUpdated')}
-                  </p>
+                  </Alert>
                 ) : null}
-              </header>
+              </Card>
 
-              <section
-                aria-labelledby="timeline-heading"
-                className="rounded-xl border border-border-subtle bg-surface-raised p-4"
-              >
+              <Card as="section" aria-labelledby="timeline-heading">
                 <h3 id="timeline-heading" className="text-sm font-semibold text-ink">
                   {t('cases.detail.timeline')}
                 </h3>
                 <div className="mt-4">
                   <Timeline entries={data.timeline} />
                 </div>
-              </section>
+              </Card>
 
               {/* `key` me-remount editor per case supaya draft tidak terbawa ke case lain. */}
               <Suspense fallback={<Skeleton className="h-40 w-full" />}>

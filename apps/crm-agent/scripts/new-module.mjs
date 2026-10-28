@@ -107,7 +107,7 @@ export const DEFAULT_${id.toUpperCase().replace(/-/g, '_')}_SEARCH: ${pascal}Sea
   [path.join(moduleDir, 'pages', `${pascal}ListPage.tsx`)]:
     `import { getRouteApi } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { EmptyState } from '@/components/ui/data-state'
+import { EmptyState } from '@crm/ui'
 
 const route = getRouteApi('${routeId}')
 
