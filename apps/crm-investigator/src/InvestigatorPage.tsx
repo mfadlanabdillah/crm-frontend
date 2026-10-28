@@ -1,6 +1,12 @@
-import type { ApiClient, MasterDataItem } from '@crm/api-client'
+import type {
+  ApiClient,
+  Case,
+  MasterData,
+  MasterDataItem,
+  UpdateCaseRequest,
+} from '@crm/api-client'
 import type { RemotePageProps } from '@crm/module-contract'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { MouseEvent, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -58,6 +64,7 @@ function CaseList({ api, navigate }: Pick<RemotePageProps, 'api' | 'navigate'>) 
     queryFn: ({ signal }) =>
       api.listCases({ queue: ESCALATION_QUEUE, page, page_size: PAGE_SIZE }, signal),
     enabled: hasQueue,
+    staleTime: 0,
   })
 
   if (master.isPending) return <p>{t('investigator.loading')}</p>
@@ -114,16 +121,107 @@ function CaseList({ api, navigate }: Pick<RemotePageProps, 'api' | 'navigate'>) 
   )
 }
 
+function CaseActions({
+  api,
+  item,
+  master,
+  openHostPath,
+}: Pick<RemotePageProps, 'api' | 'openHostPath'> & { item: Case; master: MasterData | undefined }) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const [note, setNote] = useState('')
+
+  // Host views are cached under keys starting with 'cases'. The remote refreshes them itself after
+  // a write: this couples it to the host's key names (see docs/poc/micro-frontend.md).
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['investigator'] }),
+      queryClient.invalidateQueries({ queryKey: ['cases'] }),
+    ])
+  const update = useMutation({
+    mutationFn: (patch: UpdateCaseRequest) => api.updateCase(item.id, patch),
+    onSuccess: refresh,
+  })
+  const addNote = useMutation({
+    mutationFn: () => api.createReply(item.id, { body: note.trim(), visibility: 'internal' }),
+    onSuccess: async () => {
+      setNote('')
+      await refresh()
+    },
+  })
+
+  const openCase = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+    event.preventDefault()
+    openHostPath(`/cases/${item.id}`)
+  }
+
+  return (
+    <section className="investigator__actions" aria-label={t('investigator.actions')}>
+      <label>
+        {t('investigator.status')}
+        <select
+          value={item.status}
+          disabled={update.isPending}
+          onChange={(event) => update.mutate({ status: event.target.value })}
+        >
+          {master?.statuses.map((status) => (
+            <option key={status.code} value={status.code}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        {t('investigator.queue')}
+        <select
+          value={item.queue}
+          disabled={update.isPending}
+          onChange={(event) => update.mutate({ queue: event.target.value })}
+        >
+          {master?.queues.map((queue) => (
+            <option key={queue.code} value={queue.code}>
+              {queue.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <a className="investigator__link" href={`/cases/${item.id}`} onClick={openCase}>
+        {t('investigator.openInCase')}
+      </a>
+      {update.isError ? <p role="alert">{update.error.message}</p> : null}
+
+      <label htmlFor="investigator-note">{t('investigator.note')}</label>
+      <textarea
+        id="investigator-note"
+        rows={2}
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+      />
+      <button
+        type="button"
+        disabled={note.trim().length === 0 || addNote.isPending}
+        onClick={() => addNote.mutate()}
+      >
+        {t('investigator.addNote')}
+      </button>
+      {addNote.isError ? <p role="alert">{addNote.error.message}</p> : null}
+    </section>
+  )
+}
+
 function CaseDetail({
   api,
   navigate,
+  openHostPath,
   caseId,
-}: Pick<RemotePageProps, 'api' | 'navigate'> & { caseId: string }) {
+}: Pick<RemotePageProps, 'api' | 'navigate' | 'openHostPath'> & { caseId: string }) {
   const { t, i18n } = useTranslation()
   const master = useMasterData(api)
   const detail = useQuery({
     queryKey: ['investigator', 'case', caseId],
     queryFn: ({ signal }) => api.getCase(caseId, signal),
+    staleTime: 0,
   })
 
   const back = (
@@ -162,6 +260,7 @@ function CaseDetail({
         <dt>{t('investigator.stt')}</dt>
         <dd>{item.sttNumber ?? '—'}</dd>
       </dl>
+      <CaseActions api={api} item={item} master={master.data} openHostPath={openHostPath} />
       <h4>{t('investigator.timeline')}</h4>
       <ul className="investigator__timeline">
         {item.timeline.map((entry) => (
@@ -181,14 +280,15 @@ function CaseDetail({
   )
 }
 
-export function InvestigatorPage({ api, subPath, navigate }: RemotePageProps) {
+export function InvestigatorPage({ api, subPath, navigate, openHostPath }: RemotePageProps) {
   const { t } = useTranslation()
   const [section, id] = subPath.split('/')
 
   let body: ReactNode
   if (subPath === '') body = <CaseList api={api} navigate={navigate} />
-  else if (section === 'case' && id) body = <CaseDetail api={api} navigate={navigate} caseId={id} />
-  else body = <p>{t('investigator.notFound')}</p>
+  else if (section === 'case' && id) {
+    body = <CaseDetail api={api} navigate={navigate} openHostPath={openHostPath} caseId={id} />
+  } else body = <p>{t('investigator.notFound')}</p>
 
   return (
     <div className="investigator">

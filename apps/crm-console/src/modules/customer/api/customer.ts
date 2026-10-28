@@ -7,4 +7,6 @@ import { api } from '@/lib/api'
 export const customerApi = {
   list: (query: CustomerListQuery, signal?: AbortSignal) => api.listCustomers(query, signal),
   detail: (customerId: string, signal?: AbortSignal) => api.getCustomer(customerId, signal),
+  cases: (customerId: string, signal?: AbortSignal) =>
+    api.listCases({ customerId, page_size: 10, sort: '-created_at' }, signal),
 }

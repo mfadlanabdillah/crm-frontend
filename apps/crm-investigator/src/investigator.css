@@ -105,3 +105,49 @@
   border-radius: 0.5rem;
   font-size: 0.75rem;
 }
+
+.investigator__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.investigator__actions label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.investigator__actions select,
+.investigator__actions textarea {
+  padding: 0.25rem 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.5rem;
+  font: inherit;
+}
+
+.investigator__actions textarea {
+  flex: 1 1 18rem;
+}
+
+.investigator__actions button {
+  padding: 0.25rem 0.75rem;
+  color: white;
+  background: var(--color-brand-strong);
+  border: 0;
+  border-radius: 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.investigator__actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

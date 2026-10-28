@@ -15,6 +15,11 @@ export interface RemotePageProps {
   subPath: string
   /** Moves to `/remote/<id>/<subPath>` inside the host router (no page reload). */
   navigate: (subPath: string) => void
+  /**
+   * Opens a path of the host app (for example `/cases/case-00001` or `/cases?queue=escalated`)
+   * without a page reload. Only internal paths are accepted; anything else is ignored.
+   */
+  openHostPath: (path: string) => void
 }
 
 /** What a remote exposes as `./module` (default export). */
