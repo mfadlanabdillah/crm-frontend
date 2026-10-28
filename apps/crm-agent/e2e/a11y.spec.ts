@@ -32,6 +32,14 @@ test.describe('setelah masuk', () => {
     await expectNoViolations(page)
   })
 
+  test('design system gallery: every shared component and state', async ({
+    signedInPage: page,
+  }) => {
+    await clientNavigate(page, '/design-system')
+    await expect(page.getByRole('heading', { name: 'Design system' })).toBeVisible()
+    await expectNoViolations(page)
+  })
+
   test('create case form, with and without errors', async ({ signedInPage: page }) => {
     await clientNavigate(page, '/cases/new')
     await expect(page.getByLabel('Subjek', { exact: true })).toBeVisible()
