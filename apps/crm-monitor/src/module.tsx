@@ -14,7 +14,8 @@ const resources = {
     overdue: 'Lewat batas waktu',
     queue: 'Antrean',
     open: 'Case terbuka',
-    refreshed: 'Diperbarui otomatis tiap 30 detik',
+    refreshed: 'Diperbarui otomatis tiap 30 detik.',
+    empty: 'Belum ada antrean.',
   },
   'en-US': {
     title: 'Monitor',
@@ -25,7 +26,8 @@ const resources = {
     overdue: 'Overdue',
     queue: 'Queue',
     open: 'Open cases',
-    refreshed: 'Refreshes automatically every 30 seconds',
+    refreshed: 'Refreshes automatically every 30 seconds.',
+    empty: 'No queues yet.',
   },
 } as const
 
