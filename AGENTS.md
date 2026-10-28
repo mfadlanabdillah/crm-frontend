@@ -6,35 +6,35 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 
 ## Working agreement
 
-1. Find an existing pattern before writing new code. References: module `case` (complete) and `customer` (minimal) in `apps/crm-agent/src/modules/`.
+1. Find an existing pattern before writing new code. References: module `case` (complete) and `customer` (minimal) in `apps/crm-console/src/modules/`.
 2. Change as little as possible, only what was asked. No drive-by cleanups.
 3. Run the verification below and report results as they are. Never claim "passes" without running the command; on failure, show the real error.
 4. If the API contract, a business rule, or the scope is unclear, ask. Do not invent endpoints, fields, or enums.
 
 ## Context
 
-- **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-agent`, the customer-service agent console SPA (phase 1 = case record type `CS`).
+- **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-console`, the CRM console SPA for every team (phase 1 = customer service, case record type `CS`).
 - **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 with the shared `@crm/ui` components, Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
 - **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.
-- **Terms:** "CS agent" (Indonesian: agen CS) is the customer-service staff member who uses the console; "AI agent" is a coding assistant reading this file. The app name `crm-agent` refers to the first.
+- **Terms:** "CS agent" (Indonesian: agen CS) is the customer-service staff member who uses the console; "AI agent" is a coding assistant reading this file. The app is named for the console, not for the CS agent.
 - **Glossary:** STT = shipment tracking number (Surat Tanda Terima) · Case = CS ticket (status, priority, queue, owner per tier) · Escalation tiers L1 (Frontline) -> L2 (Backline) -> L3; SWAT, Investigator, 3LC · DEX = Delivery Exception · RTS = Return to Sender · COD = Cash on Delivery · POD = Proof of Delivery · PII = phone, address, email, bank account, national ID; always masked by the server/BFF according to permission.
 
 ## Verify (definition of done)
 
-| Command                            | When                                                                                                                                                                                                                                           |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm check`                       | Must be green before you finish; same as CI: format check, lint, typecheck, tests + coverage floor, build, size, OpenAPI drift (`codegen:check` diffs against the index: stage regenerated files first)                                        |
-| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                          |
-| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                       |
-| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-agent exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
-| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                  |
-| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                            |
+| Command                            | When                                                                                                                                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm check`                       | Must be green before you finish; same as CI: format check, lint, typecheck, tests + coverage floor, build, size, OpenAPI drift (`codegen:check` diffs against the index: stage regenerated files first)                                          |
+| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                            |
+| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                         |
+| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-console exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
+| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                    |
+| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                              |
 
 ## Repo map
 
 ```text
-apps/crm-agent/src
+apps/crm-console/src
   routes/            # file-based routing; thin: validateSearch + guard + a page from a module
   modules/<id>/      # one folder per CRM module (case, customer, ...)
     module.ts        #   ModuleDefinition: nav, permission, sidebar/tab slots, realtime hook, onSignOut
@@ -111,15 +111,15 @@ packages/
 
 | File                                             | How it is updated                                      |
 | ------------------------------------------------ | ------------------------------------------------------ |
-| `apps/crm-agent/src/routeTree.gen.ts`            | Generated by the router plugin during `pnpm dev`/build |
+| `apps/crm-console/src/routeTree.gen.ts`          | Generated by the router plugin during `pnpm dev`/build |
 | `packages/api-client/src/generated/openapi.d.ts` | `pnpm codegen:api`                                     |
-| `apps/crm-agent/public/mockServiceWorker.js`     | Generated by MSW                                       |
+| `apps/crm-console/public/mockServiceWorker.js`   | Generated by MSW                                       |
 | `pnpm-lock.yaml`                                 | `pnpm add` / `remove` / `install`                      |
 
 ## Known pitfalls
 
-- **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-agent/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
-- **E2E runs with 2 workers on purpose** (`apps/crm-agent/playwright.config.ts`). Each worker is a Chromium; 2-4 workers take the same ~25 s, but 6 fail every run and 3 time out when RAM/swap is tight (seen on an 8 GB machine). Do not raise it without re-measuring. If e2e fails only when the machine is swapping, free memory before suspecting the code.
+- **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-console/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
+- **E2E runs with 2 workers on purpose** (`apps/crm-console/playwright.config.ts`). Each worker is a Chromium; 2-4 workers take the same ~25 s, but 6 fail every run and 3 time out when RAM/swap is tight (seen on an 8 GB machine). Do not raise it without re-measuring. If e2e fails only when the machine is swapping, free memory before suspecting the code.
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
 - **Session expiry vs logout:** `ModuleDefinition.onSignOut(reason)` receives `'logout'` or `'expired'`. Unsent drafts are deleted only on `logout`.
@@ -135,10 +135,10 @@ packages/
 
 ## Git, PRs, environment
 
-Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. Open PRs against `development`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-agent/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL` and `VITE_TELEMETRY_URL` as build args.
+Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. Open PRs against `development`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-console/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL` and `VITE_TELEMETRY_URL` as build args.
 
 ## Keep the docs true
 
 Record decisions that are costly to reverse as ADRs in `docs/adr/` (when to write one, and the template, are in `docs/adr/README.md`). Do not rewrite an accepted ADR; supersede it with a new one.
 
-When structure, commands, or rules change, update `README.md` and this file. `apps/crm-agent/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists, or when an operation in `openapi.yaml` is missing from `docs/contract-status.md` or has an unknown status. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, update the mock, and update `docs/contract-status.md`.
+When structure, commands, or rules change, update `README.md` and this file. `apps/crm-console/scripts/agent-docs.test.mjs` fails when a repo path mentioned in the docs no longer exists, or when an operation in `openapi.yaml` is missing from `docs/contract-status.md` or has an unknown status. When the API contract changes, update `openapi.yaml`, run `pnpm codegen:api`, update the mock, and update `docs/contract-status.md`.

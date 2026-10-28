@@ -4,6 +4,6 @@ coverage
 pnpm-lock.yaml
 playwright-report
 test-results
-apps/crm-agent/src/routeTree.gen.ts
+apps/crm-console/src/routeTree.gen.ts
 packages/api-client/src/generated
 *.inc

@@ -21,7 +21,7 @@ let resourcesFile
 /** Minimal copy of the app: the script derives its paths from its own location, so the real repo stays untouched. */
 beforeEach(() => {
   root = mkdtempSync(path.join(tmpdir(), 'new-module-'))
-  sandbox = path.join(root, 'apps/crm-agent')
+  sandbox = path.join(root, 'apps/crm-console')
   mkdirSync(path.join(sandbox, 'scripts'), { recursive: true })
   cpSync(path.join(appRoot, 'scripts/new-module.mjs'), path.join(sandbox, 'scripts/new-module.mjs'))
   mkdirSync(path.join(sandbox, 'src/app/modules'), { recursive: true })

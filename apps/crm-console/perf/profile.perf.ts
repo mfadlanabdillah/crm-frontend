@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 
 /**
  * Profil CPU saat scroll pada CPU 4× lebih lambat. Bukan pengukuran baseline; dipakai untuk
- * mencari fungsi termahal. Jalankan: `pnpm --filter @crm/crm-agent perf --grep profil`.
+ * mencari fungsi termahal. Jalankan: `pnpm --filter @crm/crm-console perf --grep profil`.
  */
 test('profil scroll CPU 4×', async ({ page }) => {
   await page.goto('/')

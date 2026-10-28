@@ -5,7 +5,7 @@ const PORT = 4174
 
 /**
  * Pengukuran performa terhadap build produksi harness.
- * Jalankan: `pnpm --filter @crm/crm-agent perf` (heap: tambahkan `--grep heap`).
+ * Jalankan: `pnpm --filter @crm/crm-console perf` (heap: tambahkan `--grep heap`).
  */
 export default defineConfig({
   testDir: '.',

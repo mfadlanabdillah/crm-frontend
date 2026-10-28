@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    name: 'crm-agent',
+    name: 'crm-console',
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.mjs'],
