@@ -9,12 +9,16 @@ import {
   EmptyState,
   ErrorState,
   FormField,
+  Inline,
   Input,
   PageHeader,
   Pagination,
+  SectionHeading,
   SegmentedControl,
   Select,
   Skeleton,
+  Stack,
+  StatCard,
   Table,
   TBody,
   Td,
@@ -180,6 +184,16 @@ export function Gallery() {
             </TextLink>
             .
           </p>
+        </Section>
+
+        <Section title="Layout and figures">
+          <Stack gap="sm">
+            <SectionHeading>A section heading</SectionHeading>
+            <Inline justify="between">
+              <StatCard label="Unassigned" value="2.760" />
+              <StatCard label="Overdue" value={<TextLink href="#overdue">7.790</TextLink>} />
+            </Inline>
+          </Stack>
         </Section>
 
         <Section title="Loading, empty, and error">
