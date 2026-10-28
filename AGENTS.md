@@ -13,7 +13,7 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 
 ## Context
 
-- **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-console`, the CRM console SPA for every team (phase 1 = customer service, case record type `CS`). `apps/crm-finance` is a micro frontend PoC (a remote loaded by the host at runtime): see `docs/poc/micro-frontend.md`; it is not part of the product yet.
+- **Repo:** `crm-frontend`, a pnpm monorepo. **App:** `apps/crm-console`, the CRM console SPA for every team (phase 1 = customer service, case record type `CS`). `apps/crm-finance`, `apps/crm-investigator`, and `apps/crm-monitor` are a micro frontend PoC (remotes loaded by the host at runtime, contract in `packages/module-contract`): see `docs/poc/micro-frontend.md`; they are not part of the product yet.
 - **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 with the shared `@crm/ui` components, Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
 - **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.

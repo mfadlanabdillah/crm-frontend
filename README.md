@@ -53,19 +53,19 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 
 ## Perintah
 
-| Perintah                            | Fungsi                                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev`                          | Dev server dengan backend mock                                                                  |
-| `pnpm check`                        | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR) |
-| `pnpm test`                         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
-| `pnpm test:e2e`                     | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                  |
-| `pnpm size`                         | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                    |
-| `pnpm --filter @crm/crm-console perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
-| `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
-| `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                |
-| `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
-| `pnpm poc:mfe`                      | PoC micro frontend: host + remote Finance (lihat `docs/poc/micro-frontend.md`)                  |
-| `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
+| Perintah                            | Fungsi                                                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                          | Dev server dengan backend mock                                                                           |
+| `pnpm check`                        | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR)          |
+| `pnpm test`                         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                             |
+| `pnpm test:e2e`                     | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                           |
+| `pnpm size`                         | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                             |
+| `pnpm --filter @crm/crm-console perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)                        |
+| `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                                 |
+| `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                         |
+| `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                             |
+| `pnpm poc:mfe`                      | PoC micro frontend: host + 3 remote (Finance, Investigator, Monitor), lihat `docs/poc/micro-frontend.md` |
+| `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                                |
 
 ## Cara kerjanya
 
