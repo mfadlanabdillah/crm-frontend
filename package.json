@@ -26,7 +26,8 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm codegen:check",
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-console new:module",
-    "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint"
+    "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
+    "poc:mfe": "VITE_REMOTE_MODULES=crm_finance=http://localhost:5174/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-finance dev"
   },
   "devDependencies": {
     "@crm/config-eslint": "workspace:*",

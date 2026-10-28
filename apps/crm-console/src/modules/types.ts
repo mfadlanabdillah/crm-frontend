@@ -23,6 +23,8 @@ export interface ModuleDefinition {
   nav: LinkOptions
   /** Modul disembunyikan bila peran tidak punya izin ini. */
   permission?: Permission
+  /** Page of a remote module, rendered by the generic `/remote/$moduleId` route. */
+  Page?: ComponentType
   /** Bagian sidebar milik modul, tampil saat modul aktif. */
   Sidebar?: ComponentType<{ variant?: 'sidebar' | 'inline' }>
   /** Baris tab di bawah header, tampil saat modul aktif. */

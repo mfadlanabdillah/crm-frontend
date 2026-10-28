@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { modules } from '@/app/modules/registry'
+import { allModules } from '@/app/modules/registry'
 import type { SignOutReason } from '@/modules/types'
 import { api } from '@/lib/api'
 import { sessionKey } from '@/lib/query-keys'
@@ -14,7 +14,7 @@ import { sessionKey } from '@/lib/query-keys'
 export function resetClientState(queryClient: QueryClient, reason: SignOutReason = 'logout') {
   queryClient.removeQueries()
   queryClient.setQueryData(sessionKey, null)
-  for (const module of modules) module.onSignOut?.(reason)
+  for (const module of allModules()) module.onSignOut?.(reason)
 }
 
 const CHANNEL_NAME = 'crm-auth'

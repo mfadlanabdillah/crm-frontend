@@ -16,4 +16,6 @@ export const env = {
   mockRole: parseMockRole(import.meta.env.VITE_MOCK_ROLE),
   mockEvents: import.meta.env.VITE_MOCK_EVENTS === 'true',
   telemetryUrl: import.meta.env.VITE_TELEMETRY_URL,
+  /** `name=entryUrl` pairs of micro frontend remotes to load at startup; unset = none. */
+  remoteModules: import.meta.env.VITE_REMOTE_MODULES,
 } as const

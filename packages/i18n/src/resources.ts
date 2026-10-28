@@ -121,6 +121,11 @@ const idID = {
     reload: 'Muat ulang halaman',
     notFound: 'Halaman tidak ditemukan.',
   },
+  remote: {
+    unavailableTitle: 'Modul tidak tersedia',
+    unavailableDescription:
+      'Modul ini dimuat dari aplikasi lain yang saat ini tidak dapat dijangkau.',
+  },
   login: {
     title: 'Masuk ke CRM',
     description: 'Gunakan akun SSO internal untuk melanjutkan.',
@@ -251,6 +256,11 @@ const enUS = {
     reference: 'Reference code: {{id}}',
     reload: 'Reload page',
     notFound: 'Page not found.',
+  },
+  remote: {
+    unavailableTitle: 'Module unavailable',
+    unavailableDescription:
+      'This module is loaded from another app that cannot be reached right now.',
   },
   login: {
     title: 'Sign in to CRM',
