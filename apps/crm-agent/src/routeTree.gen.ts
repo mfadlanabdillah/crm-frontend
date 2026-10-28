@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedDesignSystemRouteImport } from './routes/_authenticated/design-system'
 import { Route as AuthenticatedCasesIndexRouteImport } from './routes/_authenticated/cases/index'
 import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenticated/cases/$caseId'
 import { Route as AuthenticatedCasesNewRouteImport } from './routes/_authenticated/cases/new'
@@ -32,6 +33,12 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDesignSystemRoute =
+  AuthenticatedDesignSystemRouteImport.update({
+    id: '/design-system',
+    path: '/design-system',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCasesIndexRoute = AuthenticatedCasesIndexRouteImport.update({
   id: '/cases/',
   path: '/cases/',
@@ -64,6 +71,7 @@ const AuthenticatedCustomersCustomerIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/design-system': typeof AuthenticatedDesignSystemRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/cases/new': typeof AuthenticatedCasesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -73,6 +81,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/design-system': typeof AuthenticatedDesignSystemRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/cases/new': typeof AuthenticatedCasesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -84,6 +93,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/design-system': typeof AuthenticatedDesignSystemRoute
   '/_authenticated/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
   '/_authenticated/cases/new': typeof AuthenticatedCasesNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/design-system'
     | '/cases/$caseId'
     | '/cases/new'
     | '/customers/$customerId'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/design-system'
     | '/cases/$caseId'
     | '/cases/new'
     | '/customers/$customerId'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/design-system'
     | '/_authenticated/cases/$caseId'
     | '/_authenticated/cases/new'
     | '/_authenticated/customers/$customerId'
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/design-system': {
+      id: '/_authenticated/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof AuthenticatedDesignSystemRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cases/': {
       id: '/_authenticated/cases/'
@@ -189,6 +209,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedDesignSystemRoute: typeof AuthenticatedDesignSystemRoute
   AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
   AuthenticatedCasesNewRoute: typeof AuthenticatedCasesNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
@@ -197,6 +218,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDesignSystemRoute: AuthenticatedDesignSystemRoute,
   AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
   AuthenticatedCasesNewRoute: AuthenticatedCasesNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
