@@ -129,7 +129,7 @@ export function ${pascal}ListPage() {
 }
 `,
   [routeFile]: `import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
-${permission ? "import { requirePermission } from '@/app/auth/guard'\n" : ''}import { ${pascal}ListPage } from '@/modules/${id}/pages/${pascal}ListPage'
+${permission ? "import { requirePermission } from '@crm/app-kit'\n" : ''}import { ${pascal}ListPage } from '@/modules/${id}/pages/${pascal}ListPage'
 import { DEFAULT_${id.toUpperCase().replace(/-/g, '_')}_SEARCH, ${camel}SearchSchema } from '@/modules/${id}/schemas/search'
 import type { ${pascal}Search } from '@/modules/${id}/schemas/search'
 
@@ -214,5 +214,5 @@ Next steps:
      generator again with --permission).`
   }
   3. API contract: openapi.yaml -> pnpm codegen:api -> facade in modules/${id}/api/${id}.ts.
-  4. Dev mock: MSW handler in src/mocks/handlers.ts.
+  4. Dev mock: MSW handler in your mock domain (the example one is examples/mock-backend/src/handlers.ts).
   5. Run pnpm lint && pnpm typecheck && pnpm test.`)

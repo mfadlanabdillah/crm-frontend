@@ -166,7 +166,10 @@ if (/=\s*\{\}\s*$/.test(facade)) {
 } else {
   fail(`modules/${id}/api/${id}.ts format not recognized; add the entry by hand`)
 }
-if (!facade.includes("from '@/lib/api'")) facade = `import { api } from '@/lib/api'\n\n${facade}`
+// `api` comes from @crm/app-kit (a remote cannot import the console's lib); add the import once.
+if (!/import \{[^}]*\bapi\b[^}]*\} from '@crm\/app-kit'/.test(facade)) {
+  facade = `import { api } from '@crm/app-kit'\n\n${facade}`
+}
 
 const hook = `import { queryOptions, useQuery } from '@tanstack/react-query'
 import { ${moduleCamel}Api } from '@/modules/${id}/api/${id}'
