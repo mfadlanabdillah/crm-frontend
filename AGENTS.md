@@ -61,7 +61,7 @@ packages/
 | UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                                                      |
 | API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/`                                    |
 | Permission       | `packages/auth/src/roles.ts`                                                                                                                                                        |
-| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                                     |
+| UI text          | shell: `packages/i18n/src/resources.ts`; a remote: its own `src/texts.ts` (both locales)                                                                                            |
 | Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                               |
 | Dev mock         | domain data: `examples/mock-backend/src/handlers.ts` (+ `db.ts`; per-role masking in `mask.ts`); session only: `apps/crm-console/src/mocks/`                                        |
 
@@ -95,7 +95,7 @@ packages/
 
 - Tailwind only, no CSS-in-JS; use `cn` from `@crm/ui`.
 - Build screens from `@crm/ui`. A raw `button`/`input`/`select`/`textarea`/table element, or a Tailwind palette color or hex value in a class string, is a lint error: use the component or a design token (see [docs/ui-standards.md](docs/ui-standards.md)).
-- UI text exists in both locales (`id-ID` default, `en-US`); a test in `packages/i18n` rejects mismatched keys or `{{...}}` placeholders.
+- UI text exists in both locales (`id-ID` default, `en-US`); a test (`packages/i18n`, and `texts.test.ts` in a remote that has its own texts) rejects mismatched keys or `{{...}}` placeholders.
 - Accessibility: labels/aria on interactive elements, WCAG AA contrast, managed focus. `e2e/a11y.spec.ts` axe-scans the main pages and must stay clean. Never use an ARIA role without the matching children/pattern.
 - Large tables use `useVirtualizer`; heavy libraries (e.g. Tiptap in `ReplyComposer`) load via `lazy()` + `Suspense`.
 
@@ -133,7 +133,7 @@ packages/
 
 - **The shell builds its router after the remotes load.** Remote routes (`/cases`, `/customers`) are not in `routeTree.gen.ts`, so `<Link to="/cases">` is not type-checked in the shell; a remote types its search params itself (`examples/crm-cs/src/lib/search-route.ts`). A remote that fails to load leaves its routes out and the shell starts without them.
 - **One Tailwind sheet.** The shell scans every app and example `src/` (`@source` in `apps/crm-console/src/styles.css`). A new class in a remote needs a new shell build; a separate Tailwind build in the remote breaks the utility order.
-- **Domain mock data lives in `examples/mock-backend`**, loaded into the shell's MSW worker through the `@crm/mock-domain` alias. `MOCK_DOMAIN=examples/mock-backend/src/index.ts` turns it on (`pnpm dev:examples` and the example e2e set it); without it the shell has no domain data. **Texts and permissions of the CS example still live in `@crm/i18n` and `@crm/auth`.** Known coupling, not a rule.
+- **Domain mock data lives in `examples/mock-backend`**, loaded into the shell's MSW worker through the `@crm/mock-domain` alias. `MOCK_DOMAIN=examples/mock-backend/src/index.ts` turns it on (`pnpm dev:examples` and the example e2e set it); without it the shell has no domain data. **Permissions of the CS example (`case.*`, `customer.view`, the role table) and the `/v1/cases...` contract still live in `@crm/auth` and `openapi.yaml`:** they are the sample policy and contract a product replaces. CS texts live in `examples/crm-cs/src/texts.ts`.
 - **Dev:** `pnpm dev` starts the shell alone (it shows the empty state). `pnpm dev:examples` starts the shell (5173) and the four examples (5174 to 5177) together.
 
 ## Agent boundaries

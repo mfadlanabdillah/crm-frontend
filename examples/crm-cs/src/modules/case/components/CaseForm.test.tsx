@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { MasterData } from '@crm/api-client'
 import { createI18n } from '@crm/i18n'
+import { registerTexts } from '@/texts'
 import { renderWithProviders } from '@crm/test-utils'
 import { CaseForm } from './CaseForm'
 
@@ -16,6 +17,7 @@ const masterData: MasterData = {
 
 beforeAll(async () => {
   await createI18n()
+  registerTexts()
 })
 
 function renderForm(props: Partial<Parameters<typeof CaseForm>[0]> = {}) {

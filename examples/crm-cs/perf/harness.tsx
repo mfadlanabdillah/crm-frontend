@@ -7,6 +7,7 @@ import { createEventStream } from '@crm/app-kit'
 import type { StreamStatus } from '@crm/app-kit'
 import './perf.css'
 import { createI18n } from '@crm/i18n'
+import { registerTexts } from '../src/texts'
 import type { CaseListResponse, Role } from '@crm/api-client'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import {
@@ -109,6 +110,7 @@ const router = createRouter({
 
 async function bootstrap() {
   await createI18n()
+  registerTexts()
   const rootElement = document.getElementById('root')
   if (!rootElement) throw new Error('Elemen #root tidak ditemukan')
 
