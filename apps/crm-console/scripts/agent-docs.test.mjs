@@ -10,8 +10,11 @@ const docs = [
   'docs/agents/recipes.md',
   'docs/system-design.md',
   'docs/ui-standards.md',
+  'docs/onboarding.md',
+  'docs/production-readiness.md',
+  'examples/README.md',
 ]
-const ROOTS = ['apps/', 'packages/', 'docs/', '.github/']
+const ROOTS = ['apps/', 'packages/', 'docs/', 'examples/', '.github/']
 
 /** Path repo yang ditulis dalam backtick; yang bertemplat (`<id>`, `*`) atau bersifat contoh dilewati. */
 function referencedPaths(text) {
@@ -104,4 +107,61 @@ describe('docs/adr', () => {
       }
     },
   )
+})
+
+describe('docs/onboarding.md: dependency diagram', () => {
+  const doc = readFileSync(path.join(repoRoot, 'docs/onboarding.md'), 'utf8')
+  const diagram = /```mermaid\nflowchart TD\n {2}subgraph Aplikasi[\s\S]*?```/.exec(doc)?.[0] ?? ''
+  // Node ids of the diagram; `other` stands for the three small examples.
+  const nodes = {
+    shell: ['@crm/crm-console'],
+    cs: ['@crm/crm-cs'],
+    other: ['@crm/crm-finance', '@crm/crm-investigator', '@crm/crm-monitor'],
+    mockb: ['@crm/example-mock-backend'],
+    ui: ['@crm/ui'],
+    appkit: ['@crm/app-kit'],
+    contract: ['@crm/module-contract'],
+    auth: ['@crm/auth'],
+    i18n: ['@crm/i18n'],
+    apic: ['@crm/api-client'],
+  }
+
+  function documentedEdges() {
+    const edges = new Set()
+    for (const [, from, targets] of diagram.matchAll(/^ {2}(\w+) --> (.+)$/gm)) {
+      for (const target of targets.split('&').map((name) => name.trim())) {
+        if (!nodes[from] || !nodes[target])
+          throw new Error(`diagram node not known to the test: ${from} or ${target}`)
+        for (const source of nodes[from])
+          for (const dest of nodes[target]) edges.add(`${source} -> ${dest}`)
+      }
+    }
+    return edges
+  }
+
+  function actualEdges() {
+    const edges = new Set()
+    for (const parent of ['apps', 'examples', 'packages']) {
+      for (const name of readdirSync(path.join(repoRoot, parent))) {
+        const file = path.join(repoRoot, parent, name, 'package.json')
+        if (!existsSync(file)) continue
+        const pkg = JSON.parse(readFileSync(file, 'utf8'))
+        for (const dep of Object.keys(pkg.dependencies ?? {})) {
+          if (dep.startsWith('@crm/')) edges.add(`${pkg.name} -> ${dep}`)
+        }
+      }
+    }
+    return edges
+  }
+
+  it('shows exactly the @crm dependencies in package.json (dev dependencies are left out)', () => {
+    const documented = documentedEdges()
+    const actual = actualEdges()
+    expect({
+      missingInDoc: [...actual].filter((edge) => !documented.has(edge)),
+      notInPackages: [...documented].filter(
+        (edge) => !actual.has(edge) && !edge.startsWith('@crm/ui -> @crm/i18n'),
+      ),
+    }).toEqual({ missingInDoc: [], notInPackages: [] })
+  })
 })

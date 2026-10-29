@@ -1,50 +1,50 @@
 # crm-frontend
 
-> Starter kit for a customer-service agent console (CRM): React 19, Vite, TanStack, MSW. Runs fully on a mock backend.
+> Boilerplate frontend untuk aplikasi CRM: satu **shell** (login, menu, router) yang memuat layar bisnis dari
+> **remote** terpisah. React 19, Vite, TanStack, MSW. Berjalan penuh di atas backend tiruan.
 
-Kerangka frontend untuk **konsol agen customer service**: daftar case dengan filter dan ribuan baris,
-detail case dengan timeline dan balasan rich text, profil customer, dan hak akses per peran. Seluruh
-backend ditiru oleh mock di browser, jadi proyek ini langsung jalan tanpa server apa pun.
-
-Istilah: **agen CS** adalah staf customer service yang memakai konsol ini; **AI agent** adalah asisten kode (lihat bagian terakhir). Nama app `crm-console` merujuk ke konsolnya, yang akan dipakai banyak tim, bukan ke agen CS.
-
-Cocok dipakai sebagai titik awal tim frontend: pola data, routing, keamanan, tes, dan CI sudah
-tertata, tinggal menambah modul.
+Repo ini bukan satu aplikasi CRM jadi. Ia adalah kerangka yang dipakai ulang: bagian kerangka (shell)
+disiapkan, sedangkan layar bisnis dipasang sebagai remote. Di `examples/` ada contoh yang bisa dijalankan,
+termasuk satu domain lengkap (customer service: daftar case, detail, balasan, profil customer).
 
 |                                           |                                             |
 | ----------------------------------------- | ------------------------------------------- |
 | ![Daftar case](docs/images/case-list.png) | ![Detail case](docs/images/case-detail.png) |
 
-## Isi singkat
+_Gambar di atas adalah layar contoh `examples/crm-cs`, bukan bagian dari shell._
 
-- **Modul Case** (acuan lengkap) dan **Customer** (acuan minimal): daftar, detail, filter yang tersimpan di URL, tab case terbuka, balasan rich text, indikator real-time (SSE), dan form "Case baru" (React Hook Form + Zod) sebagai contoh form.
-- **Hak akses per peran** (L1, L2, supervisor, admin) dan **masking data pribadi**: server memasking, UI memasking lagi sebagai lapisan kedua.
-- **Sesi aman:** cookie `HttpOnly` lewat BFF, token CSRF, sesi habis ditangani di satu tempat, logout menjalar ke semua tab.
-- **Dua bahasa** (`id-ID`, `en-US`), aksesibilitas WCAG 2.1 AA (dipindai axe di e2e), dan budget ukuran bundle per route.
-- **Tes dan CI:** Vitest, Testing Library, Playwright; lint, typecheck, cakupan, build, dan image Docker diperiksa di setiap PR.
-- **Generator modul:** `pnpm new:module` membuat kerangka modul baru lengkap dengan route dan guard izin.
-- **Generator remote:** `pnpm new:remote` membuat aplikasi remote baru (konfigurasi federation, satu halaman, teks sendiri) yang dimuat konsol.
-- **Generator endpoint:** `pnpm new:endpoint` menyambungkan satu endpoint GET (kontrak, klien, facade, query hook, mock, tabel status) dalam satu perintah.
+## Baru di sini? Mulai dari sini
 
-**Stack:** React 19 · Vite 8 · TypeScript strict · TanStack Router/Query/Table/Virtual · Zustand · Tailwind CSS 4 · Zod · React Hook Form · Tiptap · i18next · MSW · Vitest · Playwright · pnpm workspace.
+1. **Jalankan dulu** (bagian di bawah, 5 menit) supaya kamu punya sesuatu untuk diutak-atik.
+2. **Baca [docs/onboarding.md](docs/onboarding.md)**: peta folder, alur satu layar dari URL sampai data,
+   siapa boleh memakai siapa, dan latihan pertama. Ditulis untuk developer frontend pemula.
+3. Saat mengerjakan tugas, buka [docs/agents/recipes.md](docs/agents/recipes.md) untuk langkah per jenis tugas.
 
-## Mulai cepat
+## Mulai dalam 5 menit
 
 Butuh Node >= 22.12 (lihat `.nvmrc`) dan pnpm >= 12 (`corepack enable`).
 
 ```bash
 pnpm install
 cp apps/crm-console/.env.example apps/crm-console/.env.local
-pnpm dev            # http://localhost:5173 (shell saja: layar kosong)
-pnpm dev:examples   # shell + empat contoh remote, dengan data tiruan
+pnpm dev:examples     # buka http://localhost:5173
 ```
 
-Aplikasi langsung masuk sebagai **supervisor** (sesi mock). Untuk mencoba peran lain, ubah
-`VITE_MOCK_ROLE` di `.env.local` menjadi `l1`, `l2`, atau `admin`.
+Kamu langsung masuk sebagai **supervisor** (sesi mock) dan melihat menu Case, Customer, Finance,
+Investigator, dan Monitor. Untuk melihat tampilan peran lain, tambahkan `?role=l1` (atau `l2`, `admin`) di URL.
 
-Sebelum membuat PR, jalankan `pnpm check`.
+Dua cara menjalankan:
 
-Untuk menjalankan e2e (`pnpm test:e2e`), pasang browser Playwright sekali:
+| Perintah            | Yang berjalan                                         | Kapan dipakai                                         |
+| ------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| `pnpm dev:examples` | shell + empat contoh remote, dengan data tiruan       | Belajar, mencoba, dan menjalankan e2e                 |
+| `pnpm dev`          | shell saja: menampilkan layar kosong "Belum ada menu" | Mengerjakan kerangkanya sendiri, tanpa domain apa pun |
+
+Layar kosong pada `pnpm dev` itu benar, bukan galat: shell tidak punya layar bisnis.
+
+**Start pertama lebih lambat.** Saat `pnpm dev:examples` pertama kali dijalankan (cache Vite masih kosong), kelima server mengoptimasi dependensi bersamaan dan bisa butuh satu sampai dua menit. Kalau halaman menampilkan banner "Sebagian layar gagal dimuat" dan menu kosong, tunggu sampai semua server mencetak `ready` dan terminal diam, lalu muat ulang halaman. Start berikutnya cepat.
+
+Sebelum membuat PR, jalankan `pnpm check`. Untuk e2e (`pnpm test:e2e`), pasang browser Playwright sekali:
 
 ```bash
 pnpm --filter @crm/crm-console exec playwright install chromium
@@ -53,66 +53,66 @@ pnpm --filter @crm/crm-console exec playwright install chromium
 
 Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 
-## Perintah
-
-| Perintah                         | Fungsi                                                                                          |
-| -------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev`                       | Dev server shell dengan backend mock; tanpa remote, shell menampilkan layar kosong              |
-| `pnpm check`                     | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR) |
-| `pnpm test`                      | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
-| `pnpm test:e2e`                  | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA |
-| `pnpm size`                      | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                    |
-| `pnpm --filter @crm/crm-cs perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
-| `pnpm codegen:api`               | Generate ulang klien dari `packages/api-client/openapi/`                                        |
-| `pnpm new:module`                | Buat kerangka modul baru (lihat bagian di bawah)                                                |
-| `pnpm new:remote`                | Buat aplikasi remote baru di `apps/crm-<id>` (`docs/agents/recipes.md`)                         |
-| `pnpm new:endpoint`              | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
-| `pnpm dev:examples`              | Shell dan empat contoh remote (CS, Finance, Investigator, Monitor), lihat `examples/README.md`  |
-| `pnpm test:e2e:mfe`              | E2E alur lintas semua menu contoh (shell + empat remote), tidak ikut CI                         |
-| `pnpm format`                    | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
-
-## Cara kerjanya
+## Peta singkat
 
 ```text
-apps/crm-console/src   # shell: login, layout, navigasi, router; tanpa layar domain
-  routes/        # URL shell
-  app/           # layout, auth, daftar modul, pemuat remote
-  mocks/         # worker MSW dan sesi tiruan (hanya dev); data domain ada di examples/mock-backend
-examples/crm-cs/src    # contoh remote customer service (modul case dan customer), dimuat shell saat start
-  modules/<id>/  # satu folder per fitur CRM
-  routes.ts      # rute yang dipasang di bawah layout shell
-examples/        # contoh remote yang bisa dijalankan (bukan bagian boilerplate); lihat examples/README.md
+apps/
+  crm-console/   shell: login, layout, menu, router. Tanpa layar bisnis
+examples/
+  crm-cs/        contoh lengkap: modul Case dan Customer (acuan utama)
+  mock-backend/  data dan handler tiruan untuk contoh
+  ...            tiga contoh kecil lain, dan e2e lintas aplikasi
 packages/
-  ui/            # komponen dan token desain bersama (@crm/ui)
-  app-kit/       # helper bersama shell dan remote (klien API, format, SSE, guard izin)
-  module-contract/ # kontrak antara shell dan remote
-  api-client/    # tipe dan klien dari kontrak OpenAPI
-  auth/          # peran, izin, masking data pribadi
-  i18n/          # teks id-ID dan en-US
-  test-utils/    # bantuan untuk tes
+  ui/            komponen dan token desain bersama (@crm/ui)
+  app-kit/       helper bersama shell dan remote (klien API, format, guard izin)
+  api-client/    tipe dan klien dari kontrak OpenAPI
+  auth/          peran, izin, masking data pribadi
+  i18n/          teks id-ID dan en-US milik shell
+  module-contract/  tipe "apa yang diekspor sebuah remote"
+docs/            dokumentasi
 ```
+
+Pegangan mudah: **`apps/` = yang dijalankan, `examples/` = yang ditiru, `packages/` = yang dipakai bersama.**
+Penjelasan tiap folder dan hubungan antar-paket ada di [docs/onboarding.md](docs/onboarding.md).
 
 Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; sisanya dijaga lewat resep, tes, dan review:
 
-1. **Modul saling terpisah.** Satu modul tidak boleh mengimpor modul lain kecuali lewat `public.ts`-nya.
+1. **Modul saling terpisah.** Satu modul tidak boleh mengimpor modul lain kecuali lewat `public.ts`-nya; remote tidak boleh mengimpor shell.
 2. **Data server hanya di TanStack Query.** Tidak ada `fetch` di komponen dan tidak ada data server di Zustand.
 3. **Filter hidup di URL**, jadi tampilan bisa di-bookmark dan dibagikan.
 
-### Menambah modul
+## Perintah sehari-hari
 
-```bash
-pnpm new:module invoice --path /invoices --icon Receipt --permission invoice.view
-```
+| Perintah            | Fungsi                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm dev:examples` | Shell dan empat contoh remote dengan data tiruan (`pnpm dev` untuk shell saja)                  |
+| `pnpm check`        | Sama dengan CI: format, lint, typecheck, test, build, size, drift codegen. Jalankan sebelum PR  |
+| `pnpm test`         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
+| `pnpm test:e2e`     | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA |
+| `pnpm new:remote`   | Buat aplikasi remote baru di `apps/crm-<id>`                                                    |
+| `pnpm new:endpoint` | Tambah endpoint GET ke satu modul (kontrak, klien, facade, query hook, mock)                    |
+| `pnpm codegen:api`  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
+| `pnpm format`       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
 
-Perintah itu membuat modul di shell. Modul domain contoh (`case` dan `customer`) ada di `examples/crm-cs`; untuk aplikasi remote baru pakai `pnpm new:remote`.
-Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
+Perintah lain (`pnpm size`, `pnpm test:e2e:mfe`, `pnpm new:module`, dan pengukuran performa `perf`) dijelaskan di
+[AGENTS.md](AGENTS.md) dan [docs/agents/recipes.md](docs/agents/recipes.md).
+
+## Ingin menambah sesuatu?
+
+| Tujuan                          | Caranya                                                                                      |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| Aplikasi remote baru (tim baru) | `pnpm new:remote <id> --icon Receipt --permission case.export`, lalu langkah yang dicetaknya |
+| Endpoint GET baru               | `pnpm new:endpoint`; selebihnya di recipe "Add an API endpoint"                              |
+| Halaman, form, izin, teks, tes  | [docs/agents/recipes.md](docs/agents/recipes.md)                                             |
+| Komponen UI bersama             | `packages/ui/src/` dan aturan di [docs/ui-standards.md](docs/ui-standards.md)                |
 
 ## Status dan batasan
 
 - **Backend belum ada di repo ini.** Semua data berasal dari mock (MSW). Kontrak API di `packages/api-client/openapi/openapi.yaml` masih sementara; tipe dan klien di-generate darinya. Status tiap endpoint ada di [docs/contract-status.md](docs/contract-status.md).
-- **Domain masih generik** (4 status, antrean l1/l2/escalated, 4 peran). Perlakukan sebagai contoh pola, bukan model final.
+- **Domain contoh masih generik** (4 status, antrean l1/l2/escalated, 4 peran). Perlakukan sebagai contoh pola, bukan model final. Izin contoh (`case.*`, `customer.view`) dan path `/v1/cases...` di kontrak adalah kebijakan dan kontrak contoh yang diganti pengguna boilerplate.
 - **Belum ada pelaporan error ke layanan eksternal.** Error baru masuk `console.error`; titik pasang SDK sudah disediakan (`setErrorReporter`).
 - **CSP masih Report-Only**, dan login memakai sesi mock sampai backend tersedia.
+- **Arsitektur micro frontend masih usulan** ([ADR-0009](docs/adr/0009-micro-frontends.md)). Persiapan production dicatat di [docs/production-readiness.md](docs/production-readiness.md).
 
 ## Docker
 
@@ -121,26 +121,35 @@ docker build -t crm-console .
 docker run -p 8080:8080 crm-console        # http://localhost:8080
 ```
 
-Image berisi hasil build statis yang dilayani nginx di port 8080, dengan header keamanan di
+Image berisi hasil build statis shell yang dilayani nginx di port 8080, dengan header keamanan di
 `security-headers.inc`. Aplikasi diasumsikan same-origin di belakang BFF.
 
-- Build arg `VITE_API_BASE_URL` (default `/`) dan `VITE_TELEMETRY_URL` tertanam di bundle; keduanya publik, jangan isi secret.
+**Tanpa BFF, halaman menampilkan "Terjadi kesalahan".** Image produksi tidak memuat mock, dan tanpa BFF permintaan `/v1/session` mendapat `index.html` dari nginx, sehingga shell tidak bisa membaca sesi. Itu perilaku yang diharapkan. Pakai `docker run` ini untuk memeriksa build, header, dan konfigurasi nginx; untuk melihat layar, pakai `pnpm dev:examples`.
+
+- Build arg `VITE_API_BASE_URL` (default `/`), `VITE_TELEMETRY_URL`, dan `VITE_REMOTE_MODULES` (default kosong: daftar remote yang dimuat shell, pasangan `nama=url`) tertanam di bundle; semuanya publik, jangan isi secret.
 - MSW hanya jalan di dev server. File `*.map` dan `mockServiceWorker.js` dihapus dari image.
 
 ## Kontribusi
 
 - **Branch:** `feature/`, `bugfix/`, `hotfix/`, `release/`. Alur: `development` -> `staging` -> `master`.
 - **Commit:** Conventional Commits (`feat`, `fix`, `docs`, `test`, `chore`, ...).
-- **PR:** buka dari feature branch ke `development`, ikuti template di `.github/`, dan lolos CI: `format:check`, `pnpm check`, drift klien OpenAPI (`pnpm codegen:api` tanpa diff), e2e, dan build image Docker.
+- **PR:** buka dari feature branch ke `development`, ikuti template di `.github/`, dan lolos CI: `pnpm check` (termasuk cek format dan drift klien OpenAPI), e2e, dan build image Docker.
 - **Pre-commit:** Husky menjalankan `lint-staged` (ESLint + Prettier pada file yang berubah). Aktif otomatis setelah `pnpm install`.
-- **Bahasa:** kode, komentar, nama tes, dan commit dalam bahasa Inggris; README dan teks produk (`id-ID`) dalam bahasa Indonesia. Kebijakan lengkap di [AGENTS.md](AGENTS.md).
+- **Bahasa:** kode, komentar, nama tes, dan commit dalam bahasa Inggris; README, panduan onboarding, dan teks produk (`id-ID`) dalam bahasa Indonesia. Kebijakan lengkap di [AGENTS.md](AGENTS.md).
 
 ## Dokumentasi
 
-- [AGENTS.md](AGENTS.md): aturan, perintah verifikasi, dan perangkap yang sering terjadi.
-- [docs/agents/recipes.md](docs/agents/recipes.md): langkah per jenis tugas (endpoint, modul, halaman, form, komponen UI, izin, tes).
-- [docs/contract-status.md](docs/contract-status.md): endpoint mana yang stabil, sementara, atau masih usulan.
-- [docs/adr/](docs/adr/README.md): catatan keputusan arsitektur (ADR) beserta alasannya.
+| Dokumen                                                      | Isinya                                                                           |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| [docs/onboarding.md](docs/onboarding.md)                     | Panduan untuk developer baru: peta folder, alur data, dependensi, latihan        |
+| [docs/agents/recipes.md](docs/agents/recipes.md)             | Langkah per jenis tugas (endpoint, modul, halaman, form, komponen UI, izin, tes) |
+| [docs/system-design.md](docs/system-design.md)               | Desain sistem dan batas arsitektur                                               |
+| [docs/ui-standards.md](docs/ui-standards.md)                 | Aturan UI dan komponen                                                           |
+| [docs/contract-status.md](docs/contract-status.md)           | Endpoint mana yang stabil, sementara, atau masih usulan                          |
+| [docs/adr/](docs/adr/README.md)                              | Keputusan arsitektur beserta alasannya                                           |
+| [docs/production-readiness.md](docs/production-readiness.md) | Catatan persiapan production (daftar yang dilengkapi tim)                        |
+| [examples/README.md](examples/README.md)                     | Contoh remote: apa yang ditunjukkan dan cara menjalankannya                      |
+| [AGENTS.md](AGENTS.md)                                       | Aturan, perintah verifikasi, dan perangkap yang sering terjadi                   |
 
 ## Untuk AI agent
 

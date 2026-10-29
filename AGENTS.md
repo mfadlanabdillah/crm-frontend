@@ -3,6 +3,8 @@
 Rules for AI coding agents and developers in this repo. Step-by-step recipes per task type are in
 [docs/agents/recipes.md](docs/agents/recipes.md); read the matching one before you start. How the system fits
 together is in [docs/system-design.md](docs/system-design.md); UI rules are in [docs/ui-standards.md](docs/ui-standards.md).
+A map of the folders and who depends on whom, written for people new to the repo, is in [docs/onboarding.md](docs/onboarding.md);
+what is still open before production is in [docs/production-readiness.md](docs/production-readiness.md).
 
 ## Working agreement
 
@@ -30,6 +32,7 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 | `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Runs the console's own tests (`apps/crm-console/e2e`, no remote) and the CS journeys (`examples/e2e/cs`, console plus `examples/crm-cs`). Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-console exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
 | `pnpm test:e2e:mfe`                | Journeys across every menu on the console plus the four examples (`examples/e2e/mfe/`). Not part of CI; it starts or reuses five dev servers                                                                                                                                                                                                                                               |
 | `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm --filter @crm/crm-cs perf`   | Optional and slow: measures the case table on a production build of a harness. `PERF_HEAP=1 pnpm --filter @crm/crm-cs perf --grep heap` runs the 30-minute heap session (skipped without `PERF_HEAP`)                                                                                                                                                                                      |
 | `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                                                                                                                                                                        |
 
 ## Repo map
@@ -110,7 +113,7 @@ packages/
 ## Language policy
 
 - **English:** code, comments, test names, commit messages, ESLint messages, and technical docs (`AGENTS.md`, `docs/`).
-- **Indonesian:** `README.md` and product text (the `id-ID` locale); `en-US` mirrors it.
+- **Indonesian:** `README.md`, `docs/onboarding.md` (both for people new to the repo), and product text (the `id-ID` locale); `en-US` mirrors it.
 - Older code still has Indonesian comments, test names, and lint messages. Translate them when you touch that code; do not mass-rewrite.
 
 ## Do not edit by hand

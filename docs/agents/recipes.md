@@ -24,6 +24,11 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 ## Add a CRM module
 
 1. Copy `examples/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `examples/crm-cs/src/module.tsx` and its routes to `examples/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today. For a new team's own app, see "Add a remote".
+   After the copy, these edits are easy to miss (tried on a copy of `customer`):
+   - inside the copied files, `@/modules/customer/...` imports must become `@/modules/<id>/...`; otherwise ESLint reports a cross-module import;
+   - the route ids in the pages (`searchRoute('/_authenticated/customers')`, `getRouteApi('/_authenticated/customers/$customerId')`) and the `<Link to="/customers/...">` targets must match the paths you add in `routes.ts`;
+   - `routes.ts` already imports components with the same names, so import the copies with an alias (`import { CustomerListPage as PartnerListPage } ...`);
+   - the module needs its own `id`, `labelKey`, `basePath`, and `nav` in `module.ts`.
 2. Add the permission in `packages/auth/src/roles.ts` (the `Permission` type and the per-role lists).
 3. Add `<id>.title` and any other text to both locales in the remote's `src/texts.ts`, and call `registerTexts()` when the module loads (as `examples/crm-cs/src/module.tsx` does).
 4. Contract, facade, query, and mock: follow "Add an API endpoint".
