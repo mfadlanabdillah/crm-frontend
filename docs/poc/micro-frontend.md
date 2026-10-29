@@ -13,10 +13,15 @@ the team adopts it, record that as an ADR (`docs/adr/README.md`).
 
 ## What each menu does
 
+Case and Customer used to live in the shell. They now live in the CS remote (`apps/crm-cs`), which the
+shell loads like the others, so the console is a shell with no domain screens. Unlike the three
+PoC remotes, the CS remote contributes real routes (`/cases`, `/customers`) instead of one page under
+`/remote/<id>`; see "How it works" and [ADR-0009](../adr/0009-micro-frontends.md).
+
 | Menu         | Where it lives          | Permission      | Flow                                                                                                                              |
 | ------------ | ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Case         | host (`crm-console`)      | `case.view`     | List with filters, create a case, detail with timeline, reply, change status or priority, assign to me, **move to another queue** |
-| Customer     | host (`crm-console`)      | `customer.view` | List, profile with PII masked by role, **case history** with links to each case                                                   |
+| Case         | `apps/crm-cs`           | `case.view`     | List with filters, create a case, detail with timeline, reply, change status or priority, assign to me, **move to another queue** |
+| Customer     | `apps/crm-cs`           | `customer.view` | List, profile with PII masked by role, **case history** with links to each case                                                   |
 | Finance      | `apps/crm-finance`      | `case.export`   | Refund requests: filter by status, approve or reject with a required note, who decided and when, link to the case                 |
 | Investigator | `apps/crm-investigator` | `case.escalate` | Escalated cases: list with paging, detail, add an internal note, change status or queue, open the case in Case                    |
 | Monitor      | `apps/crm-monitor`      | `case.reassign` | Queue load: unassigned, overdue, open per queue; queues and unassigned link to the filtered Case list; refreshes every 30 seconds |
@@ -103,6 +108,8 @@ Data lives in page memory, so a reload resets it. Stay in the app by clicking wh
 ```text
 packages/module-contract   types only: RemoteModule (what a remote exports), RemotePageProps (what it gets)
 apps/crm-console             host: shell, session, routing, shared singletons
+  src/router.tsx                 createAppRouter(): adds the routes of loaded remotes under /_authenticated, once, after the remotes load
+apps/crm-cs                  CS remote: modules case and customer, code-based routes.ts, port 5177
   vite.config.ts             federation plugin, no remote listed (the build does not need one)
   src/app/modules/remote.ts      reads VITE_REMOTE_MODULES, loads each `<name>/module`, registers in order
   src/app/modules/registry.ts    registerRemoteModule(): ignores an id or path that is taken, with a warning
@@ -124,9 +131,13 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
   paths are accepted, through the same `safeRedirectPath` that protects the login redirect). Remote
   links keep a real `href` so "open in a new tab" works.
 - **Shared singletons** (`react`, `react-dom`, `react-i18next`, `@tanstack/react-query`,
-  `@crm/auth`, `@crm/ui`): the host and every remote declare the same list. Anything that holds state or
+  `@tanstack/react-router` and `@crm/app-kit` for the CS remote, `@crm/auth`, `@crm/ui`): the host and every remote declare the same list. Anything that holds state or
   context must be shared, or hooks break and contexts split. `@crm/module-contract` is type-only,
   so it is never bundled or shared.
+- **The CS remote and Tailwind:** it uses utility classes of its own, so the host's Tailwind build scans
+  `apps/crm-cs/src` (`@source` in `apps/crm-console/src/styles.css`). A second Tailwind build in the remote was tried and
+  broke the utility order (a late `.hidden` beat the shell's `lg:flex`), so there is one sheet. A new class in the CS
+  remote therefore needs a new host build.
 - **Styling:** a remote is built from `@crm/ui` components and writes no CSS and no Tailwind
   utilities of its own. The host compiles the classes (it scans `packages/ui`), and `@crm/ui` is a shared
   singleton, so component code and CSS always come from the same build. A remote that needs a layout
@@ -140,13 +151,12 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
 
 ```bash
 pnpm install
-pnpm poc:mfe          # host :5173 (mock backend) + the three remotes
+pnpm poc:mfe          # host :5173 (mock backend) + the CS remote and the three PoC remotes
 ```
 
 Open http://localhost:5173. The mock signs in as supervisor. To see another team's view, add
 `?role=l1` (or `l2`, `supervisor`) to the URL; it is read once when the page loads, and signing out
-and in again returns to the role from `VITE_MOCK_ROLE`. To see the host without any remote, run
-`pnpm dev`. To load a production build of one remote:
+and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the host and the CS remote only; the host alone (no remote) shows an empty state. To load a production build of one remote:
 
 ```bash
 pnpm --filter @crm/crm-finance build
@@ -159,11 +169,11 @@ VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
 
 ### Tests
 
-`pnpm test:e2e:mfe` runs `apps/crm-console/e2e-mfe/` against the host and the three remotes
+`pnpm test:e2e:mfe` runs `apps/crm-console/e2e-mfe/` against the host and the four remotes
 (config: `apps/crm-console/playwright.mfe.config.ts`; servers that are already running are reused).
-It is not part of CI, which never starts the remotes. It covers the journey across menus, the
+It is not part of CI, which starts only the CS remote (`pnpm test:e2e`). It covers the journey across menus, the
 Finance decisions, the customer history, the role matrix, and axe scans (WCAG 2.1 AA) of every
-remote page. `pnpm test:e2e` (host alone) and `pnpm check` stay green without any remote.
+remote page. `pnpm test:e2e` and `pnpm check` stay green without the three PoC remotes.
 
 ## Add another remote
 
