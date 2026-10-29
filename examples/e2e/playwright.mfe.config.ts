@@ -40,6 +40,7 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 120_000,
       env: {
+        MOCK_DOMAIN: 'examples/mock-backend/src/index.ts',
         VITE_ENABLE_MOCKS: 'true',
         VITE_MOCK_ROLE: 'supervisor',
         VITE_REMOTE_MODULES: remoteModules,

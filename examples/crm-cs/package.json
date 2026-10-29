@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@crm/config-ts": "workspace:*",
+    "@crm/example-mock-backend": "workspace:*",
     "@crm/i18n": "workspace:*",
     "@crm/test-utils": "workspace:*",
     "@module-federation/vite": "1.23.5",
