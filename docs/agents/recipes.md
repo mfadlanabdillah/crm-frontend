@@ -25,7 +25,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 
 1. Copy `examples/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `examples/crm-cs/src/module.tsx` and its routes to `examples/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today. For a new team's own app, see "Add a remote".
 2. Add the permission in `packages/auth/src/roles.ts` (the `Permission` type and the per-role lists).
-3. Add `<id>.title` and any other text to both locales of `packages/i18n/src/resources.ts`.
+3. Add `<id>.title` and any other text to both locales in the remote's `src/texts.ts`, and call `registerTexts()` when the module loads (as `examples/crm-cs/src/module.tsx` does).
 4. Contract, facade, query, and mock: follow "Add an API endpoint".
 5. Expose things to other modules only through `modules/<id>/public.ts` (queries, schemas, store; never components).
 6. Put the markup in components with their own tests, as in "Add a page or route"; otherwise the coverage floor fails.
@@ -81,11 +81,11 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 
 ## Add UI text
 
-1. Add the key to `packages/i18n/src/resources.ts` in both `id-ID` and `en-US`, with the same structure and `{{...}}` placeholders. Validation messages in zod schemas are keys too, translated at render time.
+1. Add the key in both `id-ID` and `en-US`, in `packages/i18n/src/resources.ts` for the shell or in the remote's `src/texts.ts` for its screens (`examples/crm-cs/src/texts.ts`), with the same structure and `{{...}}` placeholders. Validation messages in zod schemas are keys too, translated at render time.
 2. Use `t('key')` from `react-i18next`; no display strings inline in JSX.
 3. Status, queue, and priority labels are not i18n text: they come from `GET /v1/master-data`.
 
-**Done when:** `pnpm exec vitest run packages/i18n` is green (locale parity test).
+**Done when:** `pnpm exec vitest run packages/i18n examples/crm-cs/src/texts.test.ts` is green (locale parity tests).
 
 ## Add or change a permission
 
@@ -114,7 +114,7 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 
 ## Write tests
 
-- **Unit/component:** `*.test.ts(x)` next to the code. For components using queries, use `renderWithProviders` from `@crm/test-utils` and seed the cache with `setQueryData`. For i18n text, `await createI18n()` in `beforeAll`.
+- **Unit/component:** `*.test.ts(x)` next to the code. For components using queries, use `renderWithProviders` from `@crm/test-utils` and seed the cache with `setQueryData`. For i18n text, `await createI18n()` in `beforeAll`, then the remote's `registerTexts()`.
 - **Router:** components that render a `Link`, use `useNavigate`, or show route errors: `await renderWithRouter(<Thing />, { linkTargets: ['/cases/$caseId'] })` from `@crm/test-utils` (memory router + query client; `rootOptions` passes `errorComponent` and friends). Example: `app/layout/RouteFallbacks.test.tsx`.
 - **E2E (Playwright):** dev server with MSW. The shell's own tests are in `apps/crm-console/e2e/` (no remote); journeys through a remote are in `examples/e2e/`. Import `test` and `expect` from the `support.ts` next to them and take `signedInPage` (already signed in: on `/` for the shell, on `/cases` for the CS example). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
 - **Accessibility:** add new pages to `e2e/a11y.spec.ts`; `expectNoViolations` must stay clean.

@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Case } from '@crm/api-client'
 import { createI18n } from '@crm/i18n'
+import { registerTexts } from '@/texts'
 import { renderWithRouter } from '@crm/test-utils'
 import { CustomerCaseList } from './CustomerCaseList'
 
@@ -16,6 +17,7 @@ const item = {
 describe('CustomerCaseList', () => {
   beforeAll(async () => {
     await createI18n()
+    registerTexts()
   })
 
   it('links each case to its detail route and shows the translated status', async () => {

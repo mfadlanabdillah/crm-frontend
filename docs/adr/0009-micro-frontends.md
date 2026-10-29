@@ -37,8 +37,10 @@ service (the Case and Customer modules) was moved out of the console into its ow
     the remote needs a new shell build, so independence covers logic and data, not appearance.
   - **Shared code moves to packages.** A remote cannot import the shell, so the helpers both need moved
     to a new package, `@crm/app-kit`, and the permission guard moved with them.
-  - **Coupling that stays.** CS texts (`@crm/i18n`) and CS permissions (`@crm/auth`) still
-    live in the shell and shared packages. `pnpm new:module` only creates shell modules;
+  - **Coupling that stays.** CS permissions (`@crm/auth`), the role-to-permission table, and the
+    `/v1/cases...` paths of the OpenAPI contract still live in shared packages. They are the product's
+    policy and its contract with the BFF, so the boilerplate ships them as examples to replace. CS texts
+    moved into the CS remote (`examples/crm-cs/src/texts.ts`). `pnpm new:module` only creates shell modules;
     `pnpm new:remote` creates a whole remote app, but a new module inside `examples/crm-cs` is still
     copied by hand.
   - **No isolation.** A remote runs in the same page with the same cache, which holds customer data,

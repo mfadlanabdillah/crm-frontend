@@ -5,7 +5,7 @@ describe('i18n', () => {
   it('memakai id-ID sebagai default', async () => {
     const instance = await createI18n()
     expect(instance.language).toBe('id-ID')
-    expect(instance.t('cases.title')).toBe('Case')
+    expect(instance.t('login.button')).toBe('Masuk lewat SSO')
   })
 
   it('bisa memuat en-US', async () => {
