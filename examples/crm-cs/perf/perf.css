@@ -1,4 +1,4 @@
-@import '../../crm-console/src/styles.css';
+@import '../../../apps/crm-console/src/styles.css';
 
 /* Root Vite harness ada di perf/, jadi kelas Tailwind di src/ harus didaftarkan manual. */
 @source '../src';

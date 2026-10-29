@@ -1,0 +1,9 @@
+{
+  "extends": "@crm/config-ts/library",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["cs/**/*.ts", "mfe/**/*.ts", "*.ts"]
+}

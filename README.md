@@ -35,7 +35,8 @@ Butuh Node >= 22.12 (lihat `.nvmrc`) dan pnpm >= 12 (`corepack enable`).
 ```bash
 pnpm install
 cp apps/crm-console/.env.example apps/crm-console/.env.local
-pnpm dev            # http://localhost:5173
+pnpm dev            # http://localhost:5173 (shell saja: layar kosong)
+pnpm dev:examples   # shell + empat contoh remote, dengan data tiruan
 ```
 
 Aplikasi langsung masuk sebagai **supervisor** (sesi mock). Untuk mencoba peran lain, ubah
@@ -54,21 +55,21 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 
 ## Perintah
 
-| Perintah                         | Fungsi                                                                                                                  |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`                       | Dev server shell (5173) dan remote CS (5177) bersama, dengan backend mock; shell sendiri hanya menampilkan layar kosong |
-| `pnpm check`                     | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR)                         |
-| `pnpm test`                      | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                                            |
-| `pnpm test:e2e`                  | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                                          |
-| `pnpm size`                      | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                                            |
-| `pnpm --filter @crm/crm-cs perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)                                       |
-| `pnpm codegen:api`               | Generate ulang klien dari `packages/api-client/openapi/`                                                                |
-| `pnpm new:module`                | Buat kerangka modul baru (lihat bagian di bawah)                                                                        |
-| `pnpm new:remote`                | Buat aplikasi remote baru di `apps/crm-<id>` (`docs/agents/recipes.md`)                                                 |
-| `pnpm new:endpoint`              | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                                            |
-| `pnpm poc:mfe`                   | PoC micro frontend: host + 3 remote (Finance, Investigator, Monitor), lihat `docs/poc/micro-frontend.md`                |
-| `pnpm test:e2e:mfe`              | E2E PoC micro frontend: alur lintas semua menu (host + 3 remote), tidak ikut CI                                         |
-| `pnpm format`                    | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                                               |
+| Perintah                         | Fungsi                                                                                          |
+| -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm dev`                       | Dev server shell dengan backend mock; tanpa remote, shell menampilkan layar kosong              |
+| `pnpm check`                     | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR) |
+| `pnpm test`                      | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
+| `pnpm test:e2e`                  | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA |
+| `pnpm size`                      | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                    |
+| `pnpm --filter @crm/crm-cs perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)               |
+| `pnpm codegen:api`               | Generate ulang klien dari `packages/api-client/openapi/`                                        |
+| `pnpm new:module`                | Buat kerangka modul baru (lihat bagian di bawah)                                                |
+| `pnpm new:remote`                | Buat aplikasi remote baru di `apps/crm-<id>` (`docs/agents/recipes.md`)                         |
+| `pnpm new:endpoint`              | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                    |
+| `pnpm dev:examples`              | Shell dan empat contoh remote (CS, Finance, Investigator, Monitor), lihat `examples/README.md`  |
+| `pnpm test:e2e:mfe`              | E2E alur lintas semua menu contoh (shell + empat remote), tidak ikut CI                         |
+| `pnpm format`                    | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
 
 ## Cara kerjanya
 
@@ -77,9 +78,10 @@ apps/crm-console/src   # shell: login, layout, navigasi, router; tanpa layar dom
   routes/        # URL shell
   app/           # layout, auth, daftar modul, pemuat remote
   mocks/         # backend tiruan (hanya dev)
-apps/crm-cs/src        # remote customer service (modul case dan customer), dimuat shell saat start
+examples/crm-cs/src    # contoh remote customer service (modul case dan customer), dimuat shell saat start
   modules/<id>/  # satu folder per fitur CRM
   routes.ts      # rute yang dipasang di bawah layout shell
+examples/        # contoh remote yang bisa dijalankan (bukan bagian boilerplate); lihat examples/README.md
 packages/
   ui/            # komponen dan token desain bersama (@crm/ui)
   app-kit/       # helper bersama shell dan remote (klien API, format, SSE, guard izin)
@@ -102,7 +104,7 @@ Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; 
 pnpm new:module invoice --path /invoices --icon Receipt --permission invoice.view
 ```
 
-Perintah itu membuat modul di shell. Modul domain (seperti `case` dan `customer`) ada di `apps/crm-cs`; belum ada generator untuk itu, salin modul `customer`.
+Perintah itu membuat modul di shell. Modul domain contoh (`case` dan `customer`) ada di `examples/crm-cs`; untuk aplikasi remote baru pakai `pnpm new:remote`.
 Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
 
 ## Status dan batasan

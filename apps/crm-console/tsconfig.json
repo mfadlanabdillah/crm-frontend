@@ -10,12 +10,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "e2e/**/*.ts",
-    "e2e-mfe/**/*.ts",
-    "perf/**/*.ts",
-    "perf/**/*.tsx",
     "vite.config.ts",
     "vitest.config.ts",
-    "playwright.config.ts",
-    "playwright.mfe.config.ts"
+    "playwright.config.ts"
   ]
 }

@@ -1,8 +1,8 @@
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import config from '@crm/config-eslint'
 
 /**
- * Batas arsitektur apps/crm-console dan apps/crm-cs (lihat AGENTS.md); crm-cs hanya punya modules/ dan lib/:
+ * Batas arsitektur setiap app dan contoh (lihat AGENTS.md); remote hanya punya modules/ dan lib/:
  *   lib                 ->  tidak boleh mengimpor modules, app, routes
  *   modules/<m>         ->  tidak boleh mengimpor app, routes, atau modul lain (kecuali public.ts)
  *   app                 ->  hanya boleh mengimpor `module.ts` / `public.ts` sebuah modul
@@ -10,12 +10,23 @@ import config from '@crm/config-eslint'
  * Daftar modul dibaca dari folder, jadi modul baru otomatis ikut dijaga.
  */
 const srcDir = 'apps/crm-console/src'
-const appSrcDirs = [srcDir, 'apps/crm-cs/src']
+// Every app and example with a `src/` folder; modules are read from `src/modules/` where it exists.
+const rootsOf = (parent) =>
+  readdirSync(new URL(`./${parent}`, import.meta.url), { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(new URL(`./${parent}/${entry.name}/src`, import.meta.url)),
+    )
+    .map((entry) => `${parent}/${entry.name}/src`)
+const appSrcDirs = [...rootsOf('apps'), ...rootsOf('examples')]
 // Dibaca relatif terhadap file ini, bukan cwd, supaya ESLint boleh dijalankan dari subfolder.
 const moduleIdsOf = (dir) =>
-  readdirSync(new URL(`./${dir}/modules`, import.meta.url), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
+  existsSync(new URL(`./${dir}/modules`, import.meta.url))
+    ? readdirSync(new URL(`./${dir}/modules`, import.meta.url), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+    : []
 
 const importRule = (patterns) => ({
   'no-restricted-imports': ['error', { patterns }],
@@ -109,7 +120,7 @@ const rawControl = {
 }
 const notTests = ['**/*.test.{ts,tsx}']
 const uiStandardApps = {
-  files: ['apps/*/src/**/*.{ts,tsx}'],
+  files: ['apps/*/src/**/*.{ts,tsx}', 'examples/*/src/**/*.{ts,tsx}'],
   ignores: notTests,
   rules: { 'no-restricted-syntax': ['error', rawControl, paletteColor] },
 }

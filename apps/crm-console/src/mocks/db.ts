@@ -244,7 +244,7 @@ const customers: CustomerProfile[] = cases.flatMap((item, index) => {
 })
 const customersById = new Map(customers.map((item) => [item.id, item]))
 
-// Refund requests are mock-only seed data for the Finance PoC (see docs/poc/micro-frontend.md).
+// Refund requests are mock-only seed data for the Finance PoC (see examples/README.md).
 const REFUND_REASONS = [
   'Barang rusak saat diterima',
   'Paket hilang dalam pengiriman',

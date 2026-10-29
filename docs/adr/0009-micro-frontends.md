@@ -7,11 +7,11 @@
 
 The CRM will serve several teams (customer service now, later Finance, Investigator, and others). The
 engineering lead asked whether the frontend can be built as micro frontends. A proof of concept
-([docs/poc/micro-frontend.md](../poc/micro-frontend.md)) used the console as the host and loaded three
+([examples/README.md](../../examples/README.md)) used the console as the host and loaded three
 remotes (Finance, Investigator, Monitor) at runtime with Module Federation (`@module-federation/vite`,
 Vite 8). The team then decided that `apps/crm-console` should be a reusable boilerplate, so customer
 service (the Case and Customer modules) was moved out of the console into its own remote,
-`apps/crm-cs`. All data is mock. What the work showed:
+`examples/crm-cs` (now kept in `examples/`, outside the boilerplate). All data is mock. What the work showed:
 
 - **It works.** A remote is built and served on its own, appears in the menu through the module
   contract, and shares one React, one session, one query cache, and one i18n instance with the shell.
@@ -31,7 +31,7 @@ service (the Case and Customer modules) was moved out of the console into its ow
 - **It has costs that do not go away.**
   - **Routing types.** Remote routes are not in the shell's generated route tree, so links to `/cases`
     and `/customers` are not type-checked in the shell, and the remote types its own search params
-    (`apps/crm-cs/src/lib/search-route.ts`).
+    (`examples/crm-cs/src/lib/search-route.ts`).
   - **One shared Tailwind sheet.** The shell's build scans the remote's source. A second Tailwind build
     in the remote broke the utility order (a late `.hidden` beat the shell's `lg:flex`). A new class in
     the remote needs a new shell build, so independence covers logic and data, not appearance.
@@ -39,15 +39,16 @@ service (the Case and Customer modules) was moved out of the console into its ow
     to a new package, `@crm/app-kit`, and the permission guard moved with them.
   - **Coupling that stays.** CS mocks, CS texts (`@crm/i18n`), and CS permissions (`@crm/auth`) still
     live in the shell and shared packages. `pnpm new:module` only creates shell modules;
-    `pnpm new:remote` creates a whole remote app, but a new module inside `apps/crm-cs` is still
+    `pnpm new:remote` creates a whole remote app, but a new module inside `examples/crm-cs` is still
     copied by hand.
   - **No isolation.** A remote runs in the same page with the same cache, which holds customer data,
     and can call the API with the user's session. Splitting a team into a remote adds no data
     protection; the BFF and server-side permissions remain the only boundary.
-  - **Production is built, not run.** The image now serves the CS remote under `/cs/` and the shell is
-    built with `VITE_REMOTE_MODULES=crm_cs=/cs/remoteEntry.js`. This was built but not run behind
-    nginx. HTTPS and CORS for separate remote origins, the CSP (`script-src 'self'`), a deploy pipeline
-    per remote, and coordination of the shared singletons are not designed.
+  - **Production is mostly untested.** The image is the shell alone (`VITE_REMOTE_MODULES` is empty by
+    default). During this work the shell and the CS remote were run together behind nginx under `/cs/`:
+    the remote and its chunks loaded with the right cache headers. Nothing else was tried in production:
+    sign-in (needs the BFF), HTTPS and CORS for separate remote origins, the CSP (`script-src 'self'`),
+    a deploy pipeline per remote, and coordination of the shared singletons are not designed.
 
 ## Decision
 
@@ -55,7 +56,7 @@ Proposed:
 
 1. **The console is a shell.** It owns login, session, layout, navigation, the router, and the remote
    loader. It ships no domain screens and starts with an empty state when no remote loads.
-2. **Every domain is a remote**, customer service included. Today that is `apps/crm-cs`; Finance,
+2. **Every domain is a remote**, customer service included. Today that is `examples/crm-cs`; Finance,
    Investigator, and Monitor stay proof-of-concept remotes until their teams exist.
 3. **A remote imports packages, never the shell.** What shell and remotes share lives in
    `@crm/app-kit`, `@crm/ui`, `@crm/auth`, `@crm/api-client`, and `@crm/module-contract`. ESLint enforces
@@ -70,12 +71,12 @@ Proposed:
 ## Consequences
 
 - The shell can be reused for another product by registering other remotes. A new team starts from a
-  module copied from `apps/crm-cs` and can release its logic and data on its own.
-- CS agents depend on two builds and two deploys instead of one. CI starts the CS remote for e2e; the
+  module copied from `examples/crm-cs` and can release its logic and data on its own.
+- An app that uses a remote depends on two builds and two deploys instead of one. CI starts the CS example for e2e; the
   image builds both apps.
 - Type safety for cross-app links is weaker, and shell and remote builds are coupled through Tailwind.
 - The proof of concept is no longer a branch to rebase later: it is the product's structure. If the
-  costs above outweigh the benefit once real teams exist, collapsing `apps/crm-cs` back into the
+  costs above outweigh the benefit once real teams exist, collapsing `examples/crm-cs` back into the
   console is a mechanical move (the modules keep their boundaries), so the decision is reversible.
 
 ## Alternatives considered

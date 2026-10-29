@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test as base } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
@@ -53,13 +54,34 @@ export async function endSession(page: Page) {
   await page.evaluate(() => fetch('/v1/auth/logout', { method: 'POST' }))
 }
 
-/** `signedInPage`: halaman yang sudah di /cases dengan sesi mock aktif (peran bawaan: supervisor). */
-export const test = base.extend<{ signedInPage: Page }>({
-  // Parameter kedua bernama `provide`: nama `use` memicu aturan react-hooks di ESLint.
-  signedInPage: async ({ page }, provide) => {
-    trackApiRequests(page)
-    await page.goto('/cases')
-    await expect(page.getByRole('heading', { name: 'Case', exact: true }).first()).toBeVisible()
-    await provide(page)
-  },
-})
+/** Fails the test on any WCAG 2.1 AA violation, listing the failing selectors. */
+export async function expectNoViolations(page: Page) {
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  const summary = violations.map(
+    (v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`,
+  )
+  expect(summary).toEqual([])
+}
+
+/**
+ * `signedInPage`: a page signed in on the mock backend (default role: supervisor) at `landing`,
+ * once `ready` says the screen is up. Remotes pick their own landing page and readiness check.
+ */
+export function createSignedInTest(landing: string, ready: (page: Page) => Promise<void>) {
+  return base.extend<{ signedInPage: Page }>({
+    // The second parameter is `provide`: the name `use` trips the react-hooks ESLint rule.
+    signedInPage: async ({ page }, provide) => {
+      trackApiRequests(page)
+      await page.goto(landing)
+      await ready(page)
+      await provide(page)
+    },
+  })
+}
+
+/** The shell alone: signed in, on the start page, with the sign-out button visible. */
+export const test = createSignedInTest('/', (page) =>
+  expect(page.getByRole('button', { name: 'Keluar' })).toBeVisible(),
+)

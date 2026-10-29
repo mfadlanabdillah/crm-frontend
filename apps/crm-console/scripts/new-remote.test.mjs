@@ -23,8 +23,8 @@ beforeEach(() => {
   sandbox = path.join(root, 'apps/crm-console')
   mkdirSync(path.join(sandbox, 'scripts'), { recursive: true })
   cpSync(path.join(appRoot, 'scripts/new-remote.mjs'), path.join(sandbox, 'scripts/new-remote.mjs'))
-  mkdirSync(path.join(root, 'apps/crm-cs'), { recursive: true })
-  writeFileSync(path.join(root, 'apps/crm-cs/vite.config.ts'), 'const REMOTE_PORT = 5177\n')
+  mkdirSync(path.join(root, 'examples/crm-cs'), { recursive: true })
+  writeFileSync(path.join(root, 'examples/crm-cs/vite.config.ts'), 'const REMOTE_PORT = 5177\n')
 })
 
 afterEach(() => rmSync(root, { recursive: true, force: true }))

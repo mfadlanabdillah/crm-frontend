@@ -21,7 +21,7 @@ import { createRoot } from 'react-dom/client'
 import { CaseTable } from '@/modules/case/components/CaseTable'
 import { applyCaseEvent, parseCaseEvent } from '@/modules/case/queries/useCaseStream'
 import { caseKeys } from '@/modules/case/queries/keys'
-import { db } from '../../crm-console/src/mocks/db'
+import { db } from '../../../apps/crm-console/src/mocks/db'
 
 declare global {
   interface Window {

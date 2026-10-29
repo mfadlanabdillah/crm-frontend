@@ -15,18 +15,24 @@
  * the mock body, and PII masking are yours to fill in.
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const appRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const repoRoot = path.join(appRoot, '../..')
 const src = path.join(appRoot, 'src')
-// A module lives in the console shell or in a domain app (crm-cs); find the one that has it.
+// A module lives in the console shell or in a remote (apps/ or examples/); find the one that has it.
 const moduleSrc = (id) =>
-  [src, path.join(repoRoot, 'apps/crm-cs/src')].find((root) =>
-    existsSync(path.join(root, 'modules', id)),
-  ) ?? src
+  ['apps', 'examples']
+    .flatMap((parent) =>
+      existsSync(path.join(repoRoot, parent))
+        ? readdirSync(path.join(repoRoot, parent)).map((app) =>
+            path.join(repoRoot, parent, app, 'src'),
+          )
+        : [],
+    )
+    .find((root) => existsSync(path.join(root, 'modules', id))) ?? src
 
 const args = process.argv.slice(2)
 const flag = (name) => {

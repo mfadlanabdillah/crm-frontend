@@ -1,4 +1,4 @@
-import { expect, test } from './support'
+import { expect, test } from '../support'
 
 test('creating a case opens its detail page', async ({ signedInPage: page }) => {
   await page.getByRole('link', { name: 'Case baru' }).click()
