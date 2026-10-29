@@ -49,17 +49,18 @@ packages/
   ui/  api-client/  auth/  i18n/  app-kit/  module-contract/  test-utils/  config-ts/  config-eslint/
 ```
 
-| To add...        | Put it in...                                                                                                                                                                                                         |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CRM module       | Copy the `customer` module in `apps/crm-cs/src/modules/` and add its routes to `apps/crm-cs/src/routes.ts`. `pnpm new:module` only makes a module in the shell (none today); a `new:remote` generator is a follow-up |
-| Page / URL       | route in `apps/crm-cs/src/routes.ts`; page body in `src/modules/<id>/pages/`                                                                                                                                         |
-| Module component | `apps/crm-cs/src/modules/<id>/components/`                                                                                                                                                                           |
-| UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                                                                                       |
-| API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/`                                                                     |
-| Permission       | `packages/auth/src/roles.ts`                                                                                                                                                                                         |
-| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                                                                      |
-| Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                                                                |
-| Dev mock         | `apps/crm-console/src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                                                                            |
+| To add...        | Put it in...                                                                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CRM module       | Copy the `customer` module in `apps/crm-cs/src/modules/` and add its routes to `apps/crm-cs/src/routes.ts`. `pnpm new:module` only makes a module in the shell (none today) |
+| Remote app       | `pnpm new:remote <id> --icon <LucideIcon> --permission <module.action>` (new `apps/crm-<id>`, see recipe "Add a remote")                                                    |
+| Page / URL       | route in `apps/crm-cs/src/routes.ts`; page body in `src/modules/<id>/pages/`                                                                                                |
+| Module component | `apps/crm-cs/src/modules/<id>/components/`                                                                                                                                  |
+| UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                                              |
+| API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/`                            |
+| Permission       | `packages/auth/src/roles.ts`                                                                                                                                                |
+| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                             |
+| Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                       |
+| Dev mock         | `apps/crm-console/src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                                   |
 
 ### Layer boundaries (enforced by ESLint, `eslint.config.js`)
 
