@@ -4,8 +4,10 @@
 @source '../../../packages/ui/src';
 /* One utility sheet for the whole page: classes used by remotes (sibling apps and examples) are
    generated here. A new class in a remote needs a new shell build (see examples/README.md). */
-@source '../../*/src';
-@source '../../../examples/*/src';
+/* File globs on purpose: Tailwind does not expand a wildcard used as a directory name, so a bare
+   directory pattern matched nothing and remote classes were missing. */
+@source '../../*/src/**/*.{ts,tsx}';
+@source '../../../examples/*/src/**/*.{ts,tsx}';
 
 @layer components {
   /* Tiptap merender HTML biasa; batasi gaya agar konsisten dengan UI. */
