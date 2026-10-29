@@ -39,13 +39,14 @@ apps/crm-console/src   # the shell
   routes/            # file-based routing: login, the authenticated layout, remote page routes
   app/               # layout/AppShell, auth/, modules/registry + remote loader
   lib/               # shell-only helpers (+ *.test.ts)
-  mocks/             # MSW handlers + in-memory db + mock masking (dev only, not in the prod bundle)
+  mocks/             # MSW worker, mock session and sign-out (dev only, not in the prod bundle); no domain data
   modules/types.ts   # ModuleDefinition contract
 apps/crm-console/e2e # the shell's own e2e (no remote)
 examples/crm-cs/src    # example remote: customer service
   modules/<id>/      # case, customer: module.ts (RemoteModule), public.ts, api/ queries/ schemas/ components/ pages/ store/
   routes.ts          # code-based routes added under the shell's /_authenticated layout
   module.tsx         # what the remote exposes: its modules
+examples/mock-backend # dev mock of the example domain: cases, customers, refunds (MSW handlers, db, masking)
 examples/e2e         # journeys across the console and the examples
 packages/
   ui/  api-client/  auth/  i18n/  app-kit/  module-contract/  test-utils/  config-ts/  config-eslint/
@@ -62,7 +63,7 @@ packages/
 | Permission       | `packages/auth/src/roles.ts`                                                                                                                                                        |
 | UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                                     |
 | Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                               |
-| Dev mock         | `apps/crm-console/src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                                           |
+| Dev mock         | domain data: `examples/mock-backend/src/handlers.ts` (+ `db.ts`; per-role masking in `mask.ts`); session only: `apps/crm-console/src/mocks/`                                        |
 
 ### Layer boundaries (enforced by ESLint, `eslint.config.js`)
 
@@ -86,7 +87,7 @@ packages/
 **Security and PII**
 
 - No tokens in `localStorage`/`sessionStorage`. Session is an `HttpOnly` cookie via the BFF; send `X-CSRF-Token` on non-safe methods.
-- Real masking happens on the server/BFF. The mock (`mocks/mask.ts`) imitates it, and the UI still calls `maskPhone`/`maskEmail`/`maskAddress` as a second layer.
+- Real masking happens on the server/BFF. The mock (`examples/mock-backend/src/mask.ts`) imitates it, and the UI still calls `maskPhone`/`maskEmail`/`maskAddress` as a second layer.
 - Permissions via `can()` / `<Can>` and `requirePermission` (from `@crm/app-kit`) on routes. Never `role === '...'` in components.
 - No real PII, secrets, or tokens in code, fixtures, logs, or commit messages. Every `VITE_*` variable is public.
 
@@ -132,7 +133,7 @@ packages/
 
 - **The shell builds its router after the remotes load.** Remote routes (`/cases`, `/customers`) are not in `routeTree.gen.ts`, so `<Link to="/cases">` is not type-checked in the shell; a remote types its search params itself (`examples/crm-cs/src/lib/search-route.ts`). A remote that fails to load leaves its routes out and the shell starts without them.
 - **One Tailwind sheet.** The shell scans every app and example `src/` (`@source` in `apps/crm-console/src/styles.css`). A new class in a remote needs a new shell build; a separate Tailwind build in the remote breaks the utility order.
-- **Mocks, texts, and permissions of the CS example still live in the shell/packages** (`mocks/`, `@crm/i18n`, `@crm/auth`). Known coupling, not a rule.
+- **Domain mock data lives in `examples/mock-backend`**, loaded into the shell's MSW worker through the `@crm/mock-domain` alias. `MOCK_DOMAIN=examples/mock-backend/src/index.ts` turns it on (`pnpm dev:examples` and the example e2e set it); without it the shell has no domain data. **Texts and permissions of the CS example still live in `@crm/i18n` and `@crm/auth`.** Known coupling, not a rule.
 - **Dev:** `pnpm dev` starts the shell alone (it shows the empty state). `pnpm dev:examples` starts the shell (5173) and the four examples (5174 to 5177) together.
 
 ## Agent boundaries

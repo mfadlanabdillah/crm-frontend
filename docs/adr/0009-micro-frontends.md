@@ -37,7 +37,7 @@ service (the Case and Customer modules) was moved out of the console into its ow
     the remote needs a new shell build, so independence covers logic and data, not appearance.
   - **Shared code moves to packages.** A remote cannot import the shell, so the helpers both need moved
     to a new package, `@crm/app-kit`, and the permission guard moved with them.
-  - **Coupling that stays.** CS mocks, CS texts (`@crm/i18n`), and CS permissions (`@crm/auth`) still
+  - **Coupling that stays.** CS texts (`@crm/i18n`) and CS permissions (`@crm/auth`) still
     live in the shell and shared packages. `pnpm new:module` only creates shell modules;
     `pnpm new:remote` creates a whole remote app, but a new module inside `examples/crm-cs` is still
     copied by hand.

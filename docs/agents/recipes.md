@@ -14,7 +14,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 3. Export the type and add a method to `createApiClient` in `packages/api-client/src/index.ts`, wrapped in `unwrap(...)` like the others so errors become `ApiError`.
 4. Wrap it in the module facade `examples/crm-cs/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
 5. Add a query hook in `modules/<id>/queries/` using `queryOptions` and the module's own key factory in `modules/<id>/queries/keys.ts` (`caseKeys`, `customerKeys`; `src/lib/query-keys.ts` holds only cross-module keys such as `sessionKey` and `masterDataKey`). Example: `useMasterData.ts`.
-6. Dev mock: data in `src/mocks/db.ts`, handler in `src/mocks/handlers.ts`. Mask PII per role through `src/mocks/mask.ts`. If only some roles may call the endpoint, enforce it in the handler with `can(role, 'x')` and answer 403, like the existing handlers.
+6. Dev mock: data in `examples/mock-backend/src/db.ts`, handler in `examples/mock-backend/src/handlers.ts`. Mask PII per role through `examples/mock-backend/src/mask.ts`. If only some roles may call the endpoint, enforce it in the handler with `can(role, 'x')` and answer 403, like the existing handlers.
 7. If only some roles may call it, do not fire the request for the others: gate the query with `enabled` (`useQuery({ ...options, enabled: can('x') })`, with `can` from `useAuth()`), otherwise they trigger a 403 on every visit.
 8. Add a row to `docs/contract-status.md` (a new endpoint starts as **Proposed**). A test fails when an operation in `openapi.yaml` is missing from that table.
 9. Tests: client logic in `packages/api-client/src/index.test.ts`; components that use it with `renderWithProviders` from `@crm/test-utils` (seed the cache with `queryClient.setQueryData`).
@@ -99,9 +99,9 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 
 1. The server already masks; the UI still calls `maskPhone`/`maskEmail`/`maskAddress` from `@crm/auth` with the current role.
 2. Never write PII to logs, error messages, or test fixtures; use fake data (`example.com`).
-3. The server-imitating mock is `src/mocks/mask.ts`; update it when a field shape changes.
+3. The server-imitating mock is `examples/mock-backend/src/mask.ts`; update it when a field shape changes.
 
-**Done when:** a masking test covers the new field (`packages/auth/src/pii.test.ts` or `src/mocks/mask.test.ts`).
+**Done when:** a masking test covers the new field (`packages/auth/src/pii.test.ts` or `examples/mock-backend/src/mask.test.ts`).
 
 ## Errors, expired sessions, and logout
 

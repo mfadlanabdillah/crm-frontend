@@ -33,6 +33,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
+        MOCK_DOMAIN: 'examples/mock-backend/src/index.ts',
         VITE_ENABLE_MOCKS: 'true',
         VITE_MOCK_ROLE: 'supervisor',
         VITE_REMOTE_MODULES: `crm_cs=http://localhost:${CS_PORT}/remoteEntry.js`,

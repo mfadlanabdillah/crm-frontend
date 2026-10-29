@@ -38,7 +38,7 @@ apps/crm-console/src   the shell: no domain screens, loads remotes at startup
   routes/          URL files (TanStack Router, file-based): login, the authenticated layout, remote page routes
   app/             layout, auth, module registry and remote loader, design-system gallery (dev only)
   lib/             shell-only helpers (query client, telemetry, redirect)
-  mocks/           MSW handlers, in-memory database, mock masking (dev only)
+  mocks/           MSW worker and mock session (dev only); domain data comes from examples/mock-backend
 examples/crm-cs/src    example remote: customer service (Module Federation); examples are not part of the boilerplate
   modules/<id>/    case, customer: module.ts, public.ts, api/, queries/, schemas/, components/, pages/, store/
   routes.ts        code-based routes added under the shell's authenticated layout

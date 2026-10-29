@@ -21,7 +21,7 @@ const TOUCHED = [
   'packages/api-client/openapi/openapi.yaml',
   'packages/api-client/src/index.ts',
   'examples/crm-cs/src/modules/customer/api/customer.ts',
-  'apps/crm-console/src/mocks/handlers.ts',
+  'examples/mock-backend/src/handlers.ts',
   'docs/contract-status.md',
 ]
 
@@ -90,7 +90,7 @@ describe('new:endpoint', () => {
     expect(hook).toContain('export function useZzItem(zzItemId: string)')
     expect(hook).toContain("queryKey: [...zzKeys.all, 'zzItem', zzItemId]")
 
-    const handlers = read('apps/crm-console/src/mocks/handlers.ts')
+    const handlers = read('examples/mock-backend/src/handlers.ts')
     expect(handlers).toContain("http.get('/v1/zz-items/:zzItemId'")
     expect(handlers).toContain("jsonError(501, 'not_implemented'")
     expect(handlers.endsWith('  }),\n]\n')).toBe(true)
@@ -116,7 +116,7 @@ describe('new:endpoint', () => {
     expect(facade).toContain('zzCustomerFixture: (customerId: string, signal?: AbortSignal) =>')
     expect(facade).toContain('detail: (customerId')
     expect(facade.trimEnd().endsWith('\n}')).toBe(true)
-    expect(read('apps/crm-console/src/mocks/handlers.ts')).toContain(
+    expect(read('examples/mock-backend/src/handlers.ts')).toContain(
       "can(session.user.role, 'customer.view')",
     )
     expect(read('packages/api-client/openapi/openapi.yaml')).toContain("'403':")
@@ -154,7 +154,7 @@ describe('new:endpoint', () => {
   })
 
   it('writes nothing when one anchor is not recognized', () => {
-    writeFileSync(path.join(root, 'apps/crm-console/src/mocks/handlers.ts'), 'export {}\n')
+    writeFileSync(path.join(root, 'examples/mock-backend/src/handlers.ts'), 'export {}\n')
     const before = snapshot()
 
     const result = run('zz', 'getZzItem', '--path', '/v1/zz-items/{zzItemId}')

@@ -77,7 +77,7 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 apps/crm-console/src   # shell: login, layout, navigasi, router; tanpa layar domain
   routes/        # URL shell
   app/           # layout, auth, daftar modul, pemuat remote
-  mocks/         # backend tiruan (hanya dev)
+  mocks/         # worker MSW dan sesi tiruan (hanya dev); data domain ada di examples/mock-backend
 examples/crm-cs/src    # contoh remote customer service (modul case dan customer), dimuat shell saat start
   modules/<id>/  # satu folder per fitur CRM
   routes.ts      # rute yang dipasang di bawah layout shell
