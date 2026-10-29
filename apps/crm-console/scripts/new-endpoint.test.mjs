@@ -83,7 +83,8 @@ describe('new:endpoint', () => {
     expect(client).toContain("client.GET('/v1/zz-items/{zzItemId}'")
 
     const facade = read('apps/crm-console/src/modules/zz/api/zz.ts')
-    expect(facade).toContain("import { api } from '@/lib/api'")
+    expect(facade).toContain("import { api } from '@crm/app-kit'")
+    expect(facade).not.toContain('@/lib/api')
     expect(facade).toContain('zzItem: (zzItemId: string, signal?: AbortSignal) =>')
 
     const hook = read('apps/crm-console/src/modules/zz/queries/useZzItem.ts')
@@ -114,6 +115,8 @@ describe('new:endpoint', () => {
 
     const facade = read('examples/crm-cs/src/modules/customer/api/customer.ts')
     expect(facade).toContain('zzCustomerFixture: (customerId: string, signal?: AbortSignal) =>')
+    // The facade already imports `api`: no second import.
+    expect(facade.match(/import \{[^}]*\bapi\b[^}]*\} from/g)).toHaveLength(1)
     expect(facade).toContain('detail: (customerId')
     expect(facade.trimEnd().endsWith('\n}')).toBe(true)
     expect(read('examples/mock-backend/src/handlers.ts')).toContain(

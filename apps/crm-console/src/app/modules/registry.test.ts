@@ -10,8 +10,11 @@ import {
 } from './registry'
 
 describe('registry modul', () => {
-  it('ships no built-in module: every domain is a remote', () => {
-    expect(modules).toEqual([])
+  // The boilerplate ships no built-in module (every domain is a remote; the shell e2e checks the empty
+  // state), but `pnpm new:module` can add one, so only uniqueness is asserted here.
+  it('built-in modules have unique ids and paths', () => {
+    expect(new Set(modules.map((module) => module.id)).size).toBe(modules.length)
+    expect(new Set(modules.map((module) => module.basePath)).size).toBe(modules.length)
   })
 
   it('a role sees exactly the modules whose permission it holds', () => {

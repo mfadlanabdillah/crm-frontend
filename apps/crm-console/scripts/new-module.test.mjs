@@ -94,6 +94,10 @@ describe('new:module', () => {
     expect(read('src/routes/_authenticated/zz-fixtures/index.tsx')).toContain(
       "beforeLoad: requirePermission('zzfixture.view')",
     )
+    // The guard lives in @crm/app-kit; the console's `app/auth/guard` no longer exists.
+    const route = read('src/routes/_authenticated/zz-fixtures/index.tsx')
+    expect(route).toContain("import { requirePermission } from '@crm/app-kit'")
+    expect(route).not.toContain('@/app/auth/guard')
   })
 
   it('menolak id, path, dan permission yang bentuknya salah', () => {
