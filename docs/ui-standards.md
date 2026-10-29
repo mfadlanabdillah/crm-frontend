@@ -106,7 +106,7 @@ controls write them. Page sizes are 25, 50, and 100. A row's main link is a `Tex
 - An error says what went wrong and what to do. It does not apologize and is never vague.
 - An empty screen invites an action.
 - Name things the way the agent does ("case", "antrean"), not the way the system is built.
-- Texts live in `packages/i18n/src/resources.ts` in both locales (the `id-ID` text is the product text).
+- Texts live in both locales: `packages/i18n/src/resources.ts` for the shell, a remote's own `src/texts.ts` for its screens (the `id-ID` text is the product text).
   Dates and numbers go through `Intl` or `@crm/app-kit` (`format.ts`), never string concatenation.
 
 ## Accessibility (WCAG 2.1 AA)

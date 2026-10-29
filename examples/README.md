@@ -127,7 +127,7 @@ examples/crm-cs                  CS remote: modules case and customer, code-base
   src/app/modules/RemoteModulePage.tsx   gives the page `api`, `subPath`, `navigate`, `openHostPath`; or "unavailable"
   src/routes/_authenticated/remote/$moduleId/   index and splat routes, one pair for every remote
   src/mocks/browser.ts           dev only: `?role=l1` opens the app as that role
-examples/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add their own i18n texts
+examples/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add their own i18n texts (so does `crm-cs`, in `src/texts.ts`)
 ```
 
 - **Tool:** `@module-federation/vite` 1.23.5 (Vite 8 is in its peer range) and

@@ -147,7 +147,7 @@ The BFF half is **Proposed**: it is not in this repository, and only the mock si
 
 Screens are built from `@crm/ui`; tokens live in `packages/ui/src/theme.css`; lint rejects raw controls and
 palette colors ([ADR-0008](adr/0008-shared-ui-package.md), [docs/ui-standards.md](ui-standards.md)).
-Texts are in both locales in `packages/i18n`, and a test rejects mismatched keys. Accessibility is WCAG 2.1
+Texts are in both locales, in `packages/i18n` for the shell and in a remote's own `src/texts.ts` for its screens, and a test rejects mismatched keys. Accessibility is WCAG 2.1
 AA, checked by axe in e2e.
 
 ## 5. Quality and delivery
@@ -177,7 +177,7 @@ drift). The runtime is a static build served by nginx in a Docker image.
 | Another endpoint | the recipe in [docs/agents/recipes.md](agents/recipes.md)                   |
 | A UI component   | "Changing or adding a component" in [docs/ui-standards.md](ui-standards.md) |
 | A permission     | `packages/auth/src/roles.ts`                                                |
-| UI text          | `packages/i18n/src/resources.ts`, both locales                              |
+| UI text          | shell: `packages/i18n/src/resources.ts`; remote: its `src/texts.ts`         |
 
 ## 7. Open decisions
 
