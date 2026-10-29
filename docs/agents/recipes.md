@@ -23,7 +23,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 
 ## Add a CRM module
 
-1. Copy `apps/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `apps/crm-cs/src/module.tsx` and its routes to `apps/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today; a `new:remote` generator is a follow-up.
+1. Copy `apps/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `apps/crm-cs/src/module.tsx` and its routes to `apps/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today. For a new team's own app, see "Add a remote".
 2. Add the permission in `packages/auth/src/roles.ts` (the `Permission` type and the per-role lists).
 3. Add `<id>.title` and any other text to both locales of `packages/i18n/src/resources.ts`.
 4. Contract, facade, query, and mock: follow "Add an API endpoint".
@@ -31,6 +31,17 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 6. Put the markup in components with their own tests, as in "Add a page or route"; otherwise the coverage floor fails.
 
 **Done when:** `pnpm check` is green and `pnpm test:e2e` passes (the module shows in navigation for roles that may see it).
+
+## Add a remote
+
+For a new domain that a separate team releases on its own: `pnpm new:remote <id> [--icon <LucideIcon>] [--permission <module.action>] [--port <n>]` (`apps/crm-console/scripts/new-remote.mjs`). It creates `apps/crm-<id>` with a federation config, one page under `/remote/<id>`, and its own text namespace, and takes the next free dev port.
+
+1. Add the permission in `packages/auth/src/roles.ts` if it is new.
+2. Run `pnpm --filter @crm/crm-<id> dev` and start the console with `VITE_REMOTE_MODULES=crm_<id>=http://localhost:<port>/remoteEntry.js` (a comma separates several remotes).
+3. Build the page from `@crm/ui`; use `api` from the page props, not your own client. A remote that needs its own routes adds `routes` to its module, as `apps/crm-cs` does.
+4. Production needs the hosting items in [ADR-0009](../adr/0009-micro-frontends.md) (path, CORS, CSP); the generator does not set them up.
+
+**Done when:** the remote's menu shows for the roles that hold the permission, and `pnpm check` is green.
 
 ## Add a page or route
 
