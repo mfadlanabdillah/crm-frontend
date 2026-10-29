@@ -1,30 +1,39 @@
-# Micro frontend PoC
+# Examples
 
-Status: proof of concept on a feature branch. It answers "can this app be split into micro
-frontends?" with a working host and three remotes that behave like separate teams' modules, every
-menu with a complete flow, all on a mock backend. It is not an accepted architecture decision; if
-the team adopts it, record that as an ADR (`docs/adr/README.md`).
+Working remotes that show how a domain plugs into the console. They are examples, not part of the
+boilerplate: the console (`apps/crm-console`) runs without any of them and shows an empty state.
+They live in `examples/`, are part of the workspace, and are checked by `pnpm check` so they do not
+rot. All data is mock (the mock backend still lives in the console; moving it is planned).
 
-| Finance (decision panel)              | Investigator (detail and actions)                             |
-| ------------------------------------- | ------------------------------------------------------------- |
-| ![Finance](../images/mfe-finance.png) | ![Investigator detail](../images/mfe-investigator-detail.png) |
-| **Monitor**                           | **Customer (case history)**                                   |
-| ![Monitor](../images/mfe-monitor.png) | ![Customer](../images/mfe-customer.png)                       |
+| Example                                             | What it shows                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| `examples/crm-cs`                                   | A full domain: Case and Customer with their own routes (`/cases`)          |
+| `examples/crm-finance`                              | A one-page remote under `/remote/finance`                                  |
+| `examples/crm-investigator`, `examples/crm-monitor` | More one-page remotes, linked to the others                                |
+| `examples/e2e`                                      | Journeys across the console and the examples (not the console's own tests) |
+
+It is not an accepted architecture decision; the proposal and its costs are in
+[ADR-0009](../docs/adr/0009-micro-frontends.md).
+
+| Finance (decision panel)           | Investigator (detail and actions)                          |
+| ---------------------------------- | ---------------------------------------------------------- |
+| ![Finance](images/mfe-finance.png) | ![Investigator detail](images/mfe-investigator-detail.png) |
+| **Monitor**                        | **Customer (case history)**                                |
+| ![Monitor](images/mfe-monitor.png) | ![Customer](images/mfe-customer.png)                       |
 
 ## What each menu does
 
-Case and Customer used to live in the shell. They now live in the CS remote (`apps/crm-cs`), which the
-shell loads like the others, so the console is a shell with no domain screens. Unlike the three
-PoC remotes, the CS remote contributes real routes (`/cases`, `/customers`) instead of one page under
-`/remote/<id>`; see "How it works" and [ADR-0009](../adr/0009-micro-frontends.md).
+The CS remote (`examples/crm-cs`) contributes real routes (`/cases`, `/customers`) instead of one page
+under `/remote/<id>`, like the other three; see "How it works" and
+[ADR-0009](../docs/adr/0009-micro-frontends.md).
 
-| Menu         | Where it lives          | Permission      | Flow                                                                                                                              |
-| ------------ | ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Case         | `apps/crm-cs`           | `case.view`     | List with filters, create a case, detail with timeline, reply, change status or priority, assign to me, **move to another queue** |
-| Customer     | `apps/crm-cs`           | `customer.view` | List, profile with PII masked by role, **case history** with links to each case                                                   |
-| Finance      | `apps/crm-finance`      | `case.export`   | Refund requests: filter by status, approve or reject with a required note, who decided and when, link to the case                 |
-| Investigator | `apps/crm-investigator` | `case.escalate` | Escalated cases: list with paging, detail, add an internal note, change status or queue, open the case in Case                    |
-| Monitor      | `apps/crm-monitor`      | `case.reassign` | Queue load: unassigned, overdue, open per queue; queues and unassigned link to the filtered Case list; refreshes every 30 seconds |
+| Menu         | Where it lives              | Permission      | Flow                                                                                                                              |
+| ------------ | --------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Case         | `examples/crm-cs`           | `case.view`     | List with filters, create a case, detail with timeline, reply, change status or priority, assign to me, **move to another queue** |
+| Customer     | `examples/crm-cs`           | `customer.view` | List, profile with PII masked by role, **case history** with links to each case                                                   |
+| Finance      | `examples/crm-finance`      | `case.export`   | Refund requests: filter by status, approve or reject with a required note, who decided and when, link to the case                 |
+| Investigator | `examples/crm-investigator` | `case.escalate` | Escalated cases: list with paging, detail, add an internal note, change status or queue, open the case in Case                    |
+| Monitor      | `examples/crm-monitor`      | `case.reassign` | Queue load: unassigned, overdue, open per queue; queues and unassigned link to the filtered Case list; refreshes every 30 seconds |
 
 The menus are connected by what a user does, not only by shared data: an L2 agent or supervisor
 moves a case to the escalation queue in **Case**, it shows up first in **Investigator**, an
@@ -54,7 +63,7 @@ Be clear about this when presenting:
 
 ## Demo script (about five minutes)
 
-Run `pnpm poc:mfe` and open http://localhost:5173 (signed in as supervisor, all five menus).
+Run `pnpm dev:examples` and open http://localhost:5173 (signed in as supervisor, all five menus).
 
 1. **Case:** open a case, change its queue to _Eskalasi_ ("Antrean" select).
 2. **Investigator:** the case is first in the list. Open it, add an internal note, set the status to
@@ -73,11 +82,11 @@ Data lives in page memory, so a reload resets it. Stay in the app by clicking wh
 
 ## The remotes
 
-| App                     | Port (dev / preview) | Module id      |
-| ----------------------- | -------------------- | -------------- |
-| `apps/crm-finance`      | 5174 / 4175          | `finance`      |
-| `apps/crm-investigator` | 5175 / 4176          | `investigator` |
-| `apps/crm-monitor`      | 5176 / 4177          | `monitor`      |
+| App                         | Port (dev / preview) | Module id      |
+| --------------------------- | -------------------- | -------------- |
+| `examples/crm-finance`      | 5174 / 4175          | `finance`      |
+| `examples/crm-investigator` | 5175 / 4176          | `investigator` |
+| `examples/crm-monitor`      | 5176 / 4177          | `monitor`      |
 
 ## What it proves
 
@@ -109,7 +118,7 @@ Data lives in page memory, so a reload resets it. Stay in the app by clicking wh
 packages/module-contract   types only: RemoteModule (what a remote exports), RemotePageProps (what it gets)
 apps/crm-console             host: shell, session, routing, shared singletons
   src/router.tsx                 createAppRouter(): adds the routes of loaded remotes under /_authenticated, once, after the remotes load
-apps/crm-cs                  CS remote: modules case and customer, code-based routes.ts, port 5177
+examples/crm-cs                  CS remote: modules case and customer, code-based routes.ts, port 5177
   vite.config.ts             federation plugin, no remote listed (the build does not need one)
   src/app/modules/remote.ts      reads VITE_REMOTE_MODULES, loads each `<name>/module`, registers in order
   src/app/modules/registry.ts    registerRemoteModule(): ignores an id or path that is taken, with a warning
@@ -117,7 +126,7 @@ apps/crm-cs                  CS remote: modules case and customer, code-based ro
   src/app/modules/RemoteModulePage.tsx   gives the page `api`, `subPath`, `navigate`, `openHostPath`; or "unavailable"
   src/routes/_authenticated/remote/$moduleId/   index and splat routes, one pair for every remote
   src/mocks/browser.ts           dev only: `?role=l1` opens the app as that role
-apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add their own i18n texts
+examples/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add their own i18n texts
 ```
 
 - **Tool:** `@module-federation/vite` 1.23.5 (Vite 8 is in its peer range) and
@@ -135,7 +144,7 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
   context must be shared, or hooks break and contexts split. `@crm/module-contract` is type-only,
   so it is never bundled or shared.
 - **The CS remote and Tailwind:** it uses utility classes of its own, so the host's Tailwind build scans
-  `apps/crm-cs/src` (`@source` in `apps/crm-console/src/styles.css`). A second Tailwind build in the remote was tried and
+  `examples/crm-cs/src` (`@source` in `apps/crm-console/src/styles.css`). A second Tailwind build in the remote was tried and
   broke the utility order (a late `.hidden` beat the shell's `lg:flex`), so there is one sheet. A new class in the CS
   remote therefore needs a new host build.
 - **Styling:** a remote is built from `@crm/ui` components and writes no CSS and no Tailwind
@@ -151,12 +160,12 @@ apps/crm-finance, crm-investigator, crm-monitor   remotes: expose ./module, add 
 
 ```bash
 pnpm install
-pnpm poc:mfe          # host :5173 (mock backend) + the CS remote and the three PoC remotes
+pnpm dev:examples          # console :5173 (mock backend) + the four examples
 ```
 
 Open http://localhost:5173. The mock signs in as supervisor. To see another team's view, add
 `?role=l1` (or `l2`, `supervisor`) to the URL; it is read once when the page loads, and signing out
-and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the host and the CS remote only; the host alone (no remote) shows an empty state. To load a production build of one remote:
+and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the console alone, which shows an empty state. To load a production build of one remote:
 
 ```bash
 pnpm --filter @crm/crm-finance build
@@ -164,31 +173,23 @@ pnpm --filter @crm/crm-finance preview        # serves dist on :4175
 VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
 ```
 
-`poc:mfe` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL). It uses
+`dev:examples` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL). It uses
 `--no-bail`, so stopping one remote does not stop the host or the others.
 
 ### Tests
 
-`pnpm test:e2e:mfe` runs `apps/crm-console/e2e-mfe/` against the host and the four remotes
-(config: `apps/crm-console/playwright.mfe.config.ts`; servers that are already running are reused).
-It is not part of CI, which starts only the CS remote (`pnpm test:e2e`). It covers the journey across menus, the
+`pnpm test:e2e:mfe` runs `examples/e2e/mfe/` against the host and the four remotes
+(config: `examples/e2e/playwright.mfe.config.ts`; servers that are already running are reused).
+It is not part of CI. `pnpm test:e2e` runs the console's own tests plus the CS journeys
+(`examples/e2e/cs/`), and CI runs that. It covers the journey across menus, the
 Finance decisions, the customer history, the role matrix, and axe scans (WCAG 2.1 AA) of every
-remote page. `pnpm test:e2e` and `pnpm check` stay green without the three PoC remotes.
+remote page. `pnpm check` builds every example but needs none of them running.
 
 ## Add another remote
 
-Copy an existing remote (`apps/crm-monitor` is the smallest real one). For a new remote (say
-`billing`):
-
-1. Copy it to `apps/crm-billing`. In `package.json` change the package name; in `vite.config.ts`
-   change the federation `name` (a unique JavaScript identifier, for example `crm_billing`) and
-   both ports.
-2. In `src/module.tsx` change the module `id`, texts, `basePath` (`/remote/billing`), `nav.params`,
-   and `permission`. Keep it `satisfies RemoteModule` so the contract is checked.
-3. Keep the `shared` list identical to the host's `vite.config.ts`; add a library there only in
-   both places at once.
-4. Run `pnpm install`, add `crm_billing=http://localhost:<port>/remoteEntry.js` to
-   `VITE_REMOTE_MODULES`, and add the app to the `poc:mfe` filters in the root `package.json`.
+Run `pnpm new:remote <id>` (see the recipe "Add a remote" in `docs/agents/recipes.md`); it creates
+`apps/crm-<id>`. Keep the `shared` list identical to the console's `vite.config.ts`; add a library there
+only in both places at once.
 
 Rules for a remote:
 
@@ -225,7 +226,7 @@ Rules for a remote:
 - **Finance beyond the PoC.** No refund creation from a case, no amounts or limits per role, no
   audit trail beyond the decision note.
 - **Tests.** The host side (loader, registry, guard, page, props, customer history) has unit tests.
-  The remotes have no unit tests; their behavior is covered by the `e2e-mfe` suite described above.
+  The remotes have no unit tests; their behavior is covered by the `examples/e2e/mfe` suite described above.
 
 ## Security: a remote is not isolated from the host
 

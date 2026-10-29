@@ -18,7 +18,7 @@ const remoteModules = REMOTES.map(
 ).join(',')
 
 export default defineConfig({
-  testDir: './e2e-mfe',
+  testDir: './mfe',
   fullyParallel: true,
   // Four dev servers and two Chromium instances: more workers are too heavy on a small machine.
   workers: 2,
@@ -35,7 +35,7 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: `pnpm dev --port ${HOST_PORT} --strictPort`,
+      command: `pnpm --filter @crm/crm-console dev --port ${HOST_PORT} --strictPort`,
       url: `http://localhost:${HOST_PORT}`,
       reuseExistingServer: true,
       timeout: 120_000,

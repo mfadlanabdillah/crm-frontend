@@ -20,7 +20,7 @@ let root
 const TOUCHED = [
   'packages/api-client/openapi/openapi.yaml',
   'packages/api-client/src/index.ts',
-  'apps/crm-cs/src/modules/customer/api/customer.ts',
+  'examples/crm-cs/src/modules/customer/api/customer.ts',
   'apps/crm-console/src/mocks/handlers.ts',
   'docs/contract-status.md',
 ]
@@ -34,7 +34,7 @@ function copyFromRepo(rel) {
 beforeEach(() => {
   root = mkdtempSync(path.join(tmpdir(), 'new-endpoint-'))
   copyFromRepo('apps/crm-console/scripts/new-endpoint.mjs')
-  for (const rel of [...TOUCHED, 'apps/crm-cs/src/modules/customer/queries/keys.ts']) {
+  for (const rel of [...TOUCHED, 'examples/crm-cs/src/modules/customer/queries/keys.ts']) {
     copyFromRepo(rel)
   }
   // A module fresh from `new:module`: empty facade, keys file only.
@@ -112,7 +112,7 @@ describe('new:endpoint', () => {
       ).ok,
     ).toBe(true)
 
-    const facade = read('apps/crm-cs/src/modules/customer/api/customer.ts')
+    const facade = read('examples/crm-cs/src/modules/customer/api/customer.ts')
     expect(facade).toContain('zzCustomerFixture: (customerId: string, signal?: AbortSignal) =>')
     expect(facade).toContain('detail: (customerId')
     expect(facade.trimEnd().endsWith('\n}')).toBe(true)

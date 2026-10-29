@@ -333,7 +333,7 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3)(msw@3.0.3(@types/node@26.6.5)(supports-color@10.2.2)(typescript@5.9.3)(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1))
 
-  apps/crm-cs:
+  examples/crm-cs:
     dependencies:
       '@crm/api-client':
         specifier: workspace:*
@@ -454,7 +454,7 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3)(msw@3.0.3(@types/node@26.6.5)(supports-color@10.2.2)(typescript@5.9.3)(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1))
 
-  apps/crm-finance:
+  examples/crm-finance:
     dependencies:
       '@crm/api-client':
         specifier: workspace:*
@@ -506,7 +506,7 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1)
 
-  apps/crm-investigator:
+  examples/crm-investigator:
     dependencies:
       '@crm/api-client':
         specifier: workspace:*
@@ -558,7 +558,7 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1)
 
-  apps/crm-monitor:
+  examples/crm-monitor:
     dependencies:
       '@crm/api-client':
         specifier: workspace:*
@@ -609,6 +609,24 @@ importers:
       vite:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.1)
+
+  examples/e2e:
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.12.1
+        version: 4.12.1(playwright-core@1.64.1)
+      '@crm/config-ts':
+        specifier: workspace:*
+        version: link:../../packages/config-ts
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
+      '@types/node':
+        specifier: 26.6.5
+        version: 26.6.5
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/api-client:
     dependencies:

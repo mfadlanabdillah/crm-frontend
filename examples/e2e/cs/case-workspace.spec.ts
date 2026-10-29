@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { clientNavigate, endSession, expect, test } from './support'
+import { clientNavigate, endSession, expect, test } from '../support'
 
 async function openCase(page: Page, caseId: string, code: string) {
   await clientNavigate(page, `/cases/${caseId}`)

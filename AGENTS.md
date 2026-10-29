@@ -6,14 +6,14 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 
 ## Working agreement
 
-1. Find an existing pattern before writing new code. References: module `case` (complete) and `customer` (minimal) in `apps/crm-cs/src/modules/`.
+1. Find an existing pattern before writing new code. References: module `case` (complete) and `customer` (minimal) in `examples/crm-cs/src/modules/`.
 2. Change as little as possible, only what was asked. No drive-by cleanups.
 3. Run the verification below and report results as they are. Never claim "passes" without running the command; on failure, show the real error.
 4. If the API contract, a business rule, or the scope is unclear, ask. Do not invent endpoints, fields, or enums.
 
 ## Context
 
-- **Repo:** `crm-frontend`, a pnpm monorepo. **Apps:** `apps/crm-console` is the shell (login, layout, navigation, router, mocks); it ships no domain screens. `apps/crm-cs` is the customer-service remote (modules `case` and `customer`, phase 1, record type `CS`) that the shell loads at startup through Module Federation; without it the shell shows an empty state. `apps/crm-finance`, `apps/crm-investigator`, and `apps/crm-monitor` are a micro frontend PoC (remotes loaded by the host at runtime, contract in `packages/module-contract`): see `docs/poc/micro-frontend.md`; they are not part of the product yet.
+- **Repo:** `crm-frontend`, a pnpm monorepo and a boilerplate for CRM modules. **App:** `apps/crm-console` is the shell (login, layout, navigation, router, mocks); it ships no domain screens and starts with an empty state when no remote loads. **Remotes:** separate apps the shell loads at startup through Module Federation (contract in `packages/module-contract`). `examples/` holds working examples: `examples/crm-cs` (customer service: modules `case` and `customer`, record type `CS`) and three smaller ones (`crm-finance`, `crm-investigator`, `crm-monitor`); see `examples/README.md`. They are examples, not product. New remotes go in `apps/` (`pnpm new:remote`).
 - **Stack:** React 19, Vite 8, TypeScript strict, TanStack Router/Query/Table/Virtual, Zustand, Tailwind CSS 4 with the shared `@crm/ui` components, Zod + React Hook Form (`@hookform/resolvers`), Tiptap, i18next, MSW, Vitest, Playwright.
 - **Backend:** Go BFF. Contract: `packages/api-client/openapi/openapi.yaml` (provisional); types and client are generated from it. Which endpoints can be trusted is tracked in [docs/contract-status.md](docs/contract-status.md).
 - **Domain status:** the skeleton uses a generic model (4 statuses, queues l1/l2/escalated, 4 roles). Record type `CS`, taxonomy, tiers, and data scope are not applied yet. Treat it as a pattern example.
@@ -22,15 +22,15 @@ together is in [docs/system-design.md](docs/system-design.md); UI rules are in [
 
 ## Verify (definition of done)
 
-| Command                            | When                                                                                                                                                                                                                                                                                   |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm check`                       | Must be green before you finish; same as CI: format check, lint, typecheck, tests + coverage floor, build, size, OpenAPI drift (`codegen:check` diffs against the index: stage regenerated files first)                                                                                |
-| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                                                                  |
-| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                                                               |
-| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Starts the console and the CS remote. Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-console exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
-| `pnpm test:e2e:mfe`                | Micro frontend PoC only: journeys across every menu on the shell plus the four remotes (`apps/crm-console/e2e-mfe/`). Not part of CI; it starts or reuses five dev servers                                                                                                             |
-| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                                                          |
-| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                                                                    |
+| Command                            | When                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm check`                       | Must be green before you finish; same as CI: format check, lint, typecheck, tests + coverage floor, build, size, OpenAPI drift (`codegen:check` diffs against the index: stage regenerated files first)                                                                                                                                                                                    |
+| `pnpm exec vitest run <test-file>` | Fast loop on one unit                                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm lint` / `pnpm typecheck`     | Fast loop for types and layer boundaries                                                                                                                                                                                                                                                                                                                                                   |
+| `pnpm test:e2e`                    | Flow, routing, auth, or UI changes. Runs the console's own tests (`apps/crm-console/e2e`, no remote) and the CS journeys (`examples/e2e/cs`, console plus `examples/crm-cs`). Includes the axe accessibility scan (WCAG 2.1 AA). Needs the browser once: `pnpm --filter @crm/crm-console exec playwright install chromium` (add `--with-deps` on a fresh Linux/WSL machine; it needs sudo) |
+| `pnpm test:e2e:mfe`                | Journeys across every menu on the console plus the four examples (`examples/e2e/mfe/`). Not part of CI; it starts or reuses five dev servers                                                                                                                                                                                                                                               |
+| `pnpm format`                      | Fixes formatting; CI runs `pnpm format:check`                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm codegen:api`                 | After editing `openapi.yaml`; CI fails if the result differs from what is committed                                                                                                                                                                                                                                                                                                        |
 
 ## Repo map
 
@@ -41,26 +41,28 @@ apps/crm-console/src   # the shell
   lib/               # shell-only helpers (+ *.test.ts)
   mocks/             # MSW handlers + in-memory db + mock masking (dev only, not in the prod bundle)
   modules/types.ts   # ModuleDefinition contract
-apps/crm-cs/src        # customer-service remote
+apps/crm-console/e2e # the shell's own e2e (no remote)
+examples/crm-cs/src    # example remote: customer service
   modules/<id>/      # case, customer: module.ts (RemoteModule), public.ts, api/ queries/ schemas/ components/ pages/ store/
   routes.ts          # code-based routes added under the shell's /_authenticated layout
   module.tsx         # what the remote exposes: its modules
+examples/e2e         # journeys across the console and the examples
 packages/
   ui/  api-client/  auth/  i18n/  app-kit/  module-contract/  test-utils/  config-ts/  config-eslint/
 ```
 
-| To add...        | Put it in...                                                                                                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CRM module       | Copy the `customer` module in `apps/crm-cs/src/modules/` and add its routes to `apps/crm-cs/src/routes.ts`. `pnpm new:module` only makes a module in the shell (none today) |
-| Remote app       | `pnpm new:remote <id> --icon <LucideIcon> --permission <module.action>` (new `apps/crm-<id>`, see recipe "Add a remote")                                                    |
-| Page / URL       | route in `apps/crm-cs/src/routes.ts`; page body in `src/modules/<id>/pages/`                                                                                                |
-| Module component | `apps/crm-cs/src/modules/<id>/components/`                                                                                                                                  |
-| UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                                              |
-| API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/`                            |
-| Permission       | `packages/auth/src/roles.ts`                                                                                                                                                |
-| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                             |
-| Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                       |
-| Dev mock         | `apps/crm-console/src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                                   |
+| To add...        | Put it in...                                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CRM module       | Copy the `customer` module in `examples/crm-cs/src/modules/` and add its routes to `examples/crm-cs/src/routes.ts`. `pnpm new:module` only makes a module in the shell (none today) |
+| Remote app       | `pnpm new:remote <id> --icon <LucideIcon> --permission <module.action>` (new `apps/crm-<id>`, see recipe "Add a remote")                                                            |
+| Page / URL       | route in `examples/crm-cs/src/routes.ts`; page body in `src/modules/<id>/pages/`                                                                                                    |
+| Module component | `examples/crm-cs/src/modules/<id>/components/`                                                                                                                                      |
+| UI component     | `packages/ui/src/` (export it, test it, add it to the gallery)                                                                                                                      |
+| API endpoint     | GET: `pnpm new:endpoint`; otherwise `openapi.yaml`, `pnpm codegen:api`, method in `packages/api-client/src/index.ts`, facade `modules/<id>/api/`                                    |
+| Permission       | `packages/auth/src/roles.ts`                                                                                                                                                        |
+| UI text          | `packages/i18n/src/resources.ts` (both locales)                                                                                                                                     |
+| Shared helper    | `packages/app-kit/src/` (api client, env, format, SSE, query keys, `requirePermission`); a remote must not import the shell's `@/lib`                                               |
+| Dev mock         | `apps/crm-console/src/mocks/handlers.ts` (+ `db.ts`; per-role masking in `mocks/mask.ts`)                                                                                           |
 
 ### Layer boundaries (enforced by ESLint, `eslint.config.js`)
 
@@ -76,7 +78,7 @@ packages/
 
 - Server state in TanStack Query; Zustand holds UI state only, never server data.
 - Filters and pagination live in the URL (search params + zod, `.catch()` for stale URLs).
-- Forms use React Hook Form + a zod schema with i18n-key messages and `FormField`; follow `apps/crm-cs/src/modules/case/components/CaseForm.tsx` (recipe: "Add a form").
+- Forms use React Hook Form + a zod schema with i18n-key messages and `FormField`; follow `examples/crm-cs/src/modules/case/components/CaseForm.tsx` (recipe: "Add a form").
 - No `fetch` in components and no data fetching in `useEffect`. API calls go through the facade in `modules/<id>/api/`. ESLint rejects `fetch` in `modules/`, `components/`, and `routes/`.
 - Master data (status, queue, priority, taxonomy) comes from the API (`GET /v1/master-data` via `useMasterData`: code, label, badge tone). Do not hardcode business enums; URL search and SSE events accept any code.
 - A 401 is handled globally (`lib/query-client.ts` + `app/auth/session-expiry.ts`). Do not handle 401 per page.
@@ -121,17 +123,17 @@ packages/
 
 ## Known pitfalls
 
-- **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-console/e2e/support.ts`: the `signedInPage` fixture starts signed in on `/cases`, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
+- **The mock session lives in page memory.** In e2e, import `test` from `apps/crm-console/e2e/support.ts` (shell tests: `signedInPage` starts signed in on `/`) or from `examples/e2e/support.ts` (example journeys: starts on `/cases`); `createSignedInTest` in the first makes one for another landing page. The fixture signs in on the mock backend, `clientNavigate` moves through the router (never `page.goto` after signing in or out), and `endSession` ends the session safely.
 - **E2E runs with 2 workers on purpose** (`apps/crm-console/playwright.config.ts`). Each worker is a Chromium; 2-4 workers take the same ~25 s, but 6 fail every run and 3 time out when RAM/swap is tight (seen on an 8 GB machine). Do not raise it without re-measuring. If e2e fails only when the machine is swapping, free memory before suspecting the code.
 - **i18n `resources` use `as const`**, so TypeScript cannot see a key missing in one locale; the parity test catches it.
 - **Mocks run only in dev** (`import.meta.env.DEV`). Production builds exclude MSW, and the image drops `*.map` and `mockServiceWorker.js`.
 - **Session expiry vs logout:** `ModuleDefinition.onSignOut(reason)` receives `'logout'` or `'expired'`. Unsent drafts are deleted only on `logout`.
 - **Mock role in dev:** the mock session starts as `VITE_MOCK_ROLE`; `?role=l1|l2|supervisor|admin` on the URL overrides it for that page load (dev only, `src/mocks/browser.ts`). Mock data lives in page memory, so a reload resets it.
 
-- **The shell builds its router after the remotes load.** Remote routes (`/cases`, `/customers`) are not in `routeTree.gen.ts`, so `<Link to="/cases">` is not type-checked in the shell; a remote types its search params itself (`apps/crm-cs/src/lib/search-route.ts`). A remote that fails to load leaves its routes out and the shell starts without them.
-- **One Tailwind sheet.** The shell scans `apps/crm-cs/src` (`@source` in `apps/crm-console/src/styles.css`). A new class in the remote needs a new shell build; a separate Tailwind build in the remote breaks the utility order.
-- **Mocks, texts, and permissions of CS still live in the shell/packages** (`mocks/`, `@crm/i18n`, `@crm/auth`). Known coupling, not a rule.
-- **Dev:** `pnpm dev` starts the shell (5173) and the CS remote (5177) together; the shell alone shows the empty state.
+- **The shell builds its router after the remotes load.** Remote routes (`/cases`, `/customers`) are not in `routeTree.gen.ts`, so `<Link to="/cases">` is not type-checked in the shell; a remote types its search params itself (`examples/crm-cs/src/lib/search-route.ts`). A remote that fails to load leaves its routes out and the shell starts without them.
+- **One Tailwind sheet.** The shell scans every app and example `src/` (`@source` in `apps/crm-console/src/styles.css`). A new class in a remote needs a new shell build; a separate Tailwind build in the remote breaks the utility order.
+- **Mocks, texts, and permissions of the CS example still live in the shell/packages** (`mocks/`, `@crm/i18n`, `@crm/auth`). Known coupling, not a rule.
+- **Dev:** `pnpm dev` starts the shell alone (it shows the empty state). `pnpm dev:examples` starts the shell (5173) and the four examples (5174 to 5177) together.
 
 ## Agent boundaries
 
@@ -144,7 +146,7 @@ packages/
 
 ## Git, PRs, environment
 
-Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. Open PRs against `development`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-console/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL`, `VITE_TELEMETRY_URL`, and `VITE_REMOTE_MODULES` (default `crm_cs=/cs/remoteEntry.js`) as build args; the image serves the CS remote under `/cs/`.
+Branches: `feature/`, `bugfix/`, `hotfix/`, `release/`; flow `development` -> `staging` -> `master`. Open PRs against `development`. A PR needs a green `pnpm check`, a "why", and screenshots for UI changes. CI runs `format:check`, `pnpm check`, the OpenAPI drift check, e2e (+ axe), and an image build (`nginx -t`, no `*.map`/`mockServiceWorker.js`). Environment variables are listed in `apps/crm-console/.env.example` (copy it to `.env.local`); Docker takes `VITE_API_BASE_URL`, `VITE_TELEMETRY_URL`, and `VITE_REMOTE_MODULES` (default empty: the image is the shell alone) as build args.
 
 ## Keep the docs true
 
