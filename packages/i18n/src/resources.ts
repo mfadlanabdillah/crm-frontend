@@ -131,6 +131,8 @@ const idID = {
       'Peran Anda belum punya akses ke modul mana pun, atau modul belum dimuat. Hubungi admin.',
   },
   remote: {
+    loadFailed: 'Sebagian layar gagal dimuat: {{names}}. Periksa koneksi, lalu muat ulang.',
+    retry: 'Muat ulang',
     unavailableTitle: 'Modul tidak tersedia',
     unavailableDescription:
       'Modul ini dimuat dari aplikasi lain yang saat ini tidak dapat dijangkau.',
@@ -276,6 +278,8 @@ const enUS = {
       'Your role has no access to any module, or the modules did not load. Contact an admin.',
   },
   remote: {
+    loadFailed: 'Some screens failed to load: {{names}}. Check your connection, then reload.',
+    retry: 'Reload',
     unavailableTitle: 'Module unavailable',
     unavailableDescription:
       'This module is loaded from another app that cannot be reached right now.',

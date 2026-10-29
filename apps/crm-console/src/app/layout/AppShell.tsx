@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BadgeTone } from '@crm/ui'
 import { useSignOut } from '@/app/auth/sign-out'
+import { RemoteLoadAlert } from '@/app/layout/RemoteLoadAlert'
 import { useConnectionStore, worstStatus } from '@/app/modules/connection'
 import { findActiveModule, getVisibleModules } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
@@ -194,6 +195,8 @@ export function AppShell() {
         ) : null}
 
         {ActiveTabs ? <ActiveTabs /> : null}
+
+        <RemoteLoadAlert />
 
         <main className="min-h-0 flex-1 overflow-hidden bg-surface">
           <Outlet />
