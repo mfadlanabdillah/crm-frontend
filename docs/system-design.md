@@ -34,16 +34,20 @@ flowchart LR
 ## 2. Structure
 
 ```text
-apps/crm-console/src
-  routes/          URL files (TanStack Router, file-based): validateSearch, a guard, a page from a module
-  modules/<id>/    one folder per CRM module: module.ts, public.ts, api/, queries/, schemas/, components/, pages/, store/
-  app/             shell: layout, auth, module registry, design-system gallery (dev only)
-  lib/             helpers that know nothing about modules (query client, sse, format, telemetry)
+apps/crm-console/src   the shell: no domain screens, loads remotes at startup
+  routes/          URL files (TanStack Router, file-based): login, the authenticated layout, remote page routes
+  app/             layout, auth, module registry and remote loader, design-system gallery (dev only)
+  lib/             shell-only helpers (query client, telemetry, redirect)
   mocks/           MSW handlers, in-memory database, mock masking (dev only)
+apps/crm-cs/src        customer-service remote (Module Federation), served under /cs/ in the image
+  modules/<id>/    case, customer: module.ts, public.ts, api/, queries/, schemas/, components/, pages/, store/
+  routes.ts        code-based routes added under the shell's authenticated layout
 packages/
   ui/              design system: components and tokens (@crm/ui)
   api-client/      OpenAPI contract, generated types, typed client
   auth/            roles, permissions, PII masking, AuthProvider
+  app-kit/         helpers shared by the shell and the remotes: API client, env, format, SSE, query keys, requirePermission
+  module-contract/ types of what a remote exposes (RemoteModule)
   i18n/            id-ID and en-US texts
   test-utils/      render helpers and the MSW setup for tests
   config-ts/ config-eslint/   shared configuration
@@ -63,17 +67,25 @@ flowchart TD
   lib -. "never" .-> modules
 ```
 
-A module never imports `app/` or `routes/`, and reaches another module only through its `public.ts`
+The same rules hold inside `apps/crm-cs`, which has `modules/` and `lib/` only. A remote never imports
+the shell; what both need lives in a package (`app-kit`, `ui`, `auth`). A module never imports `app/` or `routes/`, and reaches another module only through its `public.ts`
 (queries, schemas, store; never components). Cross-module links go through routes. Inside a module,
 imports use the alias, not `../../`. A pattern needed by three modules moves to `lib/`, `packages/ui`, or
 another package.
 
 ### The module contract
 
-A module is a `ModuleDefinition` (`src/modules/types.ts`): id, label key, icon, base path, navigation
+A module is a `ModuleDefinition` in the shell (`src/modules/types.ts`) and a `RemoteModule` in a remote
+(`packages/module-contract`); the loader turns one into the other. It has: id, label key, icon, base path, navigation
 target, the permission needed to see it, and optional slots (sidebar section, tab row, a real-time hook,
-and an `onSignOut` cleanup). The shell knows only this shape. Adding a module is `pnpm new:module`, which
-also registers it in `src/app/modules/registry.ts`.
+and an `onSignOut` cleanup) and, for a remote, `routes`. The shell knows only this shape.
+
+How a remote joins: `main.tsx` loads the configured remotes (`VITE_REMOTE_MODULES`), registers their
+modules, and only then builds the router, adding each remote's routes under `/_authenticated`
+(`createAppRouter` in `src/router.tsx`). `@tanstack/react-router` is a shared singleton, so the remote's
+routes, links, and hooks use the shell's router. The cost: routes of a remote are not in
+`routeTree.gen.ts`, so links to them are not type-checked in the shell, and the shell's Tailwind build
+scans the remote's source. Trade-offs: [ADR-0009](adr/0009-micro-frontends.md).
 
 ## 3. How data moves
 
@@ -85,7 +97,7 @@ also registers it in `src/app/modules/registry.ts`.
 | API calls          | Only through the module facade `modules/<id>/api/`, which wraps `@crm/api-client`. ESLint rejects `fetch` in modules, components, and routes                                                   |
 | Business enums     | Status, queue, and priority come from `GET /v1/master-data`; the UI does not hardcode them ([ADR-0001](adr/0001-master-data-from-the-api.md))                                                  |
 | Forms              | React Hook Form with a zod schema whose messages are i18n keys ([ADR-0003](adr/0003-forms-with-react-hook-form-and-zod.md))                                                                    |
-| Real time          | Server-Sent Events (`lib/sse.ts`, `useCaseStream`) update the query cache; the header shows the connection state                                                                               |
+| Real time          | Server-Sent Events (`@crm/app-kit` `sse.ts`, `useCaseStream`) update the query cache; the header shows the connection state                                                                    |
 | Errors             | The client throws `ApiError` (`status`, `code`, `requestId`). A view shows `ErrorState` with a retry; a route error boundary catches render errors; unexpected errors go to the telemetry hook |
 
 ### The contract workflow
@@ -159,7 +171,7 @@ drift). The runtime is a static build served by nginx in a Docker image.
 
 | To add           | Do this                                                                     |
 | ---------------- | --------------------------------------------------------------------------- |
-| A module         | `pnpm new:module <id> --path /<path>`, then the steps it prints             |
+| A module         | copy `modules/customer` in `apps/crm-cs`, then the steps in recipes         |
 | A GET endpoint   | `pnpm new:endpoint <module> <operationId> --path /v1/...`                   |
 | Another endpoint | the recipe in [docs/agents/recipes.md](agents/recipes.md)                   |
 | A UI component   | "Changing or adding a component" in [docs/ui-standards.md](ui-standards.md) |

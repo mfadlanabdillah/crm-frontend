@@ -53,32 +53,35 @@ Langkah ini tidak diperlukan untuk `pnpm dev` atau `pnpm check`.
 
 ## Perintah
 
-| Perintah                            | Fungsi                                                                                                   |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`                          | Dev server dengan backend mock                                                                           |
-| `pnpm check`                        | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR)          |
-| `pnpm test`                         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                             |
-| `pnpm test:e2e`                     | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                           |
-| `pnpm size`                         | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                             |
-| `pnpm --filter @crm/crm-console perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)                        |
-| `pnpm codegen:api`                  | Generate ulang klien dari `packages/api-client/openapi/`                                                 |
-| `pnpm new:module`                   | Buat kerangka modul baru (lihat bagian di bawah)                                                         |
-| `pnpm new:endpoint`                 | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                             |
-| `pnpm poc:mfe`                      | PoC micro frontend: host + 3 remote (Finance, Investigator, Monitor), lihat `docs/poc/micro-frontend.md` |
-| `pnpm test:e2e:mfe`                 | E2E PoC micro frontend: alur lintas semua menu (host + 3 remote), tidak ikut CI                          |
-| `pnpm format`                       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                                |
+| Perintah                         | Fungsi                                                                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                       | Dev server shell (5173) dan remote CS (5177) bersama, dengan backend mock; shell sendiri hanya menampilkan layar kosong |
+| `pnpm check`                     | sama dengan CI: format, lint, typecheck, test, build, size, drift codegen (jalankan sebelum PR)                         |
+| `pnpm test`                      | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                                            |
+| `pnpm test:e2e`                  | E2E Playwright (dev server + MSW), termasuk pindai axe WCAG AA                                                          |
+| `pnpm size`                      | Cek budget bundle (initial JS dan tiap route <= 300 KB gzip)                                                            |
+| `pnpm --filter @crm/crm-cs perf` | Ukur performa terhadap build harness (opsional, lambat; `--grep heap` untuk heap)                                       |
+| `pnpm codegen:api`               | Generate ulang klien dari `packages/api-client/openapi/`                                                                |
+| `pnpm new:module`                | Buat kerangka modul baru (lihat bagian di bawah)                                                                        |
+| `pnpm new:endpoint`              | Tambah endpoint GET ke satu modul (`docs/agents/recipes.md`)                                                            |
+| `pnpm poc:mfe`                   | PoC micro frontend: host + 3 remote (Finance, Investigator, Monitor), lihat `docs/poc/micro-frontend.md`                |
+| `pnpm test:e2e:mfe`              | E2E PoC micro frontend: alur lintas semua menu (host + 3 remote), tidak ikut CI                                         |
+| `pnpm format`                    | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                                               |
 
 ## Cara kerjanya
 
 ```text
-apps/crm-console/src
-  routes/        # URL; tipis, hanya merangkai halaman dari modul
-  modules/<id>/  # satu folder per fitur CRM (case, customer, ...)
-  app/           # shell aplikasi: layout, login, daftar modul
-  lib/           # helper umum
+apps/crm-console/src   # shell: login, layout, navigasi, router; tanpa layar domain
+  routes/        # URL shell
+  app/           # layout, auth, daftar modul, pemuat remote
   mocks/         # backend tiruan (hanya dev)
+apps/crm-cs/src        # remote customer service (modul case dan customer), dimuat shell saat start
+  modules/<id>/  # satu folder per fitur CRM
+  routes.ts      # rute yang dipasang di bawah layout shell
 packages/
   ui/            # komponen dan token desain bersama (@crm/ui)
+  app-kit/       # helper bersama shell dan remote (klien API, format, SSE, guard izin)
+  module-contract/ # kontrak antara shell dan remote
   api-client/    # tipe dan klien dari kontrak OpenAPI
   auth/          # peran, izin, masking data pribadi
   i18n/          # teks id-ID dan en-US
@@ -97,7 +100,7 @@ Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; 
 pnpm new:module invoice --path /invoices --icon Receipt --permission invoice.view
 ```
 
-Perintah itu membuat folder modul, route tipis dengan guard izin, dan mendaftarkannya di navigasi.
+Perintah itu membuat modul di shell. Modul domain (seperti `case` dan `customer`) ada di `apps/crm-cs`; belum ada generator untuk itu, salin modul `customer`.
 Langkah lanjutan (izin, teks, endpoint, mock) ada di [docs/agents/recipes.md](docs/agents/recipes.md).
 
 ## Status dan batasan
