@@ -3,13 +3,14 @@
 Working remotes that show how a domain plugs into the console. They are examples, not part of the
 boilerplate: the console (`apps/crm-console`) runs without any of them and shows an empty state.
 They live in `examples/`, are part of the workspace, and are checked by `pnpm check` so they do not
-rot. All data is mock (the mock backend still lives in the console; moving it is planned).
+rot. All data is mock: `examples/mock-backend` serves it through the console's MSW worker (`MOCK_DOMAIN`).
 
 | Example                                             | What it shows                                                              |
 | --------------------------------------------------- | -------------------------------------------------------------------------- |
 | `examples/crm-cs`                                   | A full domain: Case and Customer with their own routes (`/cases`)          |
 | `examples/crm-finance`                              | A one-page remote under `/remote/finance`                                  |
 | `examples/crm-investigator`, `examples/crm-monitor` | More one-page remotes, linked to the others                                |
+| `examples/mock-backend`                             | The dev mock of the example domain (cases, customers, refunds)             |
 | `examples/e2e`                                      | Journeys across the console and the examples (not the console's own tests) |
 
 It is not an accepted architecture decision; the proposal and its costs are in

@@ -9,7 +9,7 @@
  *   packages/api-client/src/index.ts           type export + client method
  *   src/modules/<module>/api/<module>.ts       facade entry
  *   src/modules/<module>/queries/use<Name>.ts  query options + hook (new file)
- *   src/mocks/handlers.ts                      stub handler answering 501
+ *   examples/mock-backend/src/handlers.ts      stub handler answering 501
  *   docs/contract-status.md                    row with status Proposed
  * Then runs `pnpm codegen:api` and prettier. Only GET with path parameters; the response schema,
  * the mock body, and PII masking are yours to fill in.
@@ -81,7 +81,7 @@ const files = {
   facade: path.join(moduleSrc(id), 'modules', id, 'api', `${id}.ts`),
   keys: path.join(moduleSrc(id), 'modules', id, 'queries', 'keys.ts'),
   hook: path.join(moduleSrc(id), 'modules', id, 'queries', `use${thing}.ts`),
-  handlers: path.join(src, 'mocks/handlers.ts'),
+  handlers: path.join(repoRoot, 'examples/mock-backend/src/handlers.ts'),
   status: path.join(repoRoot, 'docs/contract-status.md'),
 }
 
@@ -186,7 +186,7 @@ export function use${thing}(${argList.join(', ')}) {
 
 let handlers = read('handlers')
 if (!handlers.endsWith('  }),\n]\n'))
-  fail('mocks/handlers.ts format not recognized; add the handler by hand')
+  fail('examples/mock-backend/src/handlers.ts format not recognized; add the handler by hand')
 const permissionCheck = permission
   ? `    if (!can(session.user.role, '${permission}')) {
       return jsonError(403, 'forbidden', 'Role is not allowed')
@@ -236,7 +236,7 @@ console.log(`Endpoint GET ${urlPath} (${operationId}) added to module "${id}".
 
 Next steps:
   1. openapi.yaml: describe the response and replace the placeholder schema ${schemaName}; run pnpm codegen:api.
-  2. Mock: fill the stub in src/mocks/handlers.ts (data in db.ts, PII masking in mask.ts).
+  2. Mock: fill the stub in examples/mock-backend/src/handlers.ts (data in db.ts, PII masking in mask.ts).
   3. ${permission ? `Gate the hook with enabled: can('${permission}') for roles that must not fire the request.` : 'If only some roles may call it, add can(...) in the handler and gate the hook with enabled.'}
   4. Tests: client method in packages/api-client/src/index.test.ts, components with renderWithProviders.
   5. Run pnpm check.`)

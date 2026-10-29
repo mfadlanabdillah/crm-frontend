@@ -5,6 +5,7 @@ export default defineConfig({
     projects: [
       'apps/crm-console',
       'examples/crm-cs',
+      'examples/mock-backend',
       'packages/api-client',
       'packages/app-kit',
       'packages/auth',

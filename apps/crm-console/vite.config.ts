@@ -37,6 +37,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Dev mock backend of a domain; none by default. MOCK_DOMAIN is a path from the repo root,
+      // for example examples/mock-backend/src/index.ts (`pnpm dev:examples` sets it).
+      '@crm/mock-domain': fileURLToPath(
+        new URL(
+          process.env.MOCK_DOMAIN ?? 'apps/crm-console/src/mocks/no-domain.ts',
+          new URL('../../', import.meta.url),
+        ),
+      ),
     },
   },
   server: {
