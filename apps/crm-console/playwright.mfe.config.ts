@@ -7,6 +7,7 @@ import { defineConfig, devices } from '@playwright/test'
  */
 const HOST_PORT = 5173
 const REMOTES = [
+  { filter: '@crm/crm-cs', port: 5177, name: 'crm_cs' },
   { filter: '@crm/crm-finance', port: 5174, name: 'crm_finance' },
   { filter: '@crm/crm-investigator', port: 5175, name: 'crm_investigator' },
   { filter: '@crm/crm-monitor', port: 5176, name: 'crm_monitor' },
@@ -23,7 +24,8 @@ export default defineConfig({
   workers: 2,
   retries: 0,
   reporter: [['list']],
-  expect: { timeout: 10_000 },
+  // Five dev servers compile on demand; a page that loads all four remotes can pass 10s on a small machine.
+  expect: { timeout: 20_000 },
   use: {
     baseURL: `http://localhost:${HOST_PORT}`,
     trace: 'on-first-retry',

@@ -14,16 +14,20 @@ RUN pnpm install --frozen-lockfile --offline
 # VITE_* dibaca saat build dan tertanam di bundle: publik, jangan isi secret.
 ARG VITE_API_BASE_URL=/
 ARG VITE_TELEMETRY_URL
+# The CS screens are a separate app (apps/crm-cs) served under /cs/; the console loads it at startup.
+ARG VITE_REMOTE_MODULES=crm_cs=/cs/remoteEntry.js
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
-  VITE_TELEMETRY_URL=$VITE_TELEMETRY_URL
+  VITE_TELEMETRY_URL=$VITE_TELEMETRY_URL \
+  VITE_REMOTE_MODULES=$VITE_REMOTE_MODULES
 RUN pnpm build
 # Source map dan service worker MSW tidak boleh dilayani publik.
-RUN find apps/crm-console/dist \( -name '*.map' -o -name mockServiceWorker.js \) -delete
+RUN find apps/crm-console/dist apps/crm-cs/dist \( -name '*.map' -o -name mockServiceWorker.js \) -delete
 
 # Stage runtime
 FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS production-stage
 
 COPY --from=builder /app/apps/crm-console/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/crm-cs/dist /usr/share/nginx/html/cs
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY security-headers.inc /etc/nginx/conf.d/security-headers.inc
 

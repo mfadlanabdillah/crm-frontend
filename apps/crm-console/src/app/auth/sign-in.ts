@@ -1,5 +1,5 @@
+import { env } from '@crm/app-kit'
 import type { Role, Session } from '@crm/api-client'
-import { env } from '@/lib/env'
 
 /**
  * Di produksi, login adalah redirect ke SSO internal lewat BFF; aplikasi tidak

@@ -1,17 +1,16 @@
+import { initials } from '@crm/app-kit'
+import type { StreamStatus } from '@crm/app-kit'
+import { cn, Badge, Button } from '@crm/ui'
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@crm/auth'
 import { LogOut } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge, Button } from '@crm/ui'
 import type { BadgeTone } from '@crm/ui'
 import { useSignOut } from '@/app/auth/sign-out'
 import { useConnectionStore, worstStatus } from '@/app/modules/connection'
 import { findActiveModule, getVisibleModules } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
-import { cn } from '@/lib/cn'
-import { initials } from '@/lib/format'
-import type { StreamStatus } from '@/lib/sse'
 
 const connectionTone: Record<StreamStatus, BadgeTone> = {
   connecting: 'warning',
@@ -130,7 +129,6 @@ export function AppShell() {
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-ink">{t('common.appName')}</p>
-            <p className="truncate text-[11px] text-ink-muted">Customer Service</p>
           </div>
         </div>
 

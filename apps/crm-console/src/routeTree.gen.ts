@@ -9,23 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedDesignSystemRouteImport } from './routes/_authenticated/design-system'
-import { Route as AuthenticatedCasesIndexRouteImport } from './routes/_authenticated/cases/index'
-import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenticated/cases/$caseId'
-import { Route as AuthenticatedCasesNewRouteImport } from './routes/_authenticated/cases/new'
-import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
-import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedRemoteModuleIdIndexRouteImport } from './routes/_authenticated/remote/$moduleId/index'
 import { Route as AuthenticatedRemoteModuleIdSplatRouteImport } from './routes/_authenticated/remote/$moduleId/$'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -35,38 +25,15 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDesignSystemRoute =
   AuthenticatedDesignSystemRouteImport.update({
     id: '/design-system',
     path: '/design-system',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCasesIndexRoute = AuthenticatedCasesIndexRouteImport.update({
-  id: '/cases/',
-  path: '/cases/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCasesCaseIdRoute =
-  AuthenticatedCasesCaseIdRouteImport.update({
-    id: '/cases/$caseId',
-    path: '/cases/$caseId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCasesNewRoute = AuthenticatedCasesNewRouteImport.update({
-  id: '/cases/new',
-  path: '/cases/new',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCustomersIndexRoute =
-  AuthenticatedCustomersIndexRouteImport.update({
-    id: '/customers/',
-    path: '/customers/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCustomersCustomerIdRoute =
-  AuthenticatedCustomersCustomerIdRouteImport.update({
-    id: '/customers/$customerId',
-    path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedRemoteModuleIdIndexRoute =
@@ -83,40 +50,25 @@ const AuthenticatedRemoteModuleIdSplatRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/design-system': typeof AuthenticatedDesignSystemRoute
-  '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
-  '/cases/new': typeof AuthenticatedCasesNewRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
-  '/cases/': typeof AuthenticatedCasesIndexRoute
-  '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/remote/$moduleId/$': typeof AuthenticatedRemoteModuleIdSplatRoute
   '/remote/$moduleId/': typeof AuthenticatedRemoteModuleIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/design-system': typeof AuthenticatedDesignSystemRoute
-  '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
-  '/cases/new': typeof AuthenticatedCasesNewRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
-  '/cases': typeof AuthenticatedCasesIndexRoute
-  '/customers': typeof AuthenticatedCustomersIndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/remote/$moduleId/$': typeof AuthenticatedRemoteModuleIdSplatRoute
   '/remote/$moduleId': typeof AuthenticatedRemoteModuleIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/design-system': typeof AuthenticatedDesignSystemRoute
-  '/_authenticated/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
-  '/_authenticated/cases/new': typeof AuthenticatedCasesNewRoute
-  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
-  '/_authenticated/cases/': typeof AuthenticatedCasesIndexRoute
-  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/remote/$moduleId/$': typeof AuthenticatedRemoteModuleIdSplatRoute
   '/_authenticated/remote/$moduleId/': typeof AuthenticatedRemoteModuleIdIndexRoute
 }
@@ -126,55 +78,32 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/design-system'
-    | '/cases/$caseId'
-    | '/cases/new'
-    | '/customers/$customerId'
-    | '/cases/'
-    | '/customers/'
     | '/remote/$moduleId/$'
     | '/remote/$moduleId/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/login'
     | '/design-system'
-    | '/cases/$caseId'
-    | '/cases/new'
-    | '/customers/$customerId'
-    | '/cases'
-    | '/customers'
+    | '/'
     | '/remote/$moduleId/$'
     | '/remote/$moduleId'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/design-system'
-    | '/_authenticated/cases/$caseId'
-    | '/_authenticated/cases/new'
-    | '/_authenticated/customers/$customerId'
-    | '/_authenticated/cases/'
-    | '/_authenticated/customers/'
+    | '/_authenticated/'
     | '/_authenticated/remote/$moduleId/$'
     | '/_authenticated/remote/$moduleId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -189,46 +118,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/design-system': {
       id: '/_authenticated/design-system'
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof AuthenticatedDesignSystemRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cases/': {
-      id: '/_authenticated/cases/'
-      path: '/cases'
-      fullPath: '/cases/'
-      preLoaderRoute: typeof AuthenticatedCasesIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cases/$caseId': {
-      id: '/_authenticated/cases/$caseId'
-      path: '/cases/$caseId'
-      fullPath: '/cases/$caseId'
-      preLoaderRoute: typeof AuthenticatedCasesCaseIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cases/new': {
-      id: '/_authenticated/cases/new'
-      path: '/cases/new'
-      fullPath: '/cases/new'
-      preLoaderRoute: typeof AuthenticatedCasesNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/customers/': {
-      id: '/_authenticated/customers/'
-      path: '/customers'
-      fullPath: '/customers/'
-      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/customers/$customerId': {
-      id: '/_authenticated/customers/$customerId'
-      path: '/customers/$customerId'
-      fullPath: '/customers/$customerId'
-      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/remote/$moduleId/': {
@@ -250,22 +151,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDesignSystemRoute: typeof AuthenticatedDesignSystemRoute
-  AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
-  AuthenticatedCasesNewRoute: typeof AuthenticatedCasesNewRoute
-  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
-  AuthenticatedCasesIndexRoute: typeof AuthenticatedCasesIndexRoute
-  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedRemoteModuleIdSplatRoute: typeof AuthenticatedRemoteModuleIdSplatRoute
   AuthenticatedRemoteModuleIdIndexRoute: typeof AuthenticatedRemoteModuleIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDesignSystemRoute: AuthenticatedDesignSystemRoute,
-  AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
-  AuthenticatedCasesNewRoute: AuthenticatedCasesNewRoute,
-  AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
-  AuthenticatedCasesIndexRoute: AuthenticatedCasesIndexRoute,
-  AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedRemoteModuleIdSplatRoute: AuthenticatedRemoteModuleIdSplatRoute,
   AuthenticatedRemoteModuleIdIndexRoute: AuthenticatedRemoteModuleIdIndexRoute,
 }
@@ -275,7 +168,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
 }
