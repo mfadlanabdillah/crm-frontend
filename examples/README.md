@@ -83,11 +83,12 @@ Data lives in page memory, so a reload resets it. Stay in the app by clicking wh
 
 ## The remotes
 
-| App                         | Port (dev / preview) | Module id      |
-| --------------------------- | -------------------- | -------------- |
-| `examples/crm-finance`      | 5174 / 4175          | `finance`      |
-| `examples/crm-investigator` | 5175 / 4176          | `investigator` |
-| `examples/crm-monitor`      | 5176 / 4177          | `monitor`      |
+| App                         | Port (dev / preview) | Module id          |
+| --------------------------- | -------------------- | ------------------ |
+| `examples/crm-cs`           | 5177 / 4178          | `case`, `customer` |
+| `examples/crm-finance`      | 5174 / 4175          | `finance`          |
+| `examples/crm-investigator` | 5175 / 4176          | `investigator`     |
+| `examples/crm-monitor`      | 5176 / 4177          | `monitor`          |
 
 ## What it proves
 
@@ -171,7 +172,7 @@ and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the co
 ```bash
 pnpm --filter @crm/crm-finance build
 pnpm --filter @crm/crm-finance preview        # serves dist on :4175
-VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
+MOCK_DOMAIN=examples/mock-backend/src/index.ts VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
 ```
 
 `dev:examples` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL). It uses
@@ -189,8 +190,9 @@ remote page. `pnpm check` builds every example but needs none of them running.
 ## Add another remote
 
 Run `pnpm new:remote <id>` (see the recipe "Add a remote" in `docs/agents/recipes.md`); it creates
-`apps/crm-<id>`. Keep the `shared` list identical to the console's `vite.config.ts`; add a library there
-only in both places at once.
+`apps/crm-<id>`. A remote declares as `shared` every library it imports from this list (`react`, `react-dom`,
+`react-i18next`, `@tanstack/react-query`, `@tanstack/react-router`, `@crm/app-kit`, `@crm/auth`, `@crm/ui`); the console
+must share it too, so add a new shared library to the console's `vite.config.ts` first.
 
 Rules for a remote:
 
