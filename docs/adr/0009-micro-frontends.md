@@ -38,8 +38,9 @@ service (the Case and Customer modules) was moved out of the console into its ow
   - **Shared code moves to packages.** A remote cannot import the shell, so the helpers both need moved
     to a new package, `@crm/app-kit`, and the permission guard moved with them.
   - **Coupling that stays.** CS mocks, CS texts (`@crm/i18n`), and CS permissions (`@crm/auth`) still
-    live in the shell and shared packages. Generators (`new:module`) only create shell modules; a
-    `new:remote` generator does not exist yet.
+    live in the shell and shared packages. `pnpm new:module` only creates shell modules;
+    `pnpm new:remote` creates a whole remote app, but a new module inside `apps/crm-cs` is still
+    copied by hand.
   - **No isolation.** A remote runs in the same page with the same cache, which holds customer data,
     and can call the API with the user's session. Splitting a team into a remote adds no data
     protection; the BFF and server-side permissions remain the only boundary.

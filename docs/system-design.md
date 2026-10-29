@@ -172,6 +172,7 @@ drift). The runtime is a static build served by nginx in a Docker image.
 | To add           | Do this                                                                     |
 | ---------------- | --------------------------------------------------------------------------- |
 | A module         | copy `modules/customer` in `apps/crm-cs`, then the steps in recipes         |
+| A remote app     | `pnpm new:remote <id>`, then the steps it prints                            |
 | A GET endpoint   | `pnpm new:endpoint <module> <operationId> --path /v1/...`                   |
 | Another endpoint | the recipe in [docs/agents/recipes.md](agents/recipes.md)                   |
 | A UI component   | "Changing or adding a component" in [docs/ui-standards.md](ui-standards.md) |
