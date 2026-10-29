@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, test } from './support'
+import { expect, test } from '../support'
 
 function moduleNav(page: Page) {
   return page.getByRole('navigation', { name: 'Modul' })

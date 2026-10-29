@@ -3,7 +3,7 @@
 Step-by-step procedures per task type. Rules and boundaries live in [AGENTS.md](../../AGENTS.md).
 Each recipe ends with **Done when**; run that command and report the result as it is.
 
-Living references: module `case` (`apps/crm-cs/src/modules/case/`) and `customer`. Domain modules live in the CS remote (`apps/crm-cs`); the console is only the shell.
+Living references: module `case` (`examples/crm-cs/src/modules/case/`) and `customer`. Domain modules live in the CS remote (`examples/crm-cs`); the console is only the shell.
 
 ## Add an API endpoint
 
@@ -12,7 +12,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 1. Add the path and schema to `packages/api-client/openapi/openapi.yaml`. Business codes (status, queue, priority) are plain `string`; their values come from master data, not an OpenAPI enum.
 2. Run `pnpm codegen:api` (it writes `packages/api-client/src/generated/openapi.d.ts`; never edit that file).
 3. Export the type and add a method to `createApiClient` in `packages/api-client/src/index.ts`, wrapped in `unwrap(...)` like the others so errors become `ApiError`.
-4. Wrap it in the module facade `apps/crm-cs/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
+4. Wrap it in the module facade `examples/crm-cs/src/modules/<id>/api/<id>.ts`. Components never call `api` directly.
 5. Add a query hook in `modules/<id>/queries/` using `queryOptions` and the module's own key factory in `modules/<id>/queries/keys.ts` (`caseKeys`, `customerKeys`; `src/lib/query-keys.ts` holds only cross-module keys such as `sessionKey` and `masterDataKey`). Example: `useMasterData.ts`.
 6. Dev mock: data in `src/mocks/db.ts`, handler in `src/mocks/handlers.ts`. Mask PII per role through `src/mocks/mask.ts`. If only some roles may call the endpoint, enforce it in the handler with `can(role, 'x')` and answer 403, like the existing handlers.
 7. If only some roles may call it, do not fire the request for the others: gate the query with `enabled` (`useQuery({ ...options, enabled: can('x') })`, with `can` from `useAuth()`), otherwise they trigger a 403 on every visit.
@@ -23,7 +23,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 
 ## Add a CRM module
 
-1. Copy `apps/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `apps/crm-cs/src/module.tsx` and its routes to `apps/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today. For a new team's own app, see "Add a remote".
+1. Copy `examples/crm-cs/src/modules/customer/` to `modules/<id>/` and rename it, then add the module to `examples/crm-cs/src/module.tsx` and its routes to `examples/crm-cs/src/routes.ts` (with `requirePermission`). `pnpm new:module` only generates a module inside the shell (`apps/crm-console`), which has none today. For a new team's own app, see "Add a remote".
 2. Add the permission in `packages/auth/src/roles.ts` (the `Permission` type and the per-role lists).
 3. Add `<id>.title` and any other text to both locales of `packages/i18n/src/resources.ts`.
 4. Contract, facade, query, and mock: follow "Add an API endpoint".
@@ -38,15 +38,15 @@ For a new domain that a separate team releases on its own: `pnpm new:remote <id>
 
 1. Add the permission in `packages/auth/src/roles.ts` if it is new.
 2. Run `pnpm --filter @crm/crm-<id> dev` and start the console with `VITE_REMOTE_MODULES=crm_<id>=http://localhost:<port>/remoteEntry.js` (a comma separates several remotes).
-3. Build the page from `@crm/ui`; use `api` from the page props, not your own client. A remote that needs its own routes adds `routes` to its module, as `apps/crm-cs` does.
+3. Build the page from `@crm/ui`; use `api` from the page props, not your own client. A remote that needs its own routes adds `routes` to its module, as `examples/crm-cs` does.
 4. Production needs the hosting items in [ADR-0009](../adr/0009-micro-frontends.md) (path, CORS, CSP); the generator does not set them up.
 
 **Done when:** the remote's menu shows for the roles that hold the permission, and `pnpm check` is green.
 
 ## Add a page or route
 
-1. Page body goes in `modules/<id>/pages/`. The route goes in `apps/crm-cs/src/routes.ts` (code-based, under the shell's `/_authenticated` layout) and holds only `validateSearch`, the guard (`requirePermission` from `@crm/app-kit`), and the page component. Read search params in the page with `searchRoute<S>(id)` from `@/lib/search-route`.
-2. Filters and pagination in the URL: a zod schema with `.catch()` for stale values and `stripSearchParams(DEFAULT_...)` to keep URLs short (see `apps/crm-cs/src/modules/case/schemas/search.ts`).
+1. Page body goes in `modules/<id>/pages/`. The route goes in `examples/crm-cs/src/routes.ts` (code-based, under the shell's `/_authenticated` layout) and holds only `validateSearch`, the guard (`requirePermission` from `@crm/app-kit`), and the page component. Read search params in the page with `searchRoute<S>(id)` from `@/lib/search-route`.
+2. Filters and pagination in the URL: a zod schema with `.catch()` for stale values and `stripSearchParams(DEFAULT_...)` to keep URLs short (see `examples/crm-cs/src/modules/case/schemas/search.ts`).
 3. `routeTree.gen.ts` (shell only) is regenerated by `pnpm dev`; never edit it. Remote routes are not in it.
 4. Pages that pull in a heavy library use `lazy()` + `Suspense`.
 5. Keep the page itself thin and put the markup in a presentational component under `modules/<id>/components/` (props in, JSX out). Pages are covered only by e2e, but they count toward the coverage floor, so `pnpm check` goes red when a feature adds UI with no unit test. Test the component; if it contains a `Link`, use `renderWithRouter` (see "Write tests").
@@ -55,7 +55,7 @@ For a new domain that a separate team releases on its own: `pnpm new:remote <id>
 
 ## Add a form
 
-Reference: `apps/crm-cs/src/modules/case/components/CaseForm.tsx` (used by `pages/CaseCreatePage.tsx`).
+Reference: `examples/crm-cs/src/modules/case/components/CaseForm.tsx` (used by `pages/CaseCreatePage.tsx`).
 
 1. Put the zod schema in `modules/<id>/schemas/`. Messages are **i18n keys** (`.min(3, 'cases.create.errors.subjectShort')`), added to both locales. Selects whose values are business codes start empty and are required; options come from master data, never from a hardcoded list.
 2. Build the form with `useForm({ resolver: zodResolver(schema), defaultValues })` from `react-hook-form` and `@hookform/resolvers/zod`. The form component is presentational: it receives `onSubmit(request)`, `onCancel`, `isPending`, and a server `error` string, and emits a ready-to-send request (see `toCreateCaseRequest`).
@@ -107,16 +107,16 @@ Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-sta
 
 - API errors become `ApiError` (`status`, `code`, `requestId`). Show them with `ErrorState` (`packages/ui/src/data-state.tsx`); the message may come from the server, never show a stack trace.
 - A 401 from any query or mutation is handled globally (`lib/query-client.ts` calls the handler installed by `app/auth/session-expiry.ts`): client data is cleared and the app goes to `/login?redirect=...`. Do not add per-page 401 handling.
-- A module cleans its state through `onSignOut(reason)` in `module.ts`. `expired` may keep unsent work (example: `apps/crm-cs/src/modules/case/store/drafts.ts`); `logout` must delete it.
+- A module cleans its state through `onSignOut(reason)` in `module.ts`. `expired` may keep unsent work (example: `examples/crm-cs/src/modules/case/store/drafts.ts`); `logout` must delete it.
 - Render errors are caught by `RouteError` (`app/layout/RouteFallbacks.tsx`) and reported through `reportError` in `lib/telemetry.ts`. Plug in an SDK with `setErrorReporter`.
 
-**Done when:** the new behavior has a unit test and, if it changes the session flow, an e2e (`apps/crm-console/e2e/case-workspace.spec.ts` is the example).
+**Done when:** the new behavior has a unit test and, if it changes the session flow, an e2e (`examples/e2e/cs/case-workspace.spec.ts` is the example).
 
 ## Write tests
 
 - **Unit/component:** `*.test.ts(x)` next to the code. For components using queries, use `renderWithProviders` from `@crm/test-utils` and seed the cache with `setQueryData`. For i18n text, `await createI18n()` in `beforeAll`.
 - **Router:** components that render a `Link`, use `useNavigate`, or show route errors: `await renderWithRouter(<Thing />, { linkTargets: ['/cases/$caseId'] })` from `@crm/test-utils` (memory router + query client; `rootOptions` passes `errorComponent` and friends). Example: `app/layout/RouteFallbacks.test.tsx`.
-- **E2E (Playwright, `apps/crm-console/e2e/`):** dev server with MSW. Import `test` and `expect` from `e2e/support.ts` and take `signedInPage` (already signed in on `/cases`). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
+- **E2E (Playwright):** dev server with MSW. The shell's own tests are in `apps/crm-console/e2e/` (no remote); journeys through a remote are in `examples/e2e/`. Import `test` and `expect` from the `support.ts` next to them and take `signedInPage` (already signed in: on `/` for the shell, on `/cases` for the CS example). Move with `clientNavigate`, never `page.goto`, after signing in or out; end the session with `endSession`.
 - **Accessibility:** add new pages to `e2e/a11y.spec.ts`; `expectNoViolations` must stay clean.
 - The coverage floor is in `vitest.config.ts`; raise it when tests grow.
 

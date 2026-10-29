@@ -39,7 +39,7 @@ apps/crm-console/src   the shell: no domain screens, loads remotes at startup
   app/             layout, auth, module registry and remote loader, design-system gallery (dev only)
   lib/             shell-only helpers (query client, telemetry, redirect)
   mocks/           MSW handlers, in-memory database, mock masking (dev only)
-apps/crm-cs/src        customer-service remote (Module Federation), served under /cs/ in the image
+examples/crm-cs/src    example remote: customer service (Module Federation); examples are not part of the boilerplate
   modules/<id>/    case, customer: module.ts, public.ts, api/, queries/, schemas/, components/, pages/, store/
   routes.ts        code-based routes added under the shell's authenticated layout
 packages/
@@ -67,7 +67,7 @@ flowchart TD
   lib -. "never" .-> modules
 ```
 
-The same rules hold inside `apps/crm-cs`, which has `modules/` and `lib/` only. A remote never imports
+The same rules hold inside `examples/crm-cs`, which has `modules/` and `lib/` only. A remote never imports
 the shell; what both need lives in a package (`app-kit`, `ui`, `auth`). A module never imports `app/` or `routes/`, and reaches another module only through its `public.ts`
 (queries, schemas, store; never components). Cross-module links go through routes. Inside a module,
 imports use the alias, not `../../`. A pattern needed by three modules moves to `lib/`, `packages/ui`, or
@@ -171,7 +171,7 @@ drift). The runtime is a static build served by nginx in a Docker image.
 
 | To add           | Do this                                                                     |
 | ---------------- | --------------------------------------------------------------------------- |
-| A module         | copy `modules/customer` in `apps/crm-cs`, then the steps in recipes         |
+| A module         | copy `modules/customer` in `examples/crm-cs`, then the steps in recipes     |
 | A remote app     | `pnpm new:remote <id>`, then the steps it prints                            |
 | A GET endpoint   | `pnpm new:endpoint <module> <operationId> --path /v1/...`                   |
 | Another endpoint | the recipe in [docs/agents/recipes.md](agents/recipes.md)                   |

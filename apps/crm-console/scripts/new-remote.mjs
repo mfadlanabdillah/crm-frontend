@@ -43,12 +43,16 @@ if (!/^[A-Z][A-Za-z0-9]+$/.test(icon)) fail('--icon must be a lucide-react icon 
 const dir = path.join(appsDir, `crm-${id}`)
 if (existsSync(dir)) fail(`apps/crm-${id} already exists`)
 
-const usedPorts = readdirSync(appsDir).flatMap((name) => {
-  const config = path.join(appsDir, name, 'vite.config.ts')
-  if (!existsSync(config)) return []
-  const match = /REMOTE_PORT = (\d+)/.exec(readFileSync(config, 'utf8'))
-  return match ? [Number(match[1])] : []
-})
+const usedPorts = [appsDir, path.join(appsDir, '../examples')].flatMap((parent) =>
+  existsSync(parent)
+    ? readdirSync(parent).flatMap((name) => {
+        const config = path.join(parent, name, 'vite.config.ts')
+        if (!existsSync(config)) return []
+        const match = /REMOTE_PORT = (\d+)/.exec(readFileSync(config, 'utf8'))
+        return match ? [Number(match[1])] : []
+      })
+    : [],
+)
 const port = flag('--port') ? Number(flag('--port')) : Math.max(5173, ...usedPorts) + 1
 if (!Number.isInteger(port) || port < 1024 || port > 65_000)
   fail('--port must be a free port number')

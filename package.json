@@ -9,8 +9,8 @@
     "pnpm": ">=12.0.0"
   },
   "scripts": {
-    "dev": "VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-cs dev",
-    "build": "pnpm --filter @crm/crm-console --filter @crm/crm-cs build",
+    "dev": "pnpm --filter @crm/crm-console dev",
+    "build": "pnpm --filter @crm/crm-console build",
     "preview": "pnpm --filter @crm/crm-console preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -19,17 +19,18 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:e2e": "pnpm --filter @crm/crm-console test:e2e",
+    "test:e2e": "pnpm --filter @crm/crm-console test:e2e && pnpm --filter @crm/examples-e2e test:e2e",
     "size": "pnpm --filter @crm/crm-console size",
     "codegen:api": "pnpm --filter @crm/api-client codegen",
     "codegen:check": "pnpm codegen:api && git diff --exit-code packages/api-client/src/generated",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm codegen:check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm build:examples && pnpm size && pnpm codegen:check",
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-console new:module",
     "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
-    "poc:mfe": "VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js,crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-cs --filter @crm/crm-finance --filter @crm/crm-investigator --filter @crm/crm-monitor dev",
-    "test:e2e:mfe": "pnpm --filter @crm/crm-console test:e2e:mfe",
-    "new:remote": "pnpm --filter @crm/crm-console new:remote"
+    "test:e2e:mfe": "pnpm --filter @crm/examples-e2e test:mfe",
+    "new:remote": "pnpm --filter @crm/crm-console new:remote",
+    "dev:examples": "VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js,crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter ./examples/* dev",
+    "build:examples": "pnpm -r --if-present --filter './examples/*' build"
   },
   "devDependencies": {
     "@crm/config-eslint": "workspace:*",

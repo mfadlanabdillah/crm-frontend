@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     projects: [
       'apps/crm-console',
-      'apps/crm-cs',
+      'examples/crm-cs',
       'packages/api-client',
       'packages/app-kit',
       'packages/auth',
@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['apps/crm-console/src/**', 'apps/crm-cs/src/**', 'packages/*/src/**'],
+      include: ['apps/crm-console/src/**', 'examples/crm-cs/src/**', 'packages/*/src/**'],
       // Kode penghubung (routes, main, router) diuji lewat Playwright; mock dev bukan kode produksi.
       exclude: [
         '**/*.test.{ts,tsx}',
