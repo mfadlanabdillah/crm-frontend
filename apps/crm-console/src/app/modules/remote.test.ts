@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRemote, registerRemotes } from '@module-federation/runtime'
 import { allModules } from '@/app/modules/registry'
-import { LOAD_TIMEOUT_MS, loadRemoteModules, parseRemotes, remoteRouteFactories } from './remote'
+import {
+  LOAD_TIMEOUT_MS,
+  failedRemotes,
+  loadRemoteModules,
+  parseRemotes,
+  remoteRouteFactories,
+} from './remote'
 
 vi.mock('@module-federation/runtime', () => ({
   loadRemote: vi.fn(),
@@ -88,6 +94,7 @@ describe('loadRemoteModules', () => {
     await expect(loadRemoteModules('zz_down=http://localhost:1/e.js')).resolves.toBeUndefined()
 
     expect(error).toHaveBeenCalledWith(expect.stringContaining('zz_down'), expect.any(Error))
+    expect(failedRemotes).toEqual(['zz_down'])
   })
 
   it('gives up on a remote that never answers', async () => {

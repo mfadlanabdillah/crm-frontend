@@ -11,6 +11,9 @@ export const LOAD_TIMEOUT_MS = import.meta.env.DEV ? 60_000 : 5_000
 /** Route factories of the loaded remotes, applied by `createAppRouter` before the router exists. */
 export const remoteRouteFactories: Array<(parent: AnyRoute) => AnyRoute[]> = []
 
+/** Names of the configured remotes that failed to load, so the shell can say so and offer a retry. */
+export const failedRemotes: string[] = []
+
 export interface RemoteEntry {
   name: string
   entry: string
@@ -48,6 +51,7 @@ function withTimeout<T>(promise: Promise<T>): Promise<T> {
  */
 export async function loadRemoteModules(raw: string | undefined): Promise<void> {
   const remotes = parseRemotes(raw)
+  failedRemotes.length = 0
   if (remotes.length === 0) return
 
   registerRemotes(remotes.map(({ name, entry }) => ({ name, entry, type: 'module' })))
@@ -59,6 +63,7 @@ export async function loadRemoteModules(raw: string | undefined): Promise<void> 
         )
       } catch (error) {
         console.error(`Remote "${name}" is unavailable; continuing without it.`, error)
+        failedRemotes.push(name)
         return null
       }
     }),
