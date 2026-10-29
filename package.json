@@ -29,7 +29,7 @@
     "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
     "test:e2e:mfe": "pnpm --filter @crm/examples-e2e test:mfe",
     "new:remote": "pnpm --filter @crm/crm-console new:remote",
-    "dev:examples": "MOCK_DOMAIN=examples/mock-backend/src/index.ts VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js,crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter ./examples/* dev",
+    "dev:examples": "MOCK_DOMAIN=examples/mock-backend/src/index.ts VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js,crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter './examples/*' --if-present dev",
     "build:examples": "pnpm -r --if-present --filter './examples/*' build"
   },
   "devDependencies": {
