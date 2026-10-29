@@ -1,14 +1,12 @@
 import { can } from '@crm/auth'
 import type { Role } from '@crm/auth'
-import { caseModule } from '@/modules/case/module'
-import { customerModule } from '@/modules/customer/module'
 import type { ModuleDefinition } from '@/modules/types'
 
 /**
  * Daftar modul CRM. Menambah modul = membuat `modules/<id>/module.ts` lalu mendaftarkannya di sini
  * (`pnpm new:module <id>` melakukannya otomatis).
  */
-export const modules: readonly ModuleDefinition[] = [caseModule, customerModule]
+export const modules: readonly ModuleDefinition[] = []
 
 const remoteModules: ModuleDefinition[] = []
 

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRemote, registerRemotes } from '@module-federation/runtime'
 import { allModules } from '@/app/modules/registry'
-import { LOAD_TIMEOUT_MS, loadRemoteModules, parseRemotes } from './remote'
+import { LOAD_TIMEOUT_MS, loadRemoteModules, parseRemotes, remoteRouteFactories } from './remote'
 
 vi.mock('@module-federation/runtime', () => ({
   loadRemote: vi.fn(),
@@ -63,6 +63,22 @@ describe('loadRemoteModules', () => {
     const ids = allModules().map((module) => module.id)
     expect(ids.indexOf('zz_a')).toBeGreaterThan(-1)
     expect(ids.indexOf('zz_a')).toBeLessThan(ids.indexOf('zz_b'))
+  })
+
+  it('registers every module of a remote and keeps the route factories it brings', async () => {
+    const routes = vi.fn(() => [])
+    vi.mocked(loadRemote).mockResolvedValue({
+      default: [
+        { ...fixtureModule, id: 'zz-multi-a', basePath: '/zz-multi-a', routes },
+        { ...fixtureModule, id: 'zz-multi-b', basePath: '/zz-multi-b' },
+      ],
+    })
+
+    await loadRemoteModules('zz_multi=http://localhost:1/m.js')
+
+    const ids = allModules().map((module) => module.id)
+    expect(ids).toEqual(expect.arrayContaining(['zz-multi-a', 'zz-multi-b']))
+    expect(remoteRouteFactories).toContain(routes)
   })
 
   it('logs and continues when a remote cannot be loaded', async () => {

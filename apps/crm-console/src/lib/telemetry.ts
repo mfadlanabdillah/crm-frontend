@@ -1,6 +1,6 @@
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals'
 import type { Metric } from 'web-vitals'
-import { env } from './env'
+import { env } from '@crm/app-kit'
 
 /**
  * Budget bundle diperiksa `pnpm size`. Fungsi ini hanya mengirim Web Vitals ke endpoint observability internal.

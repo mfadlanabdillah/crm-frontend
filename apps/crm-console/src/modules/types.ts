@@ -1,10 +1,10 @@
 /** Kontrak antara shell dan modul. Letaknya di modules/ (bukan app/) supaya modul boleh mengimpornya. */
+import type { StreamStatus } from '@crm/app-kit'
 import type { Permission } from '@crm/auth'
 import type { RemotePageProps } from '@crm/module-contract'
 import type { LinkOptions } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
-import type { StreamStatus } from '@/lib/sse'
 
 /**
  * Kontrak antara shell (`app/`) dan sebuah modul CRM. Shell hanya tahu bentuk ini;

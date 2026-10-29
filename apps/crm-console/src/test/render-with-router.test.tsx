@@ -6,12 +6,15 @@ import { renderWithRouter } from '@crm/test-utils'
 describe('renderWithRouter', () => {
   it('resolves a Link to a registered target', async () => {
     await renderWithRouter(
-      <Link to="/cases/$caseId" params={{ caseId: 'case-1' }}>
-        Open case
+      <Link to="/remote/$moduleId" params={{ moduleId: 'finance' }}>
+        Open module
       </Link>,
-      { linkTargets: ['/cases/$caseId'] },
+      { linkTargets: ['/remote/$moduleId'] },
     )
 
-    expect(screen.getByRole('link', { name: 'Open case' })).toHaveAttribute('href', '/cases/case-1')
+    expect(screen.getByRole('link', { name: 'Open module' })).toHaveAttribute(
+      'href',
+      '/remote/finance',
+    )
   })
 })

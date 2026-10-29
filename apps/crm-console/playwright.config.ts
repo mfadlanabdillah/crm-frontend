@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 5173
+const CS_PORT = 5177
 
 export default defineConfig({
   testDir: './e2e',
@@ -21,14 +22,24 @@ export default defineConfig({
     timezoneId: 'Asia/Jakarta',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: `pnpm dev --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    env: {
-      VITE_ENABLE_MOCKS: 'true',
-      VITE_MOCK_ROLE: 'supervisor',
+  // The console is a shell: every screen under test comes from the CS remote, so both must run.
+  webServer: [
+    {
+      command: `pnpm dev --port ${PORT} --strictPort`,
+      url: `http://localhost:${PORT}`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: {
+        VITE_ENABLE_MOCKS: 'true',
+        VITE_MOCK_ROLE: 'supervisor',
+        VITE_REMOTE_MODULES: `crm_cs=http://localhost:${CS_PORT}/remoteEntry.js`,
+      },
     },
-  },
+    {
+      command: 'pnpm --filter @crm/crm-cs dev',
+      url: `http://localhost:${CS_PORT}/remoteEntry.js`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 })

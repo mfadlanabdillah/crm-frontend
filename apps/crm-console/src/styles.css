@@ -2,6 +2,9 @@
 @import '@crm/ui/theme.css';
 /* Tailwind does not scan node_modules: tell it where the shared components live. */
 @source '../../../packages/ui/src';
+/* One utility sheet for the whole page: classes used by the CS remote are generated here. A new class
+   in the remote needs a new host build (see docs/poc/micro-frontend.md). */
+@source '../../crm-cs/src';
 
 @layer components {
   /* Tiptap merender HTML biasa; batasi gaya agar konsisten dengan UI. */

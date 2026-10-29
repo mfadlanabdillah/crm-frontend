@@ -1,6 +1,5 @@
+import { api, sessionKey } from '@crm/app-kit'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api'
-import { sessionKey } from '@/lib/query-keys'
 import { signIn } from './sign-in'
 
 export const sessionQueryOptions = queryOptions({

@@ -5,6 +5,7 @@
  */
 import type { ApiClient } from '@crm/api-client'
 import type { Permission } from '@crm/auth'
+import type { AnyRoute } from '@tanstack/react-router'
 import type { ComponentType } from 'react'
 
 /** What the host hands to a remote's page. */
@@ -22,18 +23,37 @@ export interface RemotePageProps {
   openHostPath: (path: string) => void
 }
 
-/** What a remote exposes as `./module` (default export). */
+export type RemoteStreamStatus = 'connecting' | 'live' | 'reconnecting' | 'offline' | 'closed'
+
+/** What a remote exposes as `./module` (default export): one module, or a list of them. */
 export interface RemoteModule {
   /** Unique across the host and every remote. */
   id: string
-  /** i18n key of the module name; the remote adds its own texts under its id. */
+  /** i18n key of the module name. */
   labelKey: string
   icon: ComponentType<{ className?: string }>
-  /** Always `/remote/<id>`. */
+  /**
+   * Path prefix of the module. A module with its own `routes` owns the prefix (for example
+   * `/cases`); one that only has a `Page` lives at `/remote/<id>`.
+   */
   basePath: string
-  /** Sidebar link target: `{ to: '/remote/$moduleId', params: { moduleId: '<id>' } }`. */
-  nav: { to: string; params?: Record<string, string> }
+  /** Sidebar link target, for example `{ to: '/cases', search: { ... } }`. */
+  nav: { to: string; params?: Record<string, string>; search?: Record<string, unknown> }
   /** Hides the module and denies its routes for roles without this permission. */
   permission?: Permission
-  Page: ComponentType<RemotePageProps>
+  /** Single page rendered by the host under `/remote/<id>/`. Omit when the module has `routes`. */
+  Page?: ComponentType<RemotePageProps>
+  /**
+   * Code-based routes of the module, added under the host's authenticated layout route before the
+   * router is created. Share `@tanstack/react-router` as a singleton with the host.
+   */
+  routes?: (parent: AnyRoute) => AnyRoute[]
+  /** Sidebar section shown while the module is active. */
+  Sidebar?: ComponentType<{ variant?: 'sidebar' | 'inline' }>
+  /** Tab row under the header, shown while the module is active. */
+  Tabs?: ComponentType
+  /** Realtime connection of the module; its status feeds the indicator in the header. */
+  useRealtime?: () => RemoteStreamStatus
+  /** Clears client state of the module when the session ends. */
+  onSignOut?: (reason: 'logout' | 'expired') => void
 }

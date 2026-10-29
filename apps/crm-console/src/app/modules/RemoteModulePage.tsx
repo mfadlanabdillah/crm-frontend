@@ -1,8 +1,8 @@
+import { api } from '@crm/app-kit'
 import { useRouter } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { allModules } from '@/app/modules/registry'
 import { EmptyState } from '@crm/ui'
-import { api } from '@/lib/api'
 import { safeRedirectPath } from '@/lib/redirect'
 
 /**

@@ -22,6 +22,11 @@ import { fileURLToPath } from 'node:url'
 const appRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const repoRoot = path.join(appRoot, '../..')
 const src = path.join(appRoot, 'src')
+// A module lives in the console shell or in a domain app (crm-cs); find the one that has it.
+const moduleSrc = (id) =>
+  [src, path.join(repoRoot, 'apps/crm-cs/src')].find((root) =>
+    existsSync(path.join(root, 'modules', id)),
+  ) ?? src
 
 const args = process.argv.slice(2)
 const flag = (name) => {
@@ -67,9 +72,9 @@ const withSignal = (list) => [...list, 'signal?: AbortSignal'].join(', ')
 const files = {
   yaml: path.join(repoRoot, 'packages/api-client/openapi/openapi.yaml'),
   client: path.join(repoRoot, 'packages/api-client/src/index.ts'),
-  facade: path.join(src, 'modules', id, 'api', `${id}.ts`),
-  keys: path.join(src, 'modules', id, 'queries', 'keys.ts'),
-  hook: path.join(src, 'modules', id, 'queries', `use${thing}.ts`),
+  facade: path.join(moduleSrc(id), 'modules', id, 'api', `${id}.ts`),
+  keys: path.join(moduleSrc(id), 'modules', id, 'queries', 'keys.ts'),
+  hook: path.join(moduleSrc(id), 'modules', id, 'queries', `use${thing}.ts`),
   handlers: path.join(src, 'mocks/handlers.ts'),
   status: path.join(repoRoot, 'docs/contract-status.md'),
 }

@@ -5,11 +5,11 @@ import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { installSessionExpiry } from './app/auth/session-expiry'
-import { loadRemoteModules } from './app/modules/remote'
-import { env } from './lib/env'
+import { loadRemoteModules, remoteRouteFactories } from './app/modules/remote'
+import { env } from '@crm/app-kit'
 import { queryClient } from './lib/query-client'
 import { initWebVitals, installGlobalErrorHandlers } from './lib/telemetry'
-import { router } from './router'
+import { createAppRouter } from './router'
 
 async function bootstrap() {
   await createI18n()
@@ -22,6 +22,8 @@ async function bootstrap() {
 
   // After i18n (a remote adds its texts to it); a remote that is down never blocks startup.
   await loadRemoteModules(env.remoteModules)
+
+  const router = createAppRouter(remoteRouteFactories)
 
   installGlobalErrorHandlers()
   initWebVitals()

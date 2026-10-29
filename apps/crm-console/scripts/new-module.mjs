@@ -159,7 +159,7 @@ mkdirSync(path.join(moduleDir, 'components'), { recursive: true })
 const registryFile = path.join(src, 'app/modules/registry.ts')
 let registry = readFileSync(registryFile, 'utf8')
 const importLine = `import { ${camel}Module } from '@/modules/${id}/module'\n`
-const importRe = /^import \{ \w+ \} from '@\/modules\/[\w-]+\/module'\n/gm
+const importRe = /^import .*\n/gm
 const lastImport = [...registry.matchAll(importRe)].at(-1)
 const arrayRe = /export const modules: readonly ModuleDefinition\[\] = \[([^\]]*)\]/
 if (!lastImport || !arrayRe.test(registry)) {

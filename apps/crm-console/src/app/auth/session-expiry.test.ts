@@ -1,9 +1,9 @@
+import { sessionKey } from '@crm/app-kit'
 import { QueryClient } from '@tanstack/react-query'
 import type { AnyRouter } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { queryClient as appQueryClient } from '@/lib/query-client'
 import { ApiError } from '@crm/api-client'
-import { sessionKey } from '@/lib/query-keys'
 import { installSessionExpiry } from './session-expiry'
 
 function fakeRouter(pathname: string, href = pathname) {
