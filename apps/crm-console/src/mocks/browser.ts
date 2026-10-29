@@ -1,7 +1,7 @@
+import { env } from '@crm/app-kit'
 import { setupWorker } from 'msw/browser'
 import { ROLES } from '@crm/auth'
 import type { Role } from '@crm/auth'
-import { env } from '@/lib/env'
 import { db } from './db'
 import { handlers } from './handlers'
 

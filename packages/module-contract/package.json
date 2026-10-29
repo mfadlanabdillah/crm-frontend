@@ -14,12 +14,14 @@
     "@crm/auth": "workspace:*"
   },
   "peerDependencies": {
-    "react": ">=19"
+    "react": ">=19",
+    "@tanstack/react-router": ">=1"
   },
   "devDependencies": {
     "@crm/config-ts": "workspace:*",
     "@types/react": "19.3.0",
     "react": "19.3.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "@tanstack/react-router": "1.170.46"
   }
 }

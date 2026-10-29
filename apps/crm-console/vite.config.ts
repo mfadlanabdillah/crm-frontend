@@ -22,6 +22,8 @@ export default defineConfig({
         'react-dom': singleton,
         'react-i18next': singleton,
         '@tanstack/react-query': singleton,
+        '@tanstack/react-router': singleton,
+        '@crm/app-kit': singleton,
         '@crm/auth': singleton,
         '@crm/ui': singleton,
       },

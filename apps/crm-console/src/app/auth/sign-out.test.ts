@@ -1,15 +1,10 @@
+import { sessionKey } from '@crm/app-kit'
 import { QueryClient } from '@tanstack/react-query'
-import { beforeEach, describe, expect, it } from 'vitest'
-import { useDraftsStore, useWorkspaceStore } from '@/modules/case/public'
-import { sessionKey } from '@/lib/query-keys'
+import { describe, expect, it, vi } from 'vitest'
+import { registerRemoteModule } from '@/app/modules/registry'
 import { resetClientState } from './sign-out'
 
 describe('resetClientState', () => {
-  beforeEach(() => {
-    useWorkspaceStore.getState().reset()
-    useDraftsStore.getState().reset()
-  })
-
   it('membuang seluruh cache query, termasuk modul yang belum dikenal shell', () => {
     const queryClient = new QueryClient()
     queryClient.setQueryData(sessionKey, { user: { id: 'u1' } })
@@ -25,23 +20,20 @@ describe('resetClientState', () => {
     expect(queryClient.getQueryData(['modul-lain', 'list'])).toBeUndefined()
   })
 
-  it('mengosongkan store workspace modul Case', () => {
-    useWorkspaceStore.getState().openTab({ caseId: 'case-1', title: 'CASE-1' })
-    expect(useWorkspaceStore.getState().tabs).toHaveLength(1)
+  it('memanggil onSignOut tiap modul dengan alasan keluarnya', () => {
+    const onSignOut = vi.fn()
+    registerRemoteModule({
+      id: 'sign-out-probe',
+      labelKey: 'probe.title',
+      icon: (() => null) as never,
+      basePath: '/sign-out-probe',
+      nav: { to: '/' },
+      onSignOut,
+    })
 
-    resetClientState(new QueryClient())
-
-    expect(useWorkspaceStore.getState().tabs).toHaveLength(0)
-  })
-
-  it('logout membuang draf balasan, sesi habis (expired) menyimpannya', () => {
-    const draft = { body: '<p>halo</p>', visibility: 'customer' as const }
-
-    useDraftsStore.getState().setDraft('u1:case-1', draft)
     resetClientState(new QueryClient(), 'expired')
-    expect(useDraftsStore.getState().drafts['u1:case-1']).toEqual(draft)
-
     resetClientState(new QueryClient(), 'logout')
-    expect(useDraftsStore.getState().drafts).toEqual({})
+
+    expect(onSignOut.mock.calls).toEqual([['expired'], ['logout']])
   })
 })

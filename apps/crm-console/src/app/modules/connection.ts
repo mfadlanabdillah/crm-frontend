@@ -1,5 +1,5 @@
+import type { StreamStatus } from '@crm/app-kit'
 import { create } from 'zustand'
-import type { StreamStatus } from '@/lib/sse'
 
 interface ConnectionState {
   statuses: Record<string, StreamStatus>

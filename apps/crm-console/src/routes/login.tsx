@@ -1,3 +1,4 @@
+import { env } from '@crm/app-kit'
 import { createFileRoute, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { ShieldCheck } from 'lucide-react'
@@ -5,8 +6,6 @@ import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Alert, Button } from '@crm/ui'
 import { useSignIn, sessionQueryOptions } from '@/app/auth/session'
-import { DEFAULT_CASE_SEARCH } from '@/modules/case/schemas/search'
-import { env } from '@/lib/env'
 import { safeRedirectPath } from '@/lib/redirect'
 
 const loginSearchSchema = z.object({
@@ -23,7 +22,7 @@ export const Route = createFileRoute('/login')({
     // root, jadi membuang key di validateSearch tidak cukup.
     const redirectTo = safeRedirectPath(search.redirect)
     if (redirectTo) throw redirect({ href: redirectTo })
-    throw redirect({ to: '/cases', search: DEFAULT_CASE_SEARCH })
+    throw redirect({ to: '/' })
   },
   component: LoginPage,
 })
@@ -44,7 +43,7 @@ function LoginPage() {
         if (redirectTo) {
           router.history.push(redirectTo)
         } else {
-          void navigate({ to: '/cases', search: DEFAULT_CASE_SEARCH })
+          void navigate({ to: '/' })
         }
       },
     })

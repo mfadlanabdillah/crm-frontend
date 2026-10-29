@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs'
 import config from '@crm/config-eslint'
 
 /**
- * Batas arsitektur apps/crm-console (lihat AGENTS.md):
+ * Batas arsitektur apps/crm-console dan apps/crm-cs (lihat AGENTS.md); crm-cs hanya punya modules/ dan lib/:
  *   lib                 ->  tidak boleh mengimpor modules, app, routes
  *   modules/<m>         ->  tidak boleh mengimpor app, routes, atau modul lain (kecuali public.ts)
  *   app                 ->  hanya boleh mengimpor `module.ts` / `public.ts` sebuah modul
@@ -10,12 +10,12 @@ import config from '@crm/config-eslint'
  * Daftar modul dibaca dari folder, jadi modul baru otomatis ikut dijaga.
  */
 const srcDir = 'apps/crm-console/src'
+const appSrcDirs = [srcDir, 'apps/crm-cs/src']
 // Dibaca relatif terhadap file ini, bukan cwd, supaya ESLint boleh dijalankan dari subfolder.
-const moduleIds = readdirSync(new URL(`./${srcDir}/modules`, import.meta.url), {
-  withFileTypes: true,
-})
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
+const moduleIdsOf = (dir) =>
+  readdirSync(new URL(`./${dir}/modules`, import.meta.url), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
 
 const importRule = (patterns) => ({
   'no-restricted-imports': ['error', { patterns }],
@@ -45,35 +45,38 @@ const appBoundary = {
   ]),
 }
 
-const moduleBoundaries = moduleIds.map((id) => ({
-  files: [`${srcDir}/modules/${id}/**/*.{ts,tsx}`],
-  rules: importRule([
-    {
-      group: ['@/app/**', '@/routes/**'],
-      message:
-        'Modul tidak boleh mengimpor app atau routes. Kebutuhan shell masuk lewat ModuleDefinition.',
-    },
-    ...moduleIds
-      .filter((other) => other !== id)
-      .map((other) => ({
-        group: [`@/modules/${other}/**`, `!@/modules/${other}/public`],
-        message: `Antar-modul hanya lewat @/modules/${other}/public (queries, schemas, store), bukan komponen.`,
-      })),
-    {
-      group: ['../../*', '../../**'],
-      message:
-        'Gunakan alias @/modules/<modul>/... untuk lintas folder; path relatif tidak boleh keluar dari folder induk.',
-    },
-  ]),
-}))
+const moduleBoundaries = appSrcDirs.flatMap((dir) => {
+  const moduleIds = moduleIdsOf(dir)
+  return moduleIds.map((id) => ({
+    files: [`${dir}/modules/${id}/**/*.{ts,tsx}`],
+    rules: importRule([
+      {
+        group: ['@/app/**', '@/routes/**'],
+        message:
+          'Modul tidak boleh mengimpor app atau routes. Kebutuhan shell masuk lewat ModuleDefinition.',
+      },
+      ...moduleIds
+        .filter((other) => other !== id)
+        .map((other) => ({
+          group: [`@/modules/${other}/**`, `!@/modules/${other}/public`],
+          message: `Antar-modul hanya lewat @/modules/${other}/public (queries, schemas, store), bukan komponen.`,
+        })),
+      {
+        group: ['../../*', '../../**'],
+        message:
+          'Gunakan alias @/modules/<modul>/... untuk lintas folder; path relatif tidak boleh keluar dari folder induk.',
+      },
+    ]),
+  }))
+})
 
 /** Modules, components, and routes reach the API only through the module facade (`@crm/api-client`). */
 const noRawFetch = {
-  files: [
-    `${srcDir}/modules/**/*.{ts,tsx}`,
-    `${srcDir}/components/**/*.{ts,tsx}`,
-    `${srcDir}/routes/**/*.{ts,tsx}`,
-  ],
+  files: appSrcDirs.flatMap((dir) => [
+    `${dir}/modules/**/*.{ts,tsx}`,
+    `${dir}/components/**/*.{ts,tsx}`,
+    `${dir}/routes/**/*.{ts,tsx}`,
+  ]),
   rules: {
     'no-restricted-globals': [
       'error',

@@ -9,8 +9,8 @@
     "pnpm": ">=12.0.0"
   },
   "scripts": {
-    "dev": "pnpm --filter @crm/crm-console dev",
-    "build": "pnpm --filter @crm/crm-console build",
+    "dev": "VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-cs dev",
+    "build": "pnpm --filter @crm/crm-console --filter @crm/crm-cs build",
     "preview": "pnpm --filter @crm/crm-console preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -27,7 +27,7 @@
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-console new:module",
     "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
-    "poc:mfe": "VITE_REMOTE_MODULES=crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-finance --filter @crm/crm-investigator --filter @crm/crm-monitor dev",
+    "poc:mfe": "VITE_REMOTE_MODULES=crm_cs=http://localhost:5177/remoteEntry.js,crm_finance=http://localhost:5174/remoteEntry.js,crm_investigator=http://localhost:5175/remoteEntry.js,crm_monitor=http://localhost:5176/remoteEntry.js pnpm -r --parallel --no-bail --filter @crm/crm-console --filter @crm/crm-cs --filter @crm/crm-finance --filter @crm/crm-investigator --filter @crm/crm-monitor dev",
     "test:e2e:mfe": "pnpm --filter @crm/crm-console test:e2e:mfe"
   },
   "devDependencies": {

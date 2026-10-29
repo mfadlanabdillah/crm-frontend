@@ -1,10 +1,9 @@
+import { api, sessionKey } from '@crm/app-kit'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { allModules } from '@/app/modules/registry'
 import type { SignOutReason } from '@/modules/types'
-import { api } from '@/lib/api'
-import { sessionKey } from '@/lib/query-keys'
 
 /**
  * Data milik sesi sebelumnya (PII, case, customer, ...) tidak boleh tertinggal di memori:

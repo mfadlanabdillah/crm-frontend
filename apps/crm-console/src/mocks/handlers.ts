@@ -1,3 +1,4 @@
+import { env } from '@crm/app-kit'
 import { HttpResponse, delay, http } from 'msw'
 import { can } from '@crm/auth'
 import type {
@@ -12,7 +13,6 @@ import type {
   Role,
   UpdateCaseRequest,
 } from '@crm/api-client'
-import { env } from '@/lib/env'
 import { MASTER_DATA, db } from './db'
 import { maskCaseForRole, maskCustomerForRole } from './mask'
 

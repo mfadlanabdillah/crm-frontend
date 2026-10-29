@@ -125,6 +125,11 @@ const idID = {
     reload: 'Muat ulang halaman',
     notFound: 'Halaman tidak ditemukan.',
   },
+  home: {
+    noModulesTitle: 'Belum ada menu',
+    noModulesDescription:
+      'Peran Anda belum punya akses ke modul mana pun, atau modul belum dimuat. Hubungi admin.',
+  },
   remote: {
     unavailableTitle: 'Modul tidak tersedia',
     unavailableDescription:
@@ -264,6 +269,11 @@ const enUS = {
     reference: 'Reference code: {{id}}',
     reload: 'Reload page',
     notFound: 'Page not found.',
+  },
+  home: {
+    noModulesTitle: 'No menu yet',
+    noModulesDescription:
+      'Your role has no access to any module, or the modules did not load. Contact an admin.',
   },
   remote: {
     unavailableTitle: 'Module unavailable',

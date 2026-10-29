@@ -10,9 +10,8 @@ import {
 } from './registry'
 
 describe('registry modul', () => {
-  it('id dan basePath setiap modul unik', () => {
-    expect(new Set(modules.map((module) => module.id)).size).toBe(modules.length)
-    expect(new Set(modules.map((module) => module.basePath)).size).toBe(modules.length)
+  it('ships no built-in module: every domain is a remote', () => {
+    expect(modules).toEqual([])
   })
 
   it('a role sees exactly the modules whose permission it holds', () => {
@@ -25,18 +24,23 @@ describe('registry modul', () => {
     expect(getVisibleModules(null)).toEqual([])
   })
 
-  it('L1 sees the case module but not customer; L2 sees both', () => {
-    const ids = (role: 'l1' | 'l2') => getVisibleModules(role).map((module) => module.id)
-    expect(ids('l1')).toContain('case')
-    expect(ids('l1')).not.toContain('customer')
-    expect(ids('l2')).toEqual(expect.arrayContaining(['case', 'customer']))
-  })
+  // Modules come from remotes at runtime; these fixtures stand in for them. They stay registered for
+  // the rest of the file.
+  const fake = (id: string, basePath: string, permission?: ModuleDefinition['permission']) =>
+    ({ id, labelKey: `${id}.title`, basePath, permission }) as unknown as ModuleDefinition
 
-  it('menentukan modul aktif dari awalan path', () => {
-    expect(findActiveModule('/cases')?.id).toBe('case')
-    expect(findActiveModule('/cases/case-1')?.id).toBe('case')
-    expect(findActiveModule('/customers/cust-1')?.id).toBe('customer')
-    expect(findActiveModule('/casesX')).toBeUndefined()
+  it('a module needs its permission to be visible, and is found by path prefix', () => {
+    registerRemoteModule(fake('zz-case', '/zz-cases', 'case.view'))
+    registerRemoteModule(fake('zz-customer', '/zz-customers', 'customer.view'))
+    const ids = (role: 'l1' | 'l2') => getVisibleModules(role).map((module) => module.id)
+
+    expect(ids('l1')).toContain('zz-case')
+    expect(ids('l1')).not.toContain('zz-customer')
+    expect(ids('l2')).toEqual(expect.arrayContaining(['zz-case', 'zz-customer']))
+
+    expect(findActiveModule('/zz-cases')?.id).toBe('zz-case')
+    expect(findActiveModule('/zz-cases/case-1')?.id).toBe('zz-case')
+    expect(findActiveModule('/zz-casesX')).toBeUndefined()
     expect(findActiveModule('/login')).toBeUndefined()
   })
 

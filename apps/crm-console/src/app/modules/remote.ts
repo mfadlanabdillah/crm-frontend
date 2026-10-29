@@ -1,11 +1,15 @@
 import type { RemoteModule } from '@crm/module-contract'
 import { loadRemote, registerRemotes } from '@module-federation/runtime'
 import type { LucideIcon } from 'lucide-react'
+import type { AnyRoute } from '@tanstack/react-router'
 import { registerRemoteModule } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
 
 // A dev server compiles a remote on first request, which takes longer than serving a built one.
-export const LOAD_TIMEOUT_MS = import.meta.env.DEV ? 20_000 : 5_000
+export const LOAD_TIMEOUT_MS = import.meta.env.DEV ? 60_000 : 5_000
+
+/** Route factories of the loaded remotes, applied by `createAppRouter` before the router exists. */
+export const remoteRouteFactories: Array<(parent: AnyRoute) => AnyRoute[]> = []
 
 export interface RemoteEntry {
   name: string
@@ -50,7 +54,9 @@ export async function loadRemoteModules(raw: string | undefined): Promise<void> 
   const loaded = await Promise.all(
     remotes.map(async ({ name }) => {
       try {
-        return await withTimeout(loadRemote<{ default: RemoteModule }>(`${name}/module`))
+        return await withTimeout(
+          loadRemote<{ default: RemoteModule | RemoteModule[] }>(`${name}/module`),
+        )
       } catch (error) {
         console.error(`Remote "${name}" is unavailable; continuing without it.`, error)
         return null
@@ -60,6 +66,10 @@ export async function loadRemoteModules(raw: string | undefined): Promise<void> 
   // Load in parallel, register in the configured order: the menu must not depend on which remote
   // answered first.
   for (const remote of loaded) {
-    if (remote) registerRemoteModule(toModuleDefinition(remote.default))
+    if (!remote) continue
+    for (const module of [remote.default].flat()) {
+      registerRemoteModule(toModuleDefinition(module))
+      if (module.routes) remoteRouteFactories.push(module.routes)
+    }
   }
 }
