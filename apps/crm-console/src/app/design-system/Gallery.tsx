@@ -26,6 +26,8 @@ import {
   Textarea,
   Th,
   THead,
+  toast,
+  ToastCard,
   Tr,
 } from '@crm/ui'
 import type { BadgeTone } from '@crm/ui'
@@ -54,6 +56,8 @@ const SWATCHES = [
   ['danger', 'bg-danger'],
   ['danger-soft', 'bg-danger-soft'],
 ] as const
+
+const noop = () => {}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -144,6 +148,40 @@ export function Gallery() {
           <Alert tone="success">Saved.</Alert>
           <Alert tone="warning">The SLA is due in one hour.</Alert>
           <Alert tone="info">Drafts are kept until you sign out.</Alert>
+        </Section>
+
+        <Section title="Toast">
+          <Stack gap="sm">
+            <ToastCard message="Case updated." tone="success" closeLabel="Close" onClose={noop} />
+            <ToastCard
+              message="Drafts are kept until you sign out."
+              closeLabel="Close"
+              onClose={noop}
+            />
+            <ToastCard
+              message="The SLA is due in one hour."
+              tone="warning"
+              closeLabel="Close"
+              onClose={noop}
+            />
+            <ToastCard
+              message="Could not save. Try again."
+              tone="danger"
+              closeLabel="Close"
+              onClose={noop}
+            />
+          </Stack>
+          <Inline>
+            <Button variant="secondary" onClick={() => toast('Saved.', { tone: 'success' })}>
+              Show a toast
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => toast('Could not save.', { tone: 'danger' })}
+            >
+              Show an error toast
+            </Button>
+          </Inline>
         </Section>
 
         <Section title="Card and description list">

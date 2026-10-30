@@ -78,6 +78,8 @@ enter, and the View Transitions API for route changes.
 
 ## Phases
 
+[ADR-0005](adr/0005-ui-primitives-on-demand.md) still applies: a primitive is added together with its first real caller, not ahead of it. So each component below lands in the pull request that uses it for the first time (Toast: the update confirmation on the case detail page), and the phases are an order of intent, not a promise to build all of them.
+
 1. Motion tokens, the reduced-motion rule, and the Playwright setting.
 2. Toast, Dialog, Drawer, and Tabs.
 3. Apply them on the case detail page: panel, toast, change highlight, and route transitions.
