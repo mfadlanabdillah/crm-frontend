@@ -139,6 +139,9 @@ The BFF half is **Proposed**: it is not in this repository, and only the mock si
   the user returns to `/login?redirect=...`. Pages do not handle 401.
 - Signing out in one tab signs out the others (`BroadcastChannel`) and clears the query cache and each
   module's store.
+- Each session read announces its user id on the same channel; a tab whose cached session belongs to a
+  different user leaves as if the session had expired (drafts kept), so a tab does not keep showing the
+  previous account after another account signs in.
 - The `redirect` parameter accepts internal paths only (`lib/redirect.ts`).
 - Routes check permissions with `requirePermission`; components use `can()` and `<Can>`, never a role
   name.

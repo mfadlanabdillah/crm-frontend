@@ -1,3 +1,5 @@
+import { sessionKey } from '@crm/app-kit'
+import type { Session } from '@crm/api-client'
 import type { QueryClient } from '@tanstack/react-query'
 import type { AnyRouter } from '@tanstack/react-router'
 import { setUnauthorizedHandler } from '@/lib/query-client'
@@ -5,8 +7,9 @@ import type { SignOutReason } from '@/modules/types'
 import { listenRemoteSignOut, resetClientState } from './sign-out'
 
 /**
- * Sesi berakhir di server (401 dari query/mutation mana pun) atau agen keluar di tab lain:
- * buang data klien, lalu kembali ke /login dengan `redirect` ke halaman terakhir.
+ * Sesi berakhir di server (401 dari query/mutation mana pun), agen keluar di tab lain, atau tab lain
+ * membaca sesi pengguna yang berbeda: buang data klien, lalu kembali ke /login dengan `redirect`
+ * ke halaman terakhir.
  */
 export function installSessionExpiry(queryClient: QueryClient, router: AnyRouter) {
   let handling = false
@@ -24,7 +27,13 @@ export function installSessionExpiry(queryClient: QueryClient, router: AnyRouter
   }
 
   setUnauthorizedHandler(() => leave('expired'))
-  const stopListening = listenRemoteSignOut(() => leave('logout'))
+  const stopListening = listenRemoteSignOut(
+    () => leave('logout'),
+    (userId) => {
+      const current = queryClient.getQueryData<Session | null>(sessionKey)
+      if (current && current.user.id !== userId) leave('expired')
+    },
+  )
 
   return () => {
     setUnauthorizedHandler(undefined)

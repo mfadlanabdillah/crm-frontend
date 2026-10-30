@@ -56,4 +56,31 @@ describe('installSessionExpiry', () => {
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(1))
     other.close()
   })
+
+  it('leaves when another tab reads a different user than the cached session', async () => {
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(sessionKey, { user: { id: 'user-a' } })
+    const { router, navigate } = fakeRouter('/cases')
+    uninstall = installSessionExpiry(queryClient, router)
+
+    const other = new BroadcastChannel('crm-auth')
+    other.postMessage({ type: 'session', userId: 'user-a' })
+    other.postMessage({ type: 'session', userId: 'user-b' })
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(1))
+    expect(queryClient.getQueryData(sessionKey)).toBeNull()
+    other.close()
+  })
+
+  it('ignores session messages when no session is cached or the shape is wrong', async () => {
+    const { router, navigate } = fakeRouter('/cases')
+    uninstall = installSessionExpiry(new QueryClient(), router)
+
+    const other = new BroadcastChannel('crm-auth')
+    other.postMessage({ type: 'session', userId: 'user-b' })
+    other.postMessage({ type: 'session', userId: 42 })
+    other.postMessage(null)
+    other.postMessage('signed-out')
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(1))
+    other.close()
+  })
 })
