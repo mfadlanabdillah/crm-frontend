@@ -18,20 +18,37 @@ export function resetClientState(queryClient: QueryClient, reason: SignOutReason
 
 const CHANNEL_NAME = 'crm-auth'
 const SIGNED_OUT = 'signed-out'
+const SESSION = 'session'
 
 /** Beri tahu tab lain di browser yang sama; no-op bila BroadcastChannel tidak ada. */
-function broadcastSignOut() {
+function post(message: unknown) {
   if (typeof BroadcastChannel === 'undefined') return
   const channel = new BroadcastChannel(CHANNEL_NAME)
-  channel.postMessage(SIGNED_OUT)
+  channel.postMessage(message)
   channel.close()
 }
 
-export function listenRemoteSignOut(onSignedOut: () => void) {
+const broadcastSignOut = () => post(SIGNED_OUT)
+
+/** Announce which user this tab just read, so a tab that still shows another user can leave. */
+export const broadcastSession = (userId: string) => post({ type: SESSION, userId })
+
+function sessionUserId(data: unknown): string | undefined {
+  if (typeof data !== 'object' || data === null) return undefined
+  const { type, userId } = data as { type?: unknown; userId?: unknown }
+  return type === SESSION && typeof userId === 'string' ? userId : undefined
+}
+
+export function listenRemoteSignOut(
+  onSignedOut: () => void,
+  onSessionUser?: (userId: string) => void,
+) {
   if (typeof BroadcastChannel === 'undefined') return () => {}
   const channel = new BroadcastChannel(CHANNEL_NAME)
   channel.onmessage = (event) => {
-    if (event.data === SIGNED_OUT) onSignedOut()
+    if (event.data === SIGNED_OUT) return onSignedOut()
+    const userId = sessionUserId(event.data)
+    if (userId) onSessionUser?.(userId)
   }
   return () => channel.close()
 }
