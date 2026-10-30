@@ -43,10 +43,11 @@ Tiga cara menjalankan:
 
 Layar kosong pada `pnpm dev` itu benar, bukan galat: shell tidak punya layar bisnis.
 
-`pnpm dev:all` mencari setiap remote di `apps/` dan `examples/` (aplikasi yang `vite.config.ts`-nya punya `name`
-federation dan `REMOTE_PORT`, seperti yang ditulis `pnpm new:remote`), menyusun `VITE_REMOTE_MODULES`, lalu
+`pnpm dev:all` mencari setiap remote di `apps/` dan `examples/` (aplikasi yang `vite.config.ts`-nya memuat
+`name: 'crm_x'` dan `REMOTE_PORT = <angka>`, seperti yang ditulis `pnpm new:remote`; konfigurasi yang tampak seperti
+remote tetapi tidak terbaca dilaporkan di stderr, bukan dilewati diam-diam), menyusun `VITE_REMOTE_MODULES`, lalu
 menjalankan semuanya. Urutan menu mengikuti nama remote secara alfabetis. `--apps-only` melewatkan `examples/`,
-`--only cs,it` hanya menjalankan remote tertentu (hemat memori saat remote banyak), dan `--print` hanya menampilkan
+`--only cs,finance` hanya menjalankan remote tertentu (hemat memori saat remote banyak), dan `--print` hanya menampilkan
 perintahnya. Hentikan dengan Ctrl+C.
 
 **Start pertama lebih lambat.** Saat `pnpm dev:examples` pertama kali dijalankan (cache Vite masih kosong), kelima server mengoptimasi dependensi bersamaan dan bisa butuh satu sampai dua menit. Kalau halaman menampilkan banner "Sebagian layar gagal dimuat" dan menu kosong, tunggu sampai semua server mencetak `ready` dan terminal diam, lalu muat ulang halaman. Start berikutnya cepat.
@@ -90,17 +91,17 @@ Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; 
 
 ## Perintah sehari-hari
 
-| Perintah            | Fungsi                                                                                          |
-| ------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev:examples` | Shell dan empat contoh remote dengan data tiruan (`pnpm dev` untuk shell saja)                  |
-| `pnpm dev:all`      | Shell dan semua remote di `apps/` dan `examples/`; `--apps-only`, `--only cs,it`, `--print`     |
-| `pnpm check`        | Sama dengan CI: format, lint, typecheck, test, build, size, drift codegen. Jalankan sebelum PR  |
-| `pnpm test`         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
-| `pnpm test:e2e`     | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA |
-| `pnpm new:remote`   | Buat aplikasi remote baru di `apps/crm-<id>`                                                    |
-| `pnpm new:endpoint` | Tambah endpoint GET ke satu modul (kontrak, klien, facade, query hook, mock)                    |
-| `pnpm codegen:api`  | Generate ulang klien dari `packages/api-client/openapi/`                                        |
-| `pnpm format`       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                       |
+| Perintah            | Fungsi                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| `pnpm dev:examples` | Shell dan empat contoh remote dengan data tiruan (`pnpm dev` untuk shell saja)                   |
+| `pnpm dev:all`      | Shell dan semua remote di `apps/` dan `examples/`; `--apps-only`, `--only cs,finance`, `--print` |
+| `pnpm check`        | Sama dengan CI: format, lint, typecheck, test, build, size, drift codegen. Jalankan sebelum PR   |
+| `pnpm test`         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                     |
+| `pnpm test:e2e`     | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA  |
+| `pnpm new:remote`   | Buat aplikasi remote baru di `apps/crm-<id>`                                                     |
+| `pnpm new:endpoint` | Tambah endpoint GET ke satu modul (kontrak, klien, facade, query hook, mock)                     |
+| `pnpm codegen:api`  | Generate ulang klien dari `packages/api-client/openapi/`                                         |
+| `pnpm format`       | Prettier (`pnpm format:check` untuk cek saja, dipakai CI)                                        |
 
 Perintah lain (`pnpm size`, `pnpm test:e2e:mfe`, `pnpm new:module`, dan pengukuran performa `perf`) dijelaskan di
 [AGENTS.md](AGENTS.md) dan [docs/agents/recipes.md](docs/agents/recipes.md).

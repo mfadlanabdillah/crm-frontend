@@ -43,6 +43,39 @@ describe('findRemotes', () => {
     expect(findRemotes(root, { appsOnly: true }).map((r) => r.id)).toEqual(['it'])
   })
 
+  it('reads a name in double quotes and spaces around the equals sign', () => {
+    app('apps/crm-sales', 'const REMOTE_PORT   =   5180\nfederation({ name: "crm_sales" })\n')
+
+    expect(findRemotes(root).map((r) => [r.name, r.port])).toContainEqual(['crm_sales', 5180])
+  })
+
+  it('stays quiet about the console, a plain app and a folder with no config', () => {
+    const skipped = []
+
+    findRemotes(root, { onSkip: (dir) => skipped.push(dir) })
+
+    expect(skipped).toEqual([])
+  })
+
+  it('reports a config that looks like a remote but cannot be read as one, and keeps going', () => {
+    app('apps/crm-noport', "federation({ name: 'crm_noport' })\n")
+    app('apps/crm-noname', 'const REMOTE_PORT = 5190\nfederation({})\n')
+    app(
+      'apps/crm-computed',
+      "const REMOTE_PORT = Number(process.env.PORT)\nfederation({ name: 'crm_computed' })\n",
+    )
+    const skipped = []
+
+    const remotes = findRemotes(root, { onSkip: (dir, reason) => skipped.push([dir, reason]) })
+
+    expect(skipped.sort()).toEqual([
+      ['apps/crm-computed', 'its vite.config.ts has no `REMOTE_PORT = <number>`'],
+      ['apps/crm-noname', "its vite.config.ts has no federation `name: 'crm_<id>'`"],
+      ['apps/crm-noport', 'its vite.config.ts has no `REMOTE_PORT = <number>`'],
+    ])
+    expect(remotes.map((r) => r.id)).toEqual(['cs', 'finance', 'it'])
+  })
+
   it('refuses two remotes on one port', () => {
     app('apps/crm-clash', remoteConfig('crm_clash', 5177))
 
@@ -120,6 +153,15 @@ describe('pnpm dev:all', () => {
     expect(output).toContain('crm_cs=')
     expect(output).not.toContain('crm_finance')
   })
+
+  it.each([['--only', ','], ['--only=,'], ['--only', '--print'], ['--only=']])(
+    'refuses an empty or missing --only list (%s), which would start everything',
+    (...flags) => {
+      expect(() => execFileSync('node', [script, '--print', ...flags], { stdio: 'pipe' })).toThrow(
+        /--only needs a comma-separated list/,
+      )
+    },
+  )
 
   it('stops with a message on a bad option', () => {
     expect(() => execFileSync('node', [script, '--nope'], { stdio: 'pipe' })).toThrow(
