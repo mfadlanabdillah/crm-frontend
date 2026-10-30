@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Card,
+  cn,
   DescriptionItem,
   DescriptionList,
   EmptyState,
@@ -31,6 +32,7 @@ import {
   ToastCard,
   Tooltip,
   Tr,
+  useChangeFlash,
 } from '@crm/ui'
 import type { BadgeTone } from '@crm/ui'
 
@@ -60,6 +62,25 @@ const SWATCHES = [
 ] as const
 
 const noop = () => {}
+
+function ChangeFlashDemo() {
+  const [value, setValue] = useState(1)
+  const flashing = useChangeFlash(value)
+
+  return (
+    <Inline>
+      <p
+        data-testid="change-flash"
+        className={cn('rounded-lg px-3 py-2 text-sm', flashing && 'animate-change-flash')}
+      >
+        Value {value}
+      </p>
+      <Button variant="secondary" onClick={() => setValue((current) => current + 1)}>
+        Change the value
+      </Button>
+    </Inline>
+  )
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -199,6 +220,10 @@ export function Gallery() {
               </Button>
             </Tooltip>
           </Inline>
+        </Section>
+
+        <Section title="Change flash">
+          <ChangeFlashDemo />
         </Section>
 
         <Section title="Card and description list">
