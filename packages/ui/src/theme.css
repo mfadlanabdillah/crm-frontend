@@ -24,6 +24,18 @@
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --radius-card: 0.875rem;
+
+  /* A row or cell that changed while on screen: a soft brand tint that fades to the page color. */
+  --animate-change-flash: change-flash 1200ms ease-out;
+
+  @keyframes change-flash {
+    from {
+      background-color: var(--color-brand-soft);
+    }
+    to {
+      background-color: var(--color-surface);
+    }
+  }
 }
 
 @layer base {
@@ -56,6 +68,13 @@
     --motion-ease: cubic-bezier(0.2, 0, 0, 1);
   }
 
+  /* Route changes crossfade over the base duration (see lib/view-transition.ts). */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-base);
+    animation-timing-function: var(--motion-ease);
+  }
+
   /* Reduced motion: the tokens drop to zero, and any transition or animation (including Tailwind's
      own duration utilities and the skeleton pulse) is cut to a single frame. */
   @media (prefers-reduced-motion: reduce) {
@@ -72,6 +91,13 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+
+    /* View transition snapshots are pseudo-elements that the rule above does not match. */
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation-duration: 0.01ms !important;
     }
   }
 }

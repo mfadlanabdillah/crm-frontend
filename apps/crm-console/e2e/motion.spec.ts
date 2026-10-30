@@ -36,3 +36,15 @@ test('with no motion preference the tokens and the Button transition are live', 
   expect(token).toBe('200ms')
   expect(transition).toBeCloseTo(0.15, 2)
 })
+
+test('a value that changes flashes, then settles', async ({ signedInPage: page }) => {
+  await clientNavigate(page, '/design-system')
+  const value = page.getByTestId('change-flash')
+  await expect(value).not.toHaveClass(/animate-change-flash/)
+
+  await page.getByRole('button', { name: 'Change the value' }).click()
+
+  await expect(value).toHaveClass(/animate-change-flash/)
+  await expect(value).toHaveCSS('animation-name', 'change-flash')
+  await expect(value).not.toHaveClass(/animate-change-flash/)
+})
