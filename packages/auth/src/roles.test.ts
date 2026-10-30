@@ -42,6 +42,13 @@ describe('RBAC', () => {
     }
   })
 
+  it('denies a role the table does not know, without throwing', () => {
+    for (const role of ['superadmin', 'ADMIN', 'constructor', '__proto__', 'toString', '']) {
+      expect(can(role as never, 'case.view')).toBe(false)
+    }
+    expect(can(['admin'] as never, 'case.view')).toBe(false)
+  })
+
   it('setiap role punya case.view', () => {
     for (const role of ROLES) {
       expect(can(role, 'case.view')).toBe(true)
