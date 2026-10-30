@@ -167,7 +167,7 @@ pnpm dev:examples          # console :5173 (mock backend) + the four examples
 
 Open http://localhost:5173. The mock signs in as supervisor. To see another team's view, add
 `?role=l1` (or `l2`, `supervisor`) to the URL; it is read once when the page loads, and signing out
-and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the console alone, which shows an empty state. To load a production build of one remote:
+and in again returns to the role from `VITE_MOCK_ROLE`. `pnpm dev` starts the console alone, which shows an empty state. `pnpm dev:all` starts the console and every remote under `apps/` and `examples/`, reading each remote's name and port from its `vite.config.ts`, so a remote made with `pnpm new:remote` joins without editing a list (`--only cs,finance` runs just those). To load a production build of one remote:
 
 ```bash
 pnpm --filter @crm/crm-finance build

@@ -33,14 +33,21 @@ pnpm dev:examples     # buka http://localhost:5173
 Kamu langsung masuk sebagai **supervisor** (sesi mock) dan melihat menu Case, Customer, Finance,
 Investigator, dan Monitor. Untuk melihat tampilan peran lain, tambahkan `?role=l1` (atau `l2`, `admin`) di URL.
 
-Dua cara menjalankan:
+Tiga cara menjalankan:
 
-| Perintah            | Yang berjalan                                         | Kapan dipakai                                         |
-| ------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
-| `pnpm dev:examples` | shell + empat contoh remote, dengan data tiruan       | Belajar, mencoba, dan menjalankan e2e                 |
-| `pnpm dev`          | shell saja: menampilkan layar kosong "Belum ada menu" | Mengerjakan kerangkanya sendiri, tanpa domain apa pun |
+| Perintah            | Yang berjalan                                                                           | Kapan dipakai                                               |
+| ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `pnpm dev:examples` | shell + empat contoh remote, dengan data tiruan                                         | Belajar, mencoba, dan menjalankan e2e                       |
+| `pnpm dev:all`      | shell + semua remote di `apps/` dan `examples/`, daftarnya dibaca dari `vite.config.ts` | Remote sudah banyak: remote baru ikut tanpa mengedit daftar |
+| `pnpm dev`          | shell saja: menampilkan layar kosong "Belum ada menu"                                   | Mengerjakan kerangkanya sendiri, tanpa domain apa pun       |
 
 Layar kosong pada `pnpm dev` itu benar, bukan galat: shell tidak punya layar bisnis.
+
+`pnpm dev:all` mencari setiap remote di `apps/` dan `examples/` (aplikasi yang `vite.config.ts`-nya punya `name`
+federation dan `REMOTE_PORT`, seperti yang ditulis `pnpm new:remote`), menyusun `VITE_REMOTE_MODULES`, lalu
+menjalankan semuanya. Urutan menu mengikuti nama remote secara alfabetis. `--apps-only` melewatkan `examples/`,
+`--only cs,it` hanya menjalankan remote tertentu (hemat memori saat remote banyak), dan `--print` hanya menampilkan
+perintahnya. Hentikan dengan Ctrl+C.
 
 **Start pertama lebih lambat.** Saat `pnpm dev:examples` pertama kali dijalankan (cache Vite masih kosong), kelima server mengoptimasi dependensi bersamaan dan bisa butuh satu sampai dua menit. Kalau halaman menampilkan banner "Sebagian layar gagal dimuat" dan menu kosong, tunggu sampai semua server mencetak `ready` dan terminal diam, lalu muat ulang halaman. Start berikutnya cepat.
 
@@ -86,6 +93,7 @@ Tiga aturan utama. Aturan 1 dan larangan `fetch` di komponen ditegakkan ESLint; 
 | Perintah            | Fungsi                                                                                          |
 | ------------------- | ----------------------------------------------------------------------------------------------- |
 | `pnpm dev:examples` | Shell dan empat contoh remote dengan data tiruan (`pnpm dev` untuk shell saja)                  |
+| `pnpm dev:all`      | Shell dan semua remote di `apps/` dan `examples/`; `--apps-only`, `--only cs,it`, `--print`     |
 | `pnpm check`        | Sama dengan CI: format, lint, typecheck, test, build, size, drift codegen. Jalankan sebelum PR  |
 | `pnpm test`         | Unit/komponen (Vitest) + lantai cakupan (`vitest.config.ts`)                                    |
 | `pnpm test:e2e`     | E2E Playwright: tes shell sendiri dan alur CS dengan remote contoh, termasuk pindai axe WCAG AA |
