@@ -40,6 +40,25 @@ small text). The axe scans in `e2e/a11y.spec.ts` keep this true.
 The label/value caption style (small uppercase) is defined once, in `DescriptionItem` and `Th`. Changing
 it changes every screen.
 
+## Motion
+
+Motion tokens live next to the color tokens in `packages/ui/src/theme.css`. Use them with Tailwind's
+variable syntax, for example `transition-colors duration-(--motion-base) ease-(--motion-ease)`. Do not
+write a raw millisecond value or a new cubic-bezier in a component.
+
+| Token           | Value                        | Use for                               |
+| --------------- | ---------------------------- | ------------------------------------- |
+| `--motion-fast` | 150 ms                       | hover, press, and color changes       |
+| `--motion-base` | 200 ms                       | small elements entering or leaving    |
+| `--motion-slow` | 300 ms                       | panels and route changes              |
+| `--motion-ease` | `cubic-bezier(0.2, 0, 0, 1)` | every transition that has a direction |
+
+Animate only `transform` and `opacity`. With `prefers-reduced-motion: reduce` the three durations are
+`0ms` and every transition or animation is cut to one frame, including Tailwind's own `duration-*`
+utilities and the skeleton pulse. End-to-end tests run with reduced motion on; a test that needs motion
+calls `page.emulateMedia({ reducedMotion: 'no-preference' })` (see `apps/crm-console/e2e/motion.spec.ts`).
+The wider plan is in [ui-motion-and-crm-components.md](ui-motion-and-crm-components.md).
+
 ## Components
 
 | Component                                   | Use for                                                                                     | Not for                                         |
