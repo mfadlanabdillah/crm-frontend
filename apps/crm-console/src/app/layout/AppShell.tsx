@@ -1,6 +1,6 @@
 import { initials } from '@crm/app-kit'
 import type { StreamStatus } from '@crm/app-kit'
-import { cn, Badge, Button, Toaster } from '@crm/ui'
+import { cn, Badge, Button, Toaster, Tooltip } from '@crm/ui'
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@crm/auth'
 import { LogOut } from 'lucide-react'
@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next'
 import type { BadgeTone } from '@crm/ui'
 import { useSignOut } from '@/app/auth/sign-out'
 import { RemoteLoadAlert } from '@/app/layout/RemoteLoadAlert'
+import { SidebarToggle } from '@/app/layout/SidebarToggle'
+import { useSidebarStore } from '@/app/layout/sidebar-store'
 import { useConnectionStore, worstStatus } from '@/app/modules/connection'
 import { findActiveModule, getVisibleModules } from '@/app/modules/registry'
 import type { ModuleDefinition } from '@/modules/types'
@@ -71,10 +73,12 @@ function ModuleNav({
   items,
   active,
   variant = 'sidebar',
+  collapsed = false,
 }: {
   items: readonly ModuleDefinition[]
   active: ModuleDefinition | undefined
   variant?: 'sidebar' | 'inline'
+  collapsed?: boolean
 }) {
   const { t } = useTranslation()
   const inline = variant === 'inline'
@@ -88,19 +92,33 @@ function ModuleNav({
       )}
     >
       {items.map((module) => (
-        <Link
+        <Tooltip
           key={module.id}
-          {...module.nav}
-          className={cn(
-            navBase,
-            inline && 'shrink-0',
-            module.id === active?.id ? navActive : navIdle,
-          )}
-          aria-current={module.id === active?.id ? 'page' : undefined}
+          label={t(module.labelKey)}
+          disabled={inline || !collapsed}
+          className={cn(inline && 'shrink-0')}
         >
-          <module.icon className="size-4" aria-hidden="true" />
-          {t(module.labelKey)}
-        </Link>
+          <Link
+            {...module.nav}
+            className={cn(
+              navBase,
+              collapsed && 'overflow-hidden',
+              module.id === active?.id ? navActive : navIdle,
+            )}
+            aria-current={module.id === active?.id ? 'page' : undefined}
+          >
+            <module.icon className="size-4 shrink-0" aria-hidden="true" />
+            {/* Stays in the DOM when collapsed: it is the link's accessible name. */}
+            <span
+              className={cn(
+                'whitespace-nowrap transition-opacity duration-(--motion-base) ease-(--motion-ease)',
+                collapsed && 'opacity-0',
+              )}
+            >
+              {t(module.labelKey)}
+            </span>
+          </Link>
+        </Tooltip>
       ))}
     </nav>
   )
@@ -116,6 +134,8 @@ export function AppShell() {
   const active = findActiveModule(pathname)
   const ActiveSidebar = active?.Sidebar
   const ActiveTabs = active?.Tabs
+  const collapsed = useSidebarStore((state) => state.collapsed)
+  const toggleSidebar = useSidebarStore((state) => state.toggle)
 
   return (
     <div className="flex h-full">
@@ -123,31 +143,46 @@ export function AppShell() {
       {visibleModules.map((module) => (
         <ModuleRealtime key={module.id} module={module} />
       ))}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-raised lg:flex">
+      {/* Exception to "animate only transform and opacity" (docs/ui-standards.md): the width is layout, because the page beside it has to follow. One user-triggered, 300 ms change; measured in the standards doc. */}
+      <aside
+        id="app-sidebar"
+        className={cn(
+          'hidden shrink-0 flex-col border-r border-border-subtle bg-surface-raised transition-[width] duration-(--motion-slow) ease-(--motion-ease) lg:flex',
+          collapsed ? 'w-16' : 'w-64',
+        )}
+      >
         <div className="flex h-14 items-center gap-2.5 border-b border-border-subtle px-4">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
             CA
           </span>
-          <div className="min-w-0">
+          <div
+            className={cn(
+              'min-w-0 transition-opacity duration-(--motion-base) ease-(--motion-ease)',
+              collapsed && 'opacity-0',
+            )}
+            aria-hidden={collapsed || undefined}
+          >
             <p className="truncate text-sm font-semibold text-ink">{t('common.appName')}</p>
           </div>
         </div>
 
-        <ModuleNav items={visibleModules} active={active} />
+        <ModuleNav items={visibleModules} active={active} collapsed={collapsed} />
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {ActiveSidebar ? <ActiveSidebar /> : null}
+          <div className={cn(collapsed && 'hidden')}>
+            {ActiveSidebar ? <ActiveSidebar /> : null}
+          </div>
         </div>
 
         <div className="border-t border-border-subtle p-3">
-          <div className="flex items-center gap-2">
+          <div className={cn('flex items-center gap-2', collapsed && 'flex-col')}>
             <span
               aria-hidden="true"
               className="flex size-8 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-ink"
             >
               {session ? initials(session.user.name) : '—'}
             </span>
-            <div className="min-w-0 flex-1">
+            <div className={cn('min-w-0 flex-1', collapsed && 'hidden')}>
               <p className="truncate text-sm font-medium text-ink">{session?.user.name ?? '—'}</p>
               <p className="truncate text-xs text-ink-muted uppercase">
                 {session?.user.role ?? '—'}
@@ -169,6 +204,7 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface-raised px-4">
+          <SidebarToggle collapsed={collapsed} onToggle={toggleSidebar} controls="app-sidebar" />
           <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white lg:hidden">
             CA
           </span>

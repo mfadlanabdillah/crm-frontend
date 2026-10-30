@@ -26,6 +26,8 @@ const idID = {
     of: 'dari',
     close: 'Tutup',
     notifications: 'Notifikasi',
+    collapseSidebar: 'Ciutkan sidebar',
+    expandSidebar: 'Perluas sidebar',
   },
   errors: {
     title: 'Terjadi kesalahan',
@@ -82,6 +84,8 @@ const enUS = {
     of: 'of',
     close: 'Close',
     notifications: 'Notifications',
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar',
   },
   errors: {
     title: 'Something went wrong',
