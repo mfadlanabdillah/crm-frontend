@@ -15,7 +15,7 @@ and screens keep being built from `@crm/ui`. Assumption: the problem is feel, no
 - Motion today is `transition-colors` on `Button` and `animate-pulse` on `Skeleton`. Nothing else moves.
 - There is no animation library. `AGENTS.md` forbids adding a package for a few lines of code.
 - The initial bundle is about 200 KB gzip against a 300 KB budget (`pnpm size`).
-- `@crm/ui` has no `Dialog`, `Drawer`, `Toast`, `Tabs`, `Tooltip`, or `Menu`.
+- `@crm/ui` has `Toast`, `Tooltip`, and `Drawer` (native `<dialog>`, first used by the case preview on the list). It has no `Dialog`, `Tabs`, or `Menu`.
 
 ## References
 

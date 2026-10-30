@@ -1,9 +1,10 @@
 ﻿import { FlexRender, createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { formatRelative } from '@crm/app-kit'
-import { cn, useChangeFlash } from '@crm/ui'
+import { Button, cn, useChangeFlash } from '@crm/ui'
 import type { Row } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Link } from '@tanstack/react-router'
+import { Eye } from 'lucide-react'
 import { memo, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Case } from '@crm/api-client'
@@ -67,10 +68,13 @@ export function CaseTable({
   cases,
   role,
   isFetching = false,
+  onPreview,
 }: {
   cases: Case[]
   role: Role | null
   isFetching?: boolean
+  /** Adds a preview button to each row. Pass a stable function: it is a dependency of the columns. */
+  onPreview?: (caseId: string) => void
 }) {
   const { t } = useTranslation()
 
@@ -81,15 +85,27 @@ export function CaseTable({
         helper.accessor('subject', {
           header: t('cases.subject'),
           cell: ({ row }) => (
-            <div className="min-w-0">
-              <Link
-                to="/cases/$caseId"
-                params={{ caseId: row.original.id }}
-                className="block truncate text-sm font-medium text-ink hover:text-brand-strong hover:underline"
-              >
-                {row.original.subject}
-              </Link>
-              <span className="text-xs text-ink-muted">{row.original.code}</span>
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <Link
+                  to="/cases/$caseId"
+                  params={{ caseId: row.original.id }}
+                  className="block truncate text-sm font-medium text-ink hover:text-brand-strong hover:underline"
+                >
+                  {row.original.subject}
+                </Link>
+                <span className="text-xs text-ink-muted">{row.original.code}</span>
+              </div>
+              {onPreview ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('cases.preview.open', { code: row.original.code })}
+                  onClick={() => onPreview(row.original.id)}
+                >
+                  <Eye className="size-4" aria-hidden="true" />
+                </Button>
+              ) : null}
             </div>
           ),
         }),
@@ -122,7 +138,7 @@ export function CaseTable({
           ),
         }),
       ]),
-    [role, t],
+    [role, t, onPreview],
   )
 
   const table = useTable({

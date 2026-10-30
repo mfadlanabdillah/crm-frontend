@@ -39,6 +39,12 @@ export const texts = {
       },
       emptyTitle: 'Tidak ada case yang cocok',
       emptyDescription: 'Ubah filter atau bersihkan pencarian untuk melihat case lain.',
+      preview: {
+        open: 'Pratinjau case {{code}}',
+        title: 'Pratinjau case',
+        close: 'Tutup pratinjau',
+        openDetail: 'Buka detail case',
+      },
       detail: {
         back: 'Kembali ke daftar',
         timeline: 'Timeline',
@@ -135,6 +141,12 @@ export const texts = {
       },
       emptyTitle: 'No matching cases',
       emptyDescription: 'Change the filters or clear the search to see other cases.',
+      preview: {
+        open: 'Preview case {{code}}',
+        title: 'Case preview',
+        close: 'Close preview',
+        openDetail: 'Open case detail',
+      },
       detail: {
         back: 'Back to list',
         timeline: 'Timeline',
