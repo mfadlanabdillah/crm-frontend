@@ -33,7 +33,7 @@ These shape many answers below. They are guesses, not facts.
 | CI               | `.github/workflows/ci.yml`: `pnpm check`, e2e, image build. **No deploy, no registry push, no smoke test**                                                                          |
 | Branches         | `development` → `staging` → `master`; CI runs on pull requests to those                                                                                                             |
 | Errors           | `setErrorReporter` hook in `apps/crm-console/src/lib/telemetry.ts`; **no SDK connected**                                                                                            |
-| Source maps      | Built (`sourcemap: true` in `apps/crm-console/vite.config.ts`), **deleted from the image**; no upload step                                                                          |
+| Source maps      | Built (`sourcemap: 'hidden'` in `apps/crm-console/vite.config.ts`), **deleted from the image**; no upload step                                                                      |
 | Shared libs      | Singletons share by name with `requiredVersion: false`: **no version check** between shell and remote                                                                               |
 | Bundle budget    | `pnpm size`: initial JS and each route ≤ 300 KB gzip (the shell is about 200 KB)                                                                                                    |
 | Dependencies     | `renovate.json` exists                                                                                                                                                              |
