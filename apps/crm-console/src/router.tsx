@@ -2,6 +2,7 @@ import { createRouter } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { RouteError, RouteNotFound } from './app/layout/RouteFallbacks'
 import { queryClient } from './lib/query-client'
+import { routeViewTransition } from './lib/view-transition'
 import { routeTree } from './routeTree.gen'
 import { Route as authenticatedRoute } from './routes/_authenticated'
 
@@ -24,6 +25,7 @@ export function createAppRouter(remoteRouteFactories: readonly RouteFactory[] = 
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
+    defaultViewTransition: routeViewTransition(),
     defaultErrorComponent: RouteError,
     defaultNotFoundComponent: RouteNotFound,
   })

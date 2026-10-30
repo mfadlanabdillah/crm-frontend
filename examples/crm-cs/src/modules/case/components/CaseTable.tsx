@@ -1,6 +1,6 @@
 ﻿import { FlexRender, createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { formatRelative } from '@crm/app-kit'
-import { cn } from '@crm/ui'
+import { cn, useChangeFlash } from '@crm/ui'
 import type { Row } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Link } from '@tanstack/react-router'
@@ -34,6 +34,34 @@ const CaseRowCells = memo(function CaseRowCells({ row }: { row: Row<typeof featu
     </div>
   ))
 })
+
+/** One virtual row. It tints for a moment when the case changes while it is on screen. */
+function CaseRow({
+  row,
+  index,
+  start,
+}: {
+  row: Row<typeof features, Case>
+  index: number
+  start: number
+}) {
+  const flashing = useChangeFlash(row.original.updatedAt)
+
+  return (
+    <div
+      role="row"
+      data-index={index}
+      className={cn(
+        GRID,
+        'absolute inset-x-0 top-0 h-16 overflow-hidden border-b border-border-subtle bg-surface px-6 hover:bg-surface-muted/60',
+        flashing && 'animate-change-flash',
+      )}
+      style={{ transform: `translateY(${start}px)` }}
+    >
+      <CaseRowCells row={row} />
+    </div>
+  )
+}
 
 export function CaseTable({
   cases,
@@ -157,18 +185,7 @@ export function CaseTable({
               const row = rows[virtualRow.index]
               if (!row) return null
               return (
-                <div
-                  key={row.id}
-                  role="row"
-                  data-index={virtualRow.index}
-                  className={cn(
-                    GRID,
-                    'absolute inset-x-0 top-0 h-16 overflow-hidden border-b border-border-subtle bg-surface px-6 hover:bg-surface-muted/60',
-                  )}
-                  style={{ transform: `translateY(${virtualRow.start}px)` }}
-                >
-                  <CaseRowCells row={row} />
-                </div>
+                <CaseRow key={row.id} row={row} index={virtualRow.index} start={virtualRow.start} />
               )
             })}
           </div>

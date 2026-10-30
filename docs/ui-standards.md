@@ -57,6 +57,8 @@ Animate only `transform` and `opacity`. With `prefers-reduced-motion: reduce` th
 `0ms` and every transition or animation is cut to one frame, including Tailwind's own `duration-*`
 utilities and the skeleton pulse. End-to-end tests run with reduced motion on; a test that needs motion
 calls `page.emulateMedia({ reducedMotion: 'no-preference' })` (see `apps/crm-console/e2e/motion.spec.ts`).
+Two patterns are built in. **Route crossfade:** changing page runs a view transition over `--motion-base` (`apps/crm-console/src/lib/view-transition.ts`). It is skipped when only the search changes (filtering and paging), when the agent prefers reduced motion, and in browsers that cannot skip it per navigation, because a view transition freezes the page while it runs. **Change flash:** `useChangeFlash(value)` returns true for a moment after the value changes while the component stays mounted (never on the first render); add `animate-change-flash` while it is true. Use it for a row or cell that someone else just updated, as `CaseTable` does with `updatedAt`.
+
 The one exception is the sidebar: its width animates, which is layout work, because the page beside it has to follow. It is a single change the agent triggers, over `--motion-slow`. Measured on the case list (25 rows, headless Chromium): no frame over 17 ms at normal CPU speed, and one frame of 33 to 50 ms in 40 with the CPU slowed 4 times. It was not measured on a real low-end device; if it janks there, replace it with an instant width change and a fade of the content.
 The wider plan is in [ui-motion-and-crm-components.md](ui-motion-and-crm-components.md).
 
