@@ -45,4 +45,33 @@
   ::selection {
     @apply bg-brand-soft text-ink;
   }
+
+  /* Motion tokens. Micro-interactions use fast or base, panels and route changes use slow. Use them as
+     duration-(--motion-base) ease-(--motion-ease). The ease name is not --ease-out on purpose:
+     Tailwind already defines that one for its own ease-out utility. */
+  :root {
+    --motion-fast: 150ms;
+    --motion-base: 200ms;
+    --motion-slow: 300ms;
+    --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Reduced motion: the tokens drop to zero, and any transition or animation (including Tailwind's
+     own duration utilities and the skeleton pulse) is cut to a single frame. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --motion-fast: 0ms;
+      --motion-base: 0ms;
+      --motion-slow: 0ms;
+    }
+
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }

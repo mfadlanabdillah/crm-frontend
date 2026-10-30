@@ -24,6 +24,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     locale: 'id-ID',
     timezoneId: 'Asia/Jakarta',
+    // Animations would make assertions race the UI; a test that needs motion turns it back on.
+    reducedMotion: 'reduce',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
