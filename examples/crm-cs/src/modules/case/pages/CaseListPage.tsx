@@ -1,9 +1,11 @@
 import { formatNumber } from '@crm/app-kit'
 import { Link } from '@tanstack/react-router'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Can, useAuth } from '@crm/auth'
 import {
   Button,
+  Drawer,
   EmptyState,
   ErrorState,
   PageHeader,
@@ -13,6 +15,7 @@ import {
   buttonVariants,
 } from '@crm/ui'
 import { CaseFilters } from '@/modules/case/components/CaseFilters'
+import { CasePreview } from '@/modules/case/components/CasePreview'
 import { CaseTable } from '@/modules/case/components/CaseTable'
 import { useCases } from '@/modules/case/queries/useCases'
 import { DEFAULT_CASE_SEARCH, updateCaseSearch } from '@/modules/case/schemas/search'
@@ -37,6 +40,13 @@ export function CaseListPage() {
   const goToPage = (page: number) => {
     void navigate({ search: (prev) => ({ ...prev, page }) })
   }
+
+  const setPreview = useCallback(
+    (preview: string | undefined) =>
+      void navigate({ search: (prev) => ({ ...prev, preview }), replace: true }),
+    [navigate],
+  )
+  const openPreview = useCallback((caseId: string) => setPreview(caseId), [setPreview])
 
   const meta = data?.meta
 
@@ -95,9 +105,24 @@ export function CaseListPage() {
             }
           />
         ) : data ? (
-          <CaseTable cases={data.items} role={role} isFetching={isFetching} />
+          <CaseTable
+            cases={data.items}
+            role={role}
+            isFetching={isFetching}
+            onPreview={openPreview}
+          />
         ) : null}
       </div>
+
+      {search.preview ? (
+        <Drawer
+          title={t('cases.preview.title')}
+          closeLabel={t('cases.preview.close')}
+          onClose={() => setPreview(undefined)}
+        >
+          <CasePreview caseId={search.preview} />
+        </Drawer>
+      ) : null}
 
       <Pagination page={search.page} totalPages={meta?.totalPages ?? 1} onPageChange={goToPage}>
         <label className="flex items-center gap-2 text-xs text-ink-muted">

@@ -28,6 +28,14 @@
   /* A row or cell that changed while on screen: a soft brand tint that fades to the page color. */
   --animate-change-flash: change-flash 1200ms ease-out;
 
+  --animate-drawer-in: drawer-in var(--motion-slow) var(--motion-ease);
+
+  @keyframes drawer-in {
+    from {
+      transform: translateX(100%);
+    }
+  }
+
   @keyframes change-flash {
     from {
       background-color: var(--color-brand-soft);

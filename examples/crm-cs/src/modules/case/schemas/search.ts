@@ -27,6 +27,8 @@ export const caseSearchSchema = z.object({
     .catch(undefined)
     .transform((value) => (value === '' ? undefined : value)),
   sort: z.enum(CASE_SORTS).default('-updated_at').catch('-updated_at'),
+  // Case open in the preview panel; kept in the URL so a reload or shared link reopens it.
+  preview: z.string().min(1).max(64).optional().catch(undefined),
   page: z.coerce.number().int().min(1).max(10_000).default(1).catch(1),
   pageSize: z.coerce.number().int().min(10).max(100).default(25).catch(25),
 })

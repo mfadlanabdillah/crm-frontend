@@ -8,6 +8,7 @@ import {
   cn,
   DescriptionItem,
   DescriptionList,
+  Drawer,
   EmptyState,
   ErrorState,
   FormField,
@@ -79,6 +80,23 @@ function ChangeFlashDemo() {
         Change the value
       </Button>
     </Inline>
+  )
+}
+
+function DrawerDemo() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        Open the drawer
+      </Button>
+      {open ? (
+        <Drawer title="Drawer" closeLabel="Close" onClose={() => setOpen(false)}>
+          <p className="text-sm text-ink-muted">Side panel content.</p>
+        </Drawer>
+      ) : null}
+    </>
   )
 }
 
@@ -220,6 +238,10 @@ export function Gallery() {
               </Button>
             </Tooltip>
           </Inline>
+        </Section>
+
+        <Section title="Drawer">
+          <DrawerDemo />
         </Section>
 
         <Section title="Change flash">
