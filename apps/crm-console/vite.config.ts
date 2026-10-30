@@ -55,7 +55,7 @@ export default defineConfig({
   },
   build: {
     // Source map diunggah ke Sentry oleh pipeline deploy, tidak disajikan publik.
-    sourcemap: true,
+    sourcemap: 'hidden',
     // Dipakai scripts/check-bundle-budget.mjs untuk menghitung initial JS.
     manifest: true,
   },
