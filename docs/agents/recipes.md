@@ -73,7 +73,7 @@ Reference: `examples/crm-cs/src/modules/case/components/CaseForm.tsx` (used by `
 
 ## Add or change a UI component
 
-Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-standards.md](../ui-standards.md) and [ADR-0008](../adr/0008-shared-ui-package.md). Add a component only when a feature needs it ([ADR-0005](../adr/0005-ui-primitives-on-demand.md)): dialog, dropdown, tooltip, and toast are not included until then. First check the component table in the standards: the need may already be covered.
+Components and design tokens live in `packages/ui` (`@crm/ui`), see [docs/ui-standards.md](../ui-standards.md) and [ADR-0008](../adr/0008-shared-ui-package.md). Add a component only when a feature needs it ([ADR-0005](../adr/0005-ui-primitives-on-demand.md)): dialog, dropdown, and tooltip are not included until then (toast is: `toast()` and `Toaster`). First check the component table in the standards: the need may already be covered.
 
 1. Write it in `packages/ui/src/<name>.tsx`: styling and behavior only, design tokens only (no `gray-500`, no hex), no API calls, no feature imports. Extend through `className` and `cn`.
 2. Export it from `packages/ui/src/index.ts`.
