@@ -1,6 +1,6 @@
 import { initials } from '@crm/app-kit'
 import type { StreamStatus } from '@crm/app-kit'
-import { cn, Badge, Button } from '@crm/ui'
+import { cn, Badge, Button, Toaster } from '@crm/ui'
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@crm/auth'
 import { LogOut } from 'lucide-react'
@@ -201,6 +201,8 @@ export function AppShell() {
         <main className="min-h-0 flex-1 overflow-hidden bg-surface">
           <Outlet />
         </main>
+
+        <Toaster />
       </div>
     </div>
   )

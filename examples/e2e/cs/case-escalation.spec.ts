@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, test } from '../support'
+import { expect, expectNoViolations, test } from '../support'
 
 const CASE_ID = 'case-00010'
 const CASE_CODE = 'CASE-2026-100010'
@@ -39,6 +39,10 @@ test('an L2 agent moves a case from the L1 queue to the L2 queue', async ({ page
   expect(response.status()).toBe(200)
   expect(response.request().postDataJSON()).toEqual({ queue: 'l2' })
   await expect(queue).toHaveValue('l2')
+  // The confirmation is a toast from the shell, raised by the remote. Scan while it is on screen.
+  // A reset above also raises one, so look at the newest.
+  await expect(page.getByRole('status').filter({ hasText: 'Case diperbarui' }).last()).toBeVisible()
+  await expectNoViolations(page)
   await expect(page.getByRole('region', { name: 'Timeline' })).toContainText(
     'Case dipindah ke Antrean L2.',
   )

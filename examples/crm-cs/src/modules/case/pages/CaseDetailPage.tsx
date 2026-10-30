@@ -2,10 +2,11 @@ import { formatDateTime } from '@crm/app-kit'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { Can, useAuth } from '@crm/auth'
 import { ApiError } from '@crm/api-client'
+import type { UpdateCaseRequest } from '@crm/api-client'
 import { ArrowLeft, UserPlus } from 'lucide-react'
 import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Button, Card, EmptyState, ErrorState, Select, Skeleton } from '@crm/ui'
+import { Alert, Button, Card, EmptyState, ErrorState, Select, Skeleton, toast } from '@crm/ui'
 import { CasePriorityBadge, CaseStatusBadge } from '@/modules/case/components/CaseBadges'
 import { CustomerPanel } from '@/modules/case/components/CustomerPanel'
 import { Timeline } from '@/modules/case/components/Timeline'
@@ -30,6 +31,10 @@ export function CaseDetailPage() {
   const openTab = useWorkspaceStore((state) => state.openTab)
   const { data, isPending, isError, error, refetch } = useCase(caseId)
   const update = useUpdateCase(caseId)
+  const apply = (patch: UpdateCaseRequest) =>
+    update.mutate(patch, {
+      onSuccess: () => toast(t('cases.detail.updated'), { tone: 'success' }),
+    })
   const { data: masterData } = useMasterData()
 
   useEffect(() => {
@@ -106,7 +111,7 @@ export function CaseDetailPage() {
                     {t('cases.status')}
                     <Select
                       value={data.status}
-                      onChange={(event) => update.mutate({ status: event.target.value })}
+                      onChange={(event) => apply({ status: event.target.value })}
                       disabled={update.isPending}
                     >
                       {masterData?.statuses.map((status) => (
@@ -121,7 +126,7 @@ export function CaseDetailPage() {
                     {t('cases.priority')}
                     <Select
                       value={data.priority}
-                      onChange={(event) => update.mutate({ priority: event.target.value })}
+                      onChange={(event) => apply({ priority: event.target.value })}
                       disabled={update.isPending}
                     >
                       {masterData?.priorities.map((priority) => (
@@ -137,7 +142,7 @@ export function CaseDetailPage() {
                       {t('cases.queue')}
                       <Select
                         value={data.queue}
-                        onChange={(event) => update.mutate({ queue: event.target.value })}
+                        onChange={(event) => apply({ queue: event.target.value })}
                         disabled={update.isPending}
                       >
                         {masterData?.queues.map((queue) => (
@@ -154,7 +159,7 @@ export function CaseDetailPage() {
                       variant="secondary"
                       size="sm"
                       disabled={update.isPending || data.assignee?.id === session?.user.id}
-                      onClick={() => update.mutate({ assigneeId: session?.user.id ?? null })}
+                      onClick={() => apply({ assigneeId: session?.user.id ?? null })}
                     >
                       <UserPlus className="size-4" aria-hidden="true" />
                       {t('cases.detail.assignToMe')}
@@ -162,13 +167,7 @@ export function CaseDetailPage() {
                   </Can>
                 </div>
 
-                {update.isError ? (
-                  <Alert className="mt-2">{update.error.message}</Alert>
-                ) : update.isSuccess ? (
-                  <Alert tone="success" className="mt-2 text-xs">
-                    {t('cases.detail.statusUpdated')}
-                  </Alert>
-                ) : null}
+                {update.isError ? <Alert className="mt-2">{update.error.message}</Alert> : null}
               </Card>
 
               <Card as="section" aria-labelledby="timeline-heading">

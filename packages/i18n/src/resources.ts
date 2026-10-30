@@ -24,6 +24,8 @@ const idID = {
     errorDescription: 'Periksa koneksi Anda lalu coba lagi.',
     rowsPerPage: 'Baris per halaman',
     of: 'dari',
+    close: 'Tutup',
+    notifications: 'Notifikasi',
   },
   errors: {
     title: 'Terjadi kesalahan',
@@ -78,6 +80,8 @@ const enUS = {
     errorDescription: 'Check your connection and try again.',
     rowsPerPage: 'Rows per page',
     of: 'of',
+    close: 'Close',
+    notifications: 'Notifications',
   },
   errors: {
     title: 'Something went wrong',
