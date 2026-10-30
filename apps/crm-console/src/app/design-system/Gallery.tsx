@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useState } from 'react'
 import {
   Alert,
@@ -28,6 +29,7 @@ import {
   THead,
   toast,
   ToastCard,
+  Tooltip,
   Tr,
 } from '@crm/ui'
 import type { BadgeTone } from '@crm/ui'
@@ -181,6 +183,21 @@ export function Gallery() {
             >
               Show an error toast
             </Button>
+          </Inline>
+        </Section>
+
+        <Section title="Tooltip">
+          <Inline>
+            <Tooltip label="Close">
+              <Button variant="secondary" size="icon" aria-label="Close">
+                <X className="size-4" aria-hidden="true" />
+              </Button>
+            </Tooltip>
+            <Tooltip label="Not shown" disabled>
+              <Button variant="secondary" size="icon" aria-label="Not shown">
+                <X className="size-4" aria-hidden="true" />
+              </Button>
+            </Tooltip>
           </Inline>
         </Section>
 
