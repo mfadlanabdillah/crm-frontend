@@ -95,7 +95,8 @@ Akibat yang perlu kamu ingat:
   layar gagal dimuat" dan layar kosong bila tidak ada modul sama sekali.
 - **Remote tidak ditulis di kode shell.** Daftarnya datang dari `VITE_REMOTE_MODULES` (pasangan
   `nama=url`). Itu sebabnya `pnpm dev` menampilkan layar kosong, sedangkan `pnpm dev:examples` menampilkan
-  menu.
+  menu. Kalau remote sudah banyak, `pnpm dev:all` menyusun daftar itu otomatis dari `vite.config.ts` tiap
+  remote di `apps/` dan `examples/`.
 
 ## 5. Ikuti satu layar dari URL sampai data
 

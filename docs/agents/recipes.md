@@ -42,7 +42,7 @@ For a GET with path parameters, run `pnpm new:endpoint <module> <operationId> --
 For a new domain that a separate team releases on its own: `pnpm new:remote <id> [--icon <LucideIcon>] [--permission <module.action>] [--port <n>]` (`apps/crm-console/scripts/new-remote.mjs`). It creates `apps/crm-<id>` with a federation config, one page under `/remote/<id>`, and its own text namespace, and takes the next free dev port.
 
 1. Add the permission in `packages/auth/src/roles.ts` if it is new.
-2. Run `pnpm --filter @crm/crm-<id> dev` and start the console with `VITE_REMOTE_MODULES=crm_<id>=http://localhost:<port>/remoteEntry.js` (a comma separates several remotes).
+2. Run `pnpm dev:all --only <id>`: it starts the remote and the console and builds the remote list from the remote's `vite.config.ts`. By hand it is `pnpm --filter @crm/crm-<id> dev`, then start the console with `VITE_REMOTE_MODULES=crm_<id>=http://localhost:<port>/remoteEntry.js` (a comma separates several remotes).
 3. Build the page from `@crm/ui`; use `api` from the page props, not your own client. A remote that needs its own routes adds `routes` to its module, as `examples/crm-cs` does.
 4. Production needs the hosting items in [ADR-0009](../adr/0009-micro-frontends.md) (path, CORS, CSP); the generator does not set them up.
 
