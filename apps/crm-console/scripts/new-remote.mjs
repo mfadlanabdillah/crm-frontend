@@ -231,7 +231,8 @@ Next steps:
       ? `add "${permission}" to packages/auth/src/roles.ts if it does not exist yet.`
       : `add "${camel}.view" to packages/auth/src/roles.ts and enable the "permission" line in src/module.tsx.`
   }
-  2. Run it: pnpm --filter @crm/crm-${id} dev, and start the console with
+  2. Run it: pnpm dev:all --only ${id} (starts it and the console, and builds the remote list for you).
+     By hand: pnpm --filter @crm/crm-${id} dev, and start the console with
      VITE_REMOTE_MODULES=${federationName}=http://localhost:${port}/remoteEntry.js
   3. Build the page from @crm/ui; use the console's API client from the page props.
   4. Production: serve the build under its own path and add it to VITE_REMOTE_MODULES (see
