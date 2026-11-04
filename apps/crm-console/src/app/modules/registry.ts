@@ -14,15 +14,16 @@ const remoteModules: ModuleDefinition[] = []
  * Modules loaded at runtime from remote apps (see `app/modules/remote.ts`). A module whose id or
  * path is already taken is ignored with a warning: a remote must never replace another module.
  */
-export function registerRemoteModule(module: ModuleDefinition) {
+export function registerRemoteModule(module: ModuleDefinition): boolean {
   const clash = allModules().find(
     (existing) => existing.id === module.id || existing.basePath === module.basePath,
   )
   if (clash) {
     console.warn(`Remote module "${module.id}" ignored: its id or path is used by "${clash.id}".`)
-    return
+    return false
   }
   remoteModules.push(module)
+  return true
 }
 
 /** Built-in modules first, then the ones registered at runtime. */

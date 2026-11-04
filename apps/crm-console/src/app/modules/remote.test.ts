@@ -87,6 +87,28 @@ describe('loadRemoteModules', () => {
     expect(remoteRouteFactories).toContain(routes)
   })
 
+  it('does not mount the routes of a remote refused on a path clash', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const firstRoutes = vi.fn(() => [])
+    const secondRoutes = vi.fn(() => [])
+    vi.mocked(loadRemote).mockImplementation(async (name) => {
+      const isFirst = String(name).startsWith('zz_clash_a')
+      return {
+        default: {
+          ...fixtureModule,
+          id: isFirst ? 'zz-clash-a' : 'zz-clash-b',
+          basePath: '/zz-clash',
+          routes: isFirst ? firstRoutes : secondRoutes,
+        },
+      } as never
+    })
+
+    await loadRemoteModules('zz_clash_a=http://localhost:1/a.js,zz_clash_b=http://localhost:1/b.js')
+
+    expect(remoteRouteFactories).toContain(firstRoutes)
+    expect(remoteRouteFactories).not.toContain(secondRoutes)
+  })
+
   it('logs and continues when a remote cannot be loaded', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.mocked(loadRemote).mockRejectedValue(new Error('network down'))

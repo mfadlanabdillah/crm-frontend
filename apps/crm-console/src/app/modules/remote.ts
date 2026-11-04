@@ -73,8 +73,9 @@ export async function loadRemoteModules(raw: string | undefined): Promise<void> 
   for (const remote of loaded) {
     if (!remote) continue
     for (const module of [remote.default].flat()) {
-      registerRemoteModule(toModuleDefinition(module))
-      if (module.routes) remoteRouteFactories.push(module.routes)
+      if (registerRemoteModule(toModuleDefinition(module)) && module.routes) {
+        remoteRouteFactories.push(module.routes)
+      }
     }
   }
 }
