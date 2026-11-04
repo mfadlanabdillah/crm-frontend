@@ -8,10 +8,11 @@ test('each role sees only its own menus', async ({ browser }) => {
   } as const
 
   for (const [role, menus] of Object.entries(expected)) {
-    const page = await (await browser.newContext({ locale: 'id-ID' })).newPage()
+    const context = await browser.newContext({ locale: 'id-ID' })
+    const page = await context.newPage()
     await openAs(page, role as keyof typeof expected)
     expect(await menuItems(page), role).toEqual(menus)
-    await page.close()
+    await context.close()
   }
 })
 
@@ -27,10 +28,11 @@ test('L2 can open Investigator but not Finance or Monitor', async ({ browser }) 
     ['/remote/finance', false],
     ['/remote/monitor', false],
   ] as const) {
-    const page = await (await browser.newContext({ locale: 'id-ID' })).newPage()
+    const context = await browser.newContext({ locale: 'id-ID' })
+    const page = await context.newPage()
     await openAs(page, 'l2', path)
     // The URL keeps the ?role= query, so compare the path only.
     await expect.poll(() => new URL(page.url()).pathname).toBe(allowed ? path : '/cases')
-    await page.close()
+    await context.close()
   }
 })
