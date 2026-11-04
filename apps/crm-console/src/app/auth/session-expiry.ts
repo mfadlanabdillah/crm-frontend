@@ -27,6 +27,16 @@ export function installSessionExpiry(queryClient: QueryClient, router: AnyRouter
   }
 
   setUnauthorizedHandler(() => leave('expired'))
+  // getSession() resolves null on a 401 instead of throwing, so the global handler never sees it:
+  // leave when a fetch turns the cached session into null. Manual writes (sign-out) navigate themselves.
+  let hadSession = Boolean(queryClient.getQueryData(sessionKey))
+  const stopWatching = queryClient.getQueryCache().subscribe((event) => {
+    if (event.type !== 'updated' || event.query.queryHash !== JSON.stringify(sessionKey)) return
+    const has = Boolean(event.query.state.data)
+    const fetched = event.action.type === 'success' && !event.action.manual
+    if (hadSession && !has && fetched) leave('expired')
+    hadSession = has
+  })
   const stopListening = listenRemoteSignOut(
     () => leave('logout'),
     (userId) => {
@@ -37,6 +47,7 @@ export function installSessionExpiry(queryClient: QueryClient, router: AnyRouter
 
   return () => {
     setUnauthorizedHandler(undefined)
+    stopWatching()
     stopListening()
   }
 }
