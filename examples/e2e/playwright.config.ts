@@ -43,7 +43,9 @@ export default defineConfig({
     },
     {
       command: 'pnpm --filter @crm/crm-cs dev',
-      url: `http://localhost:${CS_PORT}/remoteEntry.js`,
+      // Ready only once the module is compiled: remoteEntry.js is served before it, and a cold
+      // Vite cache then fails the first page loads with "Failed to fetch dynamically imported module".
+      url: `http://localhost:${CS_PORT}/src/module.tsx`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
