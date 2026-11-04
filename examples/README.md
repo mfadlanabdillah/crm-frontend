@@ -175,8 +175,8 @@ pnpm --filter @crm/crm-finance preview        # serves dist on :4175
 MOCK_DOMAIN=examples/mock-backend/src/index.ts VITE_REMOTE_MODULES=crm_finance=http://localhost:4175/remoteEntry.js pnpm dev
 ```
 
-`dev:examples` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL). It uses
-`--no-bail`, so stopping one remote does not stop the host or the others.
+`dev:examples` sets the variable inline, which works in bash and zsh (Linux, macOS, WSL), not in cmd or
+PowerShell: on Windows use `pnpm dev:all`. It uses `--no-bail`, so stopping one remote does not stop the host or the others.
 
 ### Tests
 
