@@ -21,5 +21,10 @@ export async function createI18n(locale: AppLocale = DEFAULT_LOCALE) {
     defaultNS: 'translation',
     interpolation: { escapeValue: false },
   })
+  const setHtmlLang = (lng: string) => {
+    if (typeof document !== 'undefined') document.documentElement.lang = lng
+  }
+  setHtmlLang(locale)
+  instance.on('languageChanged', setHtmlLang)
   return instance
 }

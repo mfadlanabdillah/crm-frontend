@@ -1,7 +1,20 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createI18n, resources } from './index'
 
 describe('i18n', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('keeps <html lang> in step with the language', async () => {
+    const root = { lang: 'id-ID' }
+    vi.stubGlobal('document', { documentElement: root })
+
+    const instance = await createI18n('en-US')
+    expect(root.lang).toBe('en-US')
+
+    await instance.changeLanguage('id-ID')
+    expect(root.lang).toBe('id-ID')
+  })
+
   it('memakai id-ID sebagai default', async () => {
     const instance = await createI18n()
     expect(instance.language).toBe('id-ID')

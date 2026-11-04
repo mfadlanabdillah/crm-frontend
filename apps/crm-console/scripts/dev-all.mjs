@@ -150,6 +150,8 @@ function main() {
     cwd: repoRoot,
     env: { ...process.env, ...result.env },
     stdio: 'inherit',
+    // pnpm is a .cmd shim on Windows, which spawn only runs through a shell.
+    shell: process.platform === 'win32',
   })
   child.on('error', (error) => fail(`could not start pnpm: ${error.message}`))
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal))

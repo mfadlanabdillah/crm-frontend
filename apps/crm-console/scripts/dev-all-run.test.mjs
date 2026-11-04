@@ -19,25 +19,35 @@ let root
 let bin
 let report
 
-/** A pnpm that records how it was started instead of starting anything. */
-const FAKE_PNPM = `#!/bin/sh
-{
-  echo "args=$*"
-  echo "cwd=$(pwd)"
-  echo "remotes=$VITE_REMOTE_MODULES"
-  echo "mock=$MOCK_DOMAIN"
-  echo "home=$HOME"
-} > "$FAKE_REPORT"
-if [ -n "$FAKE_KILL" ]; then kill -TERM $$; fi
-if [ -n "$FAKE_WAIT" ]; then
-  trap 'echo forwarded > "$FAKE_REPORT.signal"; exit 0' INT TERM
-  echo ready > "$FAKE_REPORT.ready"
-  # Gives up after ten seconds, so a test that fails cannot leave this process running.
-  i=0; while [ "$i" -lt 100 ]; do sleep 0.1; i=$((i+1)); done
-  exit 9
-fi
-exit "\${FAKE_EXIT:-0}"
+/** A pnpm that records how it was started instead of starting anything. Node, so it runs on Windows too. */
+const FAKE_PNPM = `#!/usr/bin/env node
+const fs = require('node:fs')
+const env = process.env
+fs.writeFileSync(
+  env.FAKE_REPORT,
+  [
+    'args=' + process.argv.slice(2).join(' '),
+    'cwd=' + process.cwd(),
+    'remotes=' + (env.VITE_REMOTE_MODULES ?? ''),
+    'mock=' + (env.MOCK_DOMAIN ?? ''),
+    'home=' + (env.HOME ?? ''),
+  ].join('\\n') + '\\n',
+)
+if (env.FAKE_KILL) process.kill(process.pid, 'SIGTERM')
+if (env.FAKE_WAIT) {
+  const stop = () => {
+    fs.writeFileSync(env.FAKE_REPORT + '.signal', 'forwarded\\n')
+    process.exit(0)
+  }
+  process.on('SIGINT', stop)
+  process.on('SIGTERM', stop)
+  fs.writeFileSync(env.FAKE_REPORT + '.ready', 'ready\\n')
+  // Gives up after ten seconds, so a test that fails cannot leave this process running.
+  setTimeout(() => process.exit(9), 10000)
+} else process.exit(Number(env.FAKE_EXIT ?? 0))
 `
+
+const windows = process.platform === 'win32'
 
 function app(dir, config) {
   mkdirSync(path.join(root, dir), { recursive: true })
@@ -58,15 +68,19 @@ beforeEach(() => {
   bin = path.join(root, 'bin')
   mkdirSync(bin)
   writeFileSync(path.join(bin, 'pnpm'), FAKE_PNPM, { mode: 0o755 })
+  // Windows ignores the shebang and finds pnpm through PATHEXT, so it needs a .cmd that runs the script.
+  writeFileSync(path.join(bin, 'pnpm.cmd'), '@node "%~dp0pnpm" %*\r\n')
   report = path.join(root, 'report.txt')
 })
 
 afterEach(() => rmSync(root, { recursive: true, force: true }))
 
 const script = () => path.join(root, 'apps/crm-console/scripts/dev-all.mjs')
+/** Windows names the variable `Path`; setting `PATH` next to it would leave two keys. */
+const pathKey = Object.keys(process.env).find((key) => key.toUpperCase() === 'PATH') ?? 'PATH'
 const env = (extra = {}) => ({
   ...process.env,
-  PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+  [pathKey]: `${bin}${path.delimiter}${process.env[pathKey]}`,
   FAKE_REPORT: report,
   ...extra,
 })
@@ -98,7 +112,7 @@ describe('dev:all running pnpm', () => {
       'crm_cs=http://localhost:5177/remoteEntry.js,crm_it=http://localhost:5178/remoteEntry.js',
     )
     expect(seen.mock).toBe('examples/mock-backend/src/index.ts')
-    expect(seen.home).toBe(process.env.HOME)
+    expect(seen.home).toBe(process.env.HOME ?? '')
   })
 
   it('leaves out the examples and their mock data with --apps-only', () => {
@@ -144,7 +158,7 @@ describe('dev:all running pnpm', () => {
     expect(run([], { FAKE_EXIT: '3' }).status).toBe(3)
   })
 
-  it('does not report success when pnpm was killed by a signal', () => {
+  it.skipIf(windows)('does not report success when pnpm was killed by a signal', () => {
     expect(run([], { FAKE_KILL: '1' }).status).toBe(1)
   })
 
@@ -152,14 +166,16 @@ describe('dev:all running pnpm', () => {
     const empty = path.join(root, 'empty')
     mkdirSync(empty)
 
-    const result = run([], { PATH: empty })
+    const result = run([], { [pathKey]: empty })
 
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('dev:all: could not start pnpm')
+    // With a shell (Windows) the shell reports it; without one, spawn emits an error that dev:all names.
+    expect(result.stderr).toContain(windows ? 'not recognized' : 'dev:all: could not start pnpm')
     expect(result.stderr).not.toContain('Unhandled')
   })
 
-  it('passes Ctrl+C on to pnpm and exits with its code', async () => {
+  // Windows has no signals to forward: child.kill ends the process without running its handler.
+  it.skipIf(windows)('passes Ctrl+C on to pnpm and exits with its code', async () => {
     const child = spawn(process.execPath, [script()], {
       env: env({ FAKE_WAIT: '1' }),
       cwd: tmpdir(),

@@ -36,6 +36,28 @@ describe('installSessionExpiry', () => {
     expect(navigate).toHaveBeenCalledWith({ to: '/login', search: { redirect: '/cases/c1?tab=1' } })
   })
 
+  it('leaves when a refetch turns the cached session into null (stale SSE after a 401)', async () => {
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(sessionKey, { user: { id: 'user-a' } })
+    const { router, navigate } = fakeRouter('/cases', '/cases?q=1')
+    uninstall = installSessionExpiry(queryClient, router)
+
+    await queryClient.fetchQuery({ queryKey: sessionKey, queryFn: () => null, staleTime: 0 })
+
+    expect(navigate).toHaveBeenCalledWith({ to: '/login', search: { redirect: '/cases?q=1' } })
+  })
+
+  it('does not treat a manual sign-out write as expiry', () => {
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(sessionKey, { user: { id: 'user-a' } })
+    const { router, navigate } = fakeRouter('/cases')
+    uninstall = installSessionExpiry(queryClient, router)
+
+    queryClient.setQueryData(sessionKey, null)
+
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
   it('tidak menavigasi bila sudah di /login', async () => {
     const { router, navigate } = fakeRouter('/login')
     uninstall = installSessionExpiry(new QueryClient(), router)
