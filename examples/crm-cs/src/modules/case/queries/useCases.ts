@@ -4,7 +4,8 @@ import { casesApi } from '../api/cases'
 import { toCaseListQuery } from '../schemas/search'
 import type { CaseSearch } from '../schemas/search'
 
-export function caseListQueryOptions(search: CaseSearch) {
+export function caseListQueryOptions({ preview: _preview, ...search }: CaseSearch) {
+  // `preview` is UI state (drawer); keep it out of the key so open/close does not refetch.
   return queryOptions({
     queryKey: caseKeys.list(search),
     queryFn: ({ signal }) => casesApi.list(toCaseListQuery(search), signal),
