@@ -28,11 +28,15 @@ export function CustomerPanel({ caseItem }: { caseItem: Case }) {
       </div>
 
       <DescriptionList>
-        <DescriptionItem label="Telepon">{maskPhone(customer.phone, role)}</DescriptionItem>
-        <DescriptionItem label="Email" valueClassName="break-all">
+        <DescriptionItem label={t('cases.detail.phone')}>
+          {maskPhone(customer.phone, role)}
+        </DescriptionItem>
+        <DescriptionItem label={t('cases.detail.email')} valueClassName="break-all">
           {maskEmail(customer.email, role)}
         </DescriptionItem>
-        <DescriptionItem label="Alamat">{maskAddress(customer.address, role)}</DescriptionItem>
+        <DescriptionItem label={t('cases.detail.address')}>
+          {maskAddress(customer.address, role)}
+        </DescriptionItem>
         <DescriptionItem label={t('cases.detail.stt')} valueClassName="font-mono text-xs">
           {caseItem.sttNumber ?? '—'}
         </DescriptionItem>

@@ -8,6 +8,7 @@ const idID = {
     search: 'Cari',
     clear: 'Bersihkan',
     signOut: 'Keluar',
+    signOutFailed: 'Gagal keluar. Periksa koneksi lalu coba lagi.',
     signedInAs: 'Masuk sebagai',
     modules: 'Modul',
     connection: {
@@ -66,6 +67,7 @@ const enUS = {
     search: 'Search',
     clear: 'Clear',
     signOut: 'Sign out',
+    signOutFailed: 'Could not sign out. Check your connection and try again.',
     signedInAs: 'Signed in as',
     modules: 'Modules',
     connection: {

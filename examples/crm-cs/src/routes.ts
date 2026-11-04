@@ -18,6 +18,7 @@ export function createRoutes(parent: AnyRoute): AnyRoute[] {
     createRoute({
       getParentRoute: () => parent,
       path: 'cases',
+      beforeLoad: requirePermission('case.view'),
       validateSearch: (search: Record<string, unknown>) => caseSearchSchema.parse(search),
       // The URL stays short: defaults are not written.
       search: { middlewares: [stripSearchParams(DEFAULT_CASE_SEARCH)] },
@@ -32,6 +33,7 @@ export function createRoutes(parent: AnyRoute): AnyRoute[] {
     createRoute({
       getParentRoute: () => parent,
       path: 'cases/$caseId',
+      beforeLoad: requirePermission('case.view'),
       component: CaseDetailPage,
     }),
     createRoute({

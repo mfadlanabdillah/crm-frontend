@@ -1,4 +1,4 @@
-﻿import { FlexRender, createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
+import { FlexRender, createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { formatRelative } from '@crm/app-kit'
 import { Button, cn, useChangeFlash } from '@crm/ui'
 import type { Row } from '@tanstack/react-table'
