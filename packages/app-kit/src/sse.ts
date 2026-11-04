@@ -14,6 +14,9 @@ export interface EventStreamOptions<T> {
   maxDelayMs?: number
   /** Batas percobaan reconnect; tanpa nilai berarti terus mencoba. */
   maxAttempts?: number
+  /** EventSource cannot see a 401: called once after this many failed attempts so the caller can re-check the session. */
+  onStale?: () => void
+  staleAfterAttempts?: number
 }
 
 /**
@@ -47,6 +50,8 @@ export function createEventStream<T>(options: EventStreamOptions<T>): { close: (
     baseDelayMs = 1000,
     maxDelayMs = 30_000,
     maxAttempts,
+    onStale,
+    staleAfterAttempts = 3,
   } = options
 
   let attempt = 0
@@ -81,6 +86,7 @@ export function createEventStream<T>(options: EventStreamOptions<T>): { close: (
       if (closed) return
 
       attempt += 1
+      if (attempt === staleAfterAttempts) onStale?.()
       if (maxAttempts !== undefined && attempt > maxAttempts) {
         onStatus?.('offline')
         return

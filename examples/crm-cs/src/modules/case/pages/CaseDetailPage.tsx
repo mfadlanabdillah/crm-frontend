@@ -1,5 +1,5 @@
 import { formatDateTime } from '@crm/app-kit'
-import { getRouteApi, useNavigate } from '@tanstack/react-router'
+import { getRouteApi, useNavigate, useRouter } from '@tanstack/react-router'
 import { Can, useAuth } from '@crm/auth'
 import { ApiError } from '@crm/api-client'
 import type { UpdateCaseRequest } from '@crm/api-client'
@@ -27,6 +27,7 @@ export function CaseDetailPage() {
   const { caseId } = route.useParams()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { history } = useRouter()
   const { session } = useAuth()
   const openTab = useWorkspaceStore((state) => state.openTab)
   const { data, isPending, isError, error, refetch } = useCase(caseId)
@@ -51,7 +52,12 @@ export function CaseDetailPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => void navigate({ to: '/cases', search: DEFAULT_CASE_SEARCH })}
+          onClick={() =>
+            // Keep the agent's list filters when they came from the list.
+            history.canGoBack()
+              ? history.back()
+              : void navigate({ to: '/cases', search: DEFAULT_CASE_SEARCH })
+          }
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t('cases.detail.back')}
@@ -107,35 +113,37 @@ export function CaseDetailPage() {
                 </dl>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border-subtle pt-3">
-                  <label className="flex items-center gap-2 text-xs text-ink-muted">
-                    {t('cases.status')}
-                    <Select
-                      value={data.status}
-                      onChange={(event) => apply({ status: event.target.value })}
-                      disabled={update.isPending}
-                    >
-                      {masterData?.statuses.map((status) => (
-                        <option key={status.code} value={status.code}>
-                          {status.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
+                  <Can permission="case.status.update">
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                      {t('cases.status')}
+                      <Select
+                        value={data.status}
+                        onChange={(event) => apply({ status: event.target.value })}
+                        disabled={update.isPending}
+                      >
+                        {masterData?.statuses.map((status) => (
+                          <option key={status.code} value={status.code}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </label>
 
-                  <label className="flex items-center gap-2 text-xs text-ink-muted">
-                    {t('cases.priority')}
-                    <Select
-                      value={data.priority}
-                      onChange={(event) => apply({ priority: event.target.value })}
-                      disabled={update.isPending}
-                    >
-                      {masterData?.priorities.map((priority) => (
-                        <option key={priority.code} value={priority.code}>
-                          {priority.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                      {t('cases.priority')}
+                      <Select
+                        value={data.priority}
+                        onChange={(event) => apply({ priority: event.target.value })}
+                        disabled={update.isPending}
+                      >
+                        {masterData?.priorities.map((priority) => (
+                          <option key={priority.code} value={priority.code}>
+                            {priority.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </label>
+                  </Can>
 
                   <Can permission="case.escalate">
                     <label className="flex items-center gap-2 text-xs text-ink-muted">

@@ -7,10 +7,18 @@ export const Route = createFileRoute('/_authenticated/remote/$moduleId/$')({
   component: RemoteSubPath,
 })
 
+function safeDecode(segment: string) {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
+}
+
 function RemoteSubPath() {
   const { moduleId = '' } = useParams({ strict: false })
   const pathname = useLocation({ select: (location) => location.pathname })
   // `/remote/<id>/a/b` -> `a/b`. Read from the pathname: this router version does not type the splat.
-  const subPath = pathname.split('/').slice(3).map(decodeURIComponent).join('/')
+  const subPath = pathname.split('/').slice(3).map(safeDecode).join('/')
   return <RemoteModulePage moduleId={moduleId} subPath={subPath} />
 }

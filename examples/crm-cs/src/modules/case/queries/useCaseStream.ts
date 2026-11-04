@@ -1,4 +1,4 @@
-import { env, createEventStream } from '@crm/app-kit'
+import { env, createEventStream, sessionKey } from '@crm/app-kit'
 import type { StreamStatus } from '@crm/app-kit'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -21,16 +21,19 @@ export function parseCaseEvent(raw: string): CaseEventPayload {
 /** Tambal cache list dan detail di tempat; tidak memicu refetch kecuali case baru/eskalasi. */
 export function applyCaseEvent(queryClient: QueryClient, event: CaseEventPayload): void {
   const patch = toCasePatch(event)
+  const occurredAt = Date.parse(event.occurredAt)
+  // Drop events older than what the cache already holds, so a late event cannot revert newer state.
+  const isStale = (item: Case) => Date.parse(item.updatedAt) > occurredAt
   if (Object.keys(patch).length > 0) {
     queryClient.setQueryData<Case>(caseKeys.detail(event.caseId), (current) =>
-      current ? { ...current, ...patch } : current,
+      current && !isStale(current) ? { ...current, ...patch } : current,
     )
     queryClient.setQueriesData<CaseListResponse>({ queryKey: caseKeys.lists() }, (current) =>
       current
         ? {
             ...current,
             items: current.items.map((item) =>
-              item.id === event.caseId ? { ...item, ...patch } : item,
+              item.id === event.caseId && !isStale(item) ? { ...item, ...patch } : item,
             ),
           }
         : current,
@@ -70,6 +73,7 @@ export function useCaseStream(): StreamStatus {
       parse: parseCaseEvent,
       onEvent: (event) => applyCaseEvent(queryClient, event),
       onStatus: setStatus,
+      onStale: () => void queryClient.invalidateQueries({ queryKey: sessionKey }),
       onError: (error) => {
         if (import.meta.env.DEV) console.warn('[sse] event diabaikan', error)
       },

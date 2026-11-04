@@ -83,7 +83,7 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Bold"
+            aria-label={t('cases.detail.bold')}
             aria-pressed={editor?.isActive('bold') ?? false}
             onClick={() => editor?.chain().focus().toggleBold().run()}
           >
@@ -92,7 +92,7 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Italic"
+            aria-label={t('cases.detail.italic')}
             aria-pressed={editor?.isActive('italic') ?? false}
             onClick={() => editor?.chain().focus().toggleItalic().run()}
           >
@@ -101,7 +101,7 @@ export function ReplyComposer({ caseId }: { caseId: string }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Bullet list"
+            aria-label={t('cases.detail.bulletList')}
             aria-pressed={editor?.isActive('bulletList') ?? false}
             onClick={() => editor?.chain().focus().toggleBulletList().run()}
           >

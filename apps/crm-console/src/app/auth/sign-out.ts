@@ -1,4 +1,7 @@
 import { api, sessionKey } from '@crm/app-kit'
+import { ApiError } from '@crm/api-client'
+import { toast } from '@crm/ui'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -56,13 +59,21 @@ export function listenRemoteSignOut(
 export function useSignOut() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  const finish = () => {
+    broadcastSignOut()
+    resetClientState(queryClient)
+    void navigate({ to: '/login' })
+  }
 
   return useMutation({
     mutationFn: () => api.logout(),
-    onSettled: () => {
-      broadcastSignOut()
-      resetClientState(queryClient)
-      void navigate({ to: '/login' })
+    onSuccess: () => finish(),
+    onError: (error) => {
+      // 401: the session is already gone on the server, so leaving is correct.
+      if (error instanceof ApiError && error.status === 401) return finish()
+      toast(t('common.signOutFailed'), { tone: 'danger' })
     },
   })
 }
