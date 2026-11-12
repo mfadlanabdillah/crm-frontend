@@ -46,6 +46,28 @@ export function App() {
       />
 
       <section className="flex flex-col gap-2">
+        <SectionHeading as="h2">Apps</SectionHeading>
+        <div className={PANEL}>
+          <Table>
+            <THead>
+              <Tr>
+                <Th>App</Th>
+                <Th>Path</Th>
+              </Tr>
+            </THead>
+            <TBody>
+              {catalog.apps.map((app) => (
+                <Tr key={app.path}>
+                  <Td>{app.name}</Td>
+                  <Td className="text-ink-muted">{app.path}</Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
         <SectionHeading as="h2">Remotes</SectionHeading>
         <div className={PANEL}>
           <Table>
