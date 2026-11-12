@@ -69,19 +69,32 @@ export function format(root, files) {
       command: result.command,
     })
   }
-  const failures = output(result)
-    .split('\n')
-    .filter((line) => line.startsWith('[warn] ') && line.includes('.'))
-    .map((line) => line.replace('[warn] ', '').trim())
-    .filter((line) => !line.startsWith('Code style'))
-    .map((file) => ({
-      file,
-      line: null,
-      column: null,
-      ruleId: 'prettier',
-      message: 'not formatted',
-      docsUrl: null,
-    }))
+  const lines = output(result).split('\n')
+  const errors = lines
+    .map((line) => line.match(/\[error\]\s+([^\s:]+):\s+(.*)$/))
+    .filter((match) => Boolean(match))
+  const failures =
+    errors.length > 0
+      ? errors.map((match) => ({
+          file: match[1],
+          line: null,
+          column: null,
+          ruleId: 'prettier',
+          message: match[2],
+          docsUrl: null,
+        }))
+      : lines
+          .filter((line) => line.startsWith('[warn] ') && line.includes('.'))
+          .map((line) => line.replace('[warn] ', '').trim())
+          .filter((line) => !line.startsWith('Code style'))
+          .map((file) => ({
+            file,
+            line: null,
+            column: null,
+            ruleId: 'prettier',
+            message: 'not formatted',
+            docsUrl: null,
+          }))
   return failed('format', result, failures)
 }
 
