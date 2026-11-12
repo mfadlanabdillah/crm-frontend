@@ -78,6 +78,18 @@ export function CaseFilters({ search, data, onChange, onReset }: CaseFiltersProp
         ))}
       </Select>
 
+      <Select
+        aria-label={t('cases.sort')}
+        value={search.sort}
+        onChange={(event) => onChange({ sort: event.target.value as CaseSearch['sort'] })}
+      >
+        <option value="-updated_at">{t('cases.sortUpdatedNewest')}</option>
+        <option value="updated_at">{t('cases.sortUpdatedOldest')}</option>
+        <option value="-created_at">{t('cases.sortCreatedNewest')}</option>
+        <option value="created_at">{t('cases.sortCreatedOldest')}</option>
+        <option value="-priority">{t('cases.sortPriority')}</option>
+      </Select>
+
       <Button type="submit" variant="secondary" size="sm">
         {t('common.search')}
       </Button>

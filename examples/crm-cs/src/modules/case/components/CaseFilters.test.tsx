@@ -61,6 +61,16 @@ describe('CaseFilters', () => {
     expect(onChange).toHaveBeenLastCalledWith({ status: undefined })
   })
 
+  it('memilih urutan mengirim nilai sort dari URL', async () => {
+    const { onChange } = renderFilters()
+
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: /urutkan|sort/i }),
+      '-priority',
+    )
+    expect(onChange).toHaveBeenLastCalledWith({ sort: '-priority' })
+  })
+
   it('submit pencarian memangkas spasi dan kosong menjadi undefined', async () => {
     const { onChange } = renderFilters()
     const box = screen.getByRole('searchbox')
