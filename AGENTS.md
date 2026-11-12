@@ -54,7 +54,7 @@ examples/mock-backend # dev mock of the example domain: cases, customers, refund
 examples/e2e         # journeys across the console and the examples
 packages/
   ui/  api-client/  auth/  i18n/  app-kit/  module-contract/  test-utils/  config-ts/  config-eslint/
-apps/platform-portal/  # internal IDP portal: reads docs/catalog.json; not a remote, not shipped with the CRM
+apps/platform-portal/  # internal IDP portal: reads docs/catalog.json, plus verify-report.json when it exists
 ```
 
 `pnpm dev:portal` runs the portal on port 5178.

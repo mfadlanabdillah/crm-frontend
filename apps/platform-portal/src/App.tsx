@@ -15,6 +15,7 @@ import {
 } from '@crm/ui'
 import { catalog } from './catalog'
 import { filterCatalog } from './filter'
+import { packageStatus, verifyReport } from './report'
 
 const PANEL = 'overflow-hidden rounded-xl border border-border-subtle bg-surface-raised'
 
@@ -122,6 +123,11 @@ export function App() {
 
       <section className="flex flex-col gap-2">
         <SectionHeading as="h2">Shared packages</SectionHeading>
+        <p className="text-xs text-ink-muted">
+          {verifyReport
+            ? `Last verify: ${verifyReport.summary.failed} failed, ${verifyReport.summary.passed} passed, ${verifyReport.summary.skipped} skipped (${new Date(verifyReport.startedAt).toLocaleString()})`
+            : 'No verify report. Run pnpm verify --json to see the last run.'}
+        </p>
         <div className={PANEL}>
           <Table>
             <THead>
@@ -130,23 +136,33 @@ export function App() {
                 <Th>Path</Th>
                 <Th>Tests</Th>
                 <Th>Typecheck</Th>
+                <Th>Last verify</Th>
               </Tr>
             </THead>
             <TBody>
-              {view.packages.map((pkg) => (
-                <Tr key={pkg.name}>
-                  <Td>{pkg.name}</Td>
-                  <Td className="text-ink-muted">{pkg.path}</Td>
-                  <Td>
-                    <Badge tone={pkg.tests ? 'success' : 'muted'}>{pkg.tests ? 'yes' : 'no'}</Badge>
-                  </Td>
-                  <Td>
-                    <Badge tone={pkg.typecheck ? 'success' : 'muted'}>
-                      {pkg.typecheck ? 'yes' : 'no'}
-                    </Badge>
-                  </Td>
-                </Tr>
-              ))}
+              {view.packages.map((pkg) => {
+                const status = packageStatus(verifyReport, pkg)
+                const tone = status === 'pass' ? 'success' : status === 'fail' ? 'danger' : 'muted'
+                return (
+                  <Tr key={pkg.name}>
+                    <Td>{pkg.name}</Td>
+                    <Td className="text-ink-muted">{pkg.path}</Td>
+                    <Td>
+                      <Badge tone={pkg.tests ? 'success' : 'muted'}>
+                        {pkg.tests ? 'yes' : 'no'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <Badge tone={pkg.typecheck ? 'success' : 'muted'}>
+                        {pkg.typecheck ? 'yes' : 'no'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <Badge tone={tone}>{status}</Badge>
+                    </Td>
+                  </Tr>
+                )
+              })}
             </TBody>
           </Table>
         </div>
