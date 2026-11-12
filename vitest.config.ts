@@ -11,6 +11,7 @@ export default defineConfig({
       'packages/auth',
       'packages/i18n',
       'packages/ui',
+      'scripts',
     ],
     coverage: {
       provider: 'v8',

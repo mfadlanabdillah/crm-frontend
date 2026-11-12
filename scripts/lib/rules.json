@@ -1,0 +1,16 @@
+{
+  "no-restricted-syntax": "docs/ui-standards.md",
+  "no-restricted-imports": "AGENTS.md",
+  "no-restricted-globals": "AGENTS.md",
+  "@typescript-eslint/no-explicit-any": "AGENTS.md",
+  "@typescript-eslint/no-unused-vars": "AGENTS.md",
+  "@typescript-eslint/consistent-type-imports": "AGENTS.md",
+  "no-console": "AGENTS.md",
+  "eqeqeq": "AGENTS.md",
+  "import/no-duplicates": "AGENTS.md",
+  "import/newline-after-import": "AGENTS.md",
+  "react-hooks/rules-of-hooks": "docs/ui-standards.md",
+  "react-hooks/exhaustive-deps": "docs/ui-standards.md",
+  "jsx-a11y/alt-text": "docs/ui-standards.md",
+  "jsx-a11y/label-has-associated-control": "docs/ui-standards.md"
+}

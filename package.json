@@ -24,6 +24,8 @@
     "codegen:api": "pnpm --filter @crm/api-client codegen",
     "codegen:check": "pnpm codegen:api && git diff --exit-code packages/api-client/src/generated",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm build:examples && pnpm size && pnpm codegen:check",
+    "verify": "node scripts/verify.mjs",
+    "verify:json": "node scripts/verify.mjs --json",
     "prepare": "husky",
     "new:module": "pnpm --filter @crm/crm-console new:module",
     "new:endpoint": "pnpm --filter @crm/crm-console new:endpoint",
