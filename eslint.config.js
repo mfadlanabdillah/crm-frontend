@@ -47,11 +47,11 @@ const appBoundary = {
   rules: importRule([
     {
       group: ['@/routes/**'],
-      message: 'app tidak boleh mengimpor routes.',
+      message: 'app must not import routes.',
     },
     {
       group: ['@/modules/*/**', '!@/modules/*/module', '!@/modules/*/public'],
-      message: 'app hanya boleh mengimpor module.ts atau public.ts sebuah modul.',
+      message: 'app may import only the module.ts or public.ts of a module.',
     },
   ]),
 }
@@ -63,19 +63,18 @@ const moduleBoundaries = appSrcDirs.flatMap((dir) => {
     rules: importRule([
       {
         group: ['@/app/**', '@/routes/**'],
-        message:
-          'Modul tidak boleh mengimpor app atau routes. Kebutuhan shell masuk lewat ModuleDefinition.',
+        message: 'A module must not import app or routes. Shell needs go through ModuleDefinition.',
       },
       ...moduleIds
         .filter((other) => other !== id)
         .map((other) => ({
           group: [`@/modules/${other}/**`, `!@/modules/${other}/public`],
-          message: `Antar-modul hanya lewat @/modules/${other}/public (queries, schemas, store), bukan komponen.`,
+          message: `Cross-module imports go through @/modules/${other}/public (queries, schemas, store), never components.`,
         })),
       {
         group: ['../../*', '../../**'],
         message:
-          'Gunakan alias @/modules/<modul>/... untuk lintas folder; path relatif tidak boleh keluar dari folder induk.',
+          'Use the @/modules/<module>/... alias across folders; relative paths must not climb out of the parent folder.',
       },
     ]),
   }))
