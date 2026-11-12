@@ -1,4 +1,5 @@
-import { writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
 
 export const SCHEMA_VERSION = 1
 
@@ -42,6 +43,7 @@ export function writeReport(report, target) {
     process.stdout.write(text)
     return
   }
+  mkdirSync(path.dirname(target), { recursive: true })
   writeFileSync(target, text)
 }
 

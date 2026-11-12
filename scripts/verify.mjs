@@ -160,6 +160,14 @@ function seconds(ms) {
   return `${(ms / 1000).toFixed(1)}s`
 }
 
+function unparsable(result) {
+  return (
+    result.id === 'format' &&
+    result.status === 'fail' &&
+    result.failures.some((failure) => (failure.message ?? '').startsWith('SyntaxError'))
+  )
+}
+
 function main() {
   let options
   try {
@@ -192,6 +200,11 @@ function main() {
   if (!toStdout) printScope(scope)
   const results = []
   for (const entry of entries) {
+    // A file Prettier cannot parse fails every tool that reads it; one report is enough.
+    if (entry.id === 'lint' && results.some(unparsable)) {
+      results.push(skipped('lint', 'format could not parse the file'))
+      continue
+    }
     const result = entry.run()
     results.push(result ?? skipped(entry.id, entry.reason ?? 'not applicable'))
   }
