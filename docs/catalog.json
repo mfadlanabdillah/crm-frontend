@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    { "name": "@crm/crm-console", "path": "apps/crm-console" },
+    { "name": "@crm/platform-portal", "path": "apps/platform-portal" }
+  ],
+  "remotes": [
+    {
+      "name": "@crm/crm-cs",
+      "path": "examples/crm-cs",
+      "moduleName": "crm_cs",
+      "port": 5177
+    },
+    {
+      "name": "@crm/crm-finance",
+      "path": "examples/crm-finance",
+      "moduleName": "crm_finance",
+      "port": 5174
+    },
+    {
+      "name": "@crm/crm-investigator",
+      "path": "examples/crm-investigator",
+      "moduleName": "crm_investigator",
+      "port": 5175
+    },
+    {
+      "name": "@crm/crm-monitor",
+      "path": "examples/crm-monitor",
+      "moduleName": "crm_monitor",
+      "port": 5176
+    }
+  ],
+  "modules": [
+    {
+      "id": "case",
+      "remote": "@crm/crm-cs",
+      "basePath": "/cases",
+      "path": "/cases",
+      "permission": "case.view",
+      "labelKey": "cases.title"
+    },
+    {
+      "id": "customer",
+      "remote": "@crm/crm-cs",
+      "basePath": "/customers",
+      "path": "/customers",
+      "permission": "customer.view",
+      "labelKey": "customer.title"
+    },
+    {
+      "id": "finance",
+      "remote": "@crm/crm-finance",
+      "basePath": "/remote/finance",
+      "path": "/remote/finance",
+      "permission": "case.export",
+      "labelKey": "finance.title"
+    },
+    {
+      "id": "investigator",
+      "remote": "@crm/crm-investigator",
+      "basePath": "/remote/investigator",
+      "path": "/remote/investigator",
+      "permission": "case.escalate",
+      "labelKey": "investigator.title"
+    },
+    {
+      "id": "monitor",
+      "remote": "@crm/crm-monitor",
+      "basePath": "/remote/monitor",
+      "path": "/remote/monitor",
+      "permission": "case.reassign",
+      "labelKey": "monitor.title"
+    }
+  ],
+  "packages": [
+    {
+      "name": "@crm/api-client",
+      "path": "packages/api-client",
+      "tests": true,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/app-kit",
+      "path": "packages/app-kit",
+      "tests": true,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/auth",
+      "path": "packages/auth",
+      "tests": true,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/config-eslint",
+      "path": "packages/config-eslint",
+      "tests": false,
+      "typecheck": false
+    },
+    {
+      "name": "@crm/config-ts",
+      "path": "packages/config-ts",
+      "tests": false,
+      "typecheck": false
+    },
+    {
+      "name": "@crm/i18n",
+      "path": "packages/i18n",
+      "tests": true,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/module-contract",
+      "path": "packages/module-contract",
+      "tests": false,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/test-utils",
+      "path": "packages/test-utils",
+      "tests": true,
+      "typecheck": true
+    },
+    {
+      "name": "@crm/ui",
+      "path": "packages/ui",
+      "tests": true,
+      "typecheck": true
+    }
+  ],
+  "owners": ["@mfadlanabdillah"]
+}

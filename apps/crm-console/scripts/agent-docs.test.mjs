@@ -118,6 +118,7 @@ describe('docs/onboarding.md: dependency diagram', () => {
     cs: ['@crm/crm-cs'],
     other: ['@crm/crm-finance', '@crm/crm-investigator', '@crm/crm-monitor'],
     mockb: ['@crm/example-mock-backend'],
+    portal: ['@crm/platform-portal'],
     ui: ['@crm/ui'],
     appkit: ['@crm/app-kit'],
     contract: ['@crm/module-contract'],

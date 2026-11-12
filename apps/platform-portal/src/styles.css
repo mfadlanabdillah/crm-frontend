@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '@crm/ui/theme.css';
+/* Tailwind does not scan node_modules: point it at the shared components. */
+@source '../../../packages/ui/src';

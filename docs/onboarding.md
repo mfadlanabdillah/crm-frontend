@@ -143,6 +143,7 @@ flowchart TD
     cs["examples/crm-cs"]
     other["crm-finance, crm-investigator, crm-monitor"]
     mockb["examples/mock-backend"]
+    portal["apps/platform-portal"]
   end
   subgraph Paket
     ui["@crm/ui"]
@@ -156,6 +157,7 @@ flowchart TD
   cs --> ui & appkit & contract & auth & apic
   other --> ui & contract & auth & apic
   mockb --> auth & apic
+  portal --> ui
   appkit --> auth & apic
   contract --> auth & apic
   auth --> apic
