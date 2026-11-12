@@ -139,41 +139,54 @@ export function lint(root, files) {
   return failed('lint', result, failures)
 }
 
-const TSC_ERROR = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)$/
+const TSC_ERROR = /^(?:.*?typecheck: )?(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)$/
 
 export function typecheck(root, packages) {
   const targets = packages.filter((pkg) => Boolean(pkg.json.scripts?.typecheck))
   if (targets.length === 0) return null
+  const args = ['-r', '--parallel', '--no-bail', '--if-present']
+  for (const pkg of targets) args.push('--filter', pkg.name)
+  args.push('typecheck')
+  const result = run(root, 'pnpm', args)
   const failures = []
-  let durationMs = 0
-  const commands = []
-  for (const pkg of targets) {
-    const result = run(root, 'pnpm', ['--filter', pkg.name, 'typecheck'])
-    durationMs += result.durationMs
-    commands.push(result.command)
-    const before = failures.length
-    for (const line of output(result).split('\n')) {
-      const match = line.match(TSC_ERROR)
-      if (match) {
-        failures.push({
-          file: match[1],
-          line: Number(match[2]),
-          column: Number(match[3]),
-          ruleId: match[4],
-          message: match[5],
-          docsUrl: 'AGENTS.md',
-        })
-      }
-    }
-    if (result.exitCode !== 0 && failures.length === before) {
-      failures.push(rawFailure(result))
+  for (const line of output(result).split('\n')) {
+    const match = line.match(TSC_ERROR)
+    if (match) {
+      failures.push({
+        file: match[1].replace(/^(\.\.\/)+/, ''),
+        line: Number(match[2]),
+        column: Number(match[3]),
+        ruleId: match[4],
+        message: match[5],
+        docsUrl: 'AGENTS.md',
+      })
     }
   }
-  const command = commands.join(' && ')
-  if (failures.length === 0) {
-    return step({ id: 'typecheck', status: 'pass', durationMs, command })
+  if (failures.length === 0 && result.exitCode !== 0) failures.push(rawFailure(result))
+  // Each dependent package re-reports the same error in the changed file; keep one.
+  const unique = [
+    ...new Map(
+      failures.map((failure) => [
+        `${path.basename(failure.file ?? '')}:${failure.line}:${failure.column}:${failure.ruleId}:${failure.message}`,
+        failure,
+      ]),
+    ).values(),
+  ]
+  if (unique.length === 0) {
+    return step({
+      id: 'typecheck',
+      status: 'pass',
+      durationMs: result.durationMs,
+      command: result.command,
+    })
   }
-  return step({ id: 'typecheck', status: 'fail', durationMs, command, failures })
+  return step({
+    id: 'typecheck',
+    status: 'fail',
+    durationMs: result.durationMs,
+    command: result.command,
+    failures: unique,
+  })
 }
 
 export function vitestProject(pkg) {
